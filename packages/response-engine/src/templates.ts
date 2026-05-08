@@ -1,5 +1,5 @@
 import type { Locale } from '@aga/api-contracts';
-import type { IntentSlug } from './intent-matcher.js';
+import type { IntentSlug } from './intent-matcher';
 
 interface TemplateContext {
   /** Substitution values for {placeholders} in the template */

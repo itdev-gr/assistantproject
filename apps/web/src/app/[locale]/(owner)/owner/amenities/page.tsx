@@ -25,7 +25,7 @@ export default async function AmenitiesPage({ params }: Props) {
     <div>
       <div className="mb-6 flex items-center justify-between">
         <h1 className="text-2xl font-semibold">{locale === 'en' ? 'Amenities' : 'Παροχές'}</h1>
-        <Button asChild={false}>
+        <Button asChild>
           <Link href="/owner/amenities/new">
             {locale === 'en' ? 'New amenity' : 'Νέα παροχή'}
           </Link>

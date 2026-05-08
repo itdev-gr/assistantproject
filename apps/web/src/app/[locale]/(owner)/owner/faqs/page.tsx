@@ -26,7 +26,7 @@ export default async function FaqsListPage({ params }: Props) {
     <div>
       <div className="mb-6 flex items-center justify-between">
         <h1 className="text-2xl font-semibold">FAQs</h1>
-        <Button asChild={false}>
+        <Button asChild>
           <Link href="/owner/faqs/new">
             {locale === 'en' ? 'New FAQ' : 'Νέα ερώτηση'}
           </Link>

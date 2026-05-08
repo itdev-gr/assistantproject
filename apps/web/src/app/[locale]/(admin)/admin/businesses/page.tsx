@@ -27,7 +27,7 @@ export default async function BusinessesListPage({ params }: Props) {
         <h1 className="text-2xl font-semibold">
           {locale === 'en' ? 'Businesses' : 'Επιχειρήσεις'}
         </h1>
-        <Button asChild={false}>
+        <Button asChild>
           <Link href="/admin/businesses/new">
             {locale === 'en' ? 'New business' : 'Νέα επιχείρηση'}
           </Link>
@@ -69,7 +69,7 @@ export default async function BusinessesListPage({ params }: Props) {
                         ? 'inactive'
                         : 'ανενεργή'}
                   </Badge>
-                  <Button asChild={false} variant="outline" size="sm">
+                  <Button asChild variant="outline" size="sm">
                     <Link href={`/admin/businesses/${b.id}`}>
                       {locale === 'en' ? 'Edit' : 'Επεξεργασία'}
                     </Link>

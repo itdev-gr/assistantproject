@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react';
-import type { ChatMessage, ChatRequest, ChatResponse, ChatStatus } from './types.js';
+import type { ChatMessage, ChatRequest, ChatResponse, ChatStatus } from './types';
 
 export interface UseConversationOptions {
   /** Override the API endpoint. Defaults to /api/chat */

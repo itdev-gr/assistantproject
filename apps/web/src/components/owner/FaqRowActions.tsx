@@ -33,7 +33,7 @@ export function FaqRowActions({ id, published, editHref, locale }: Props) {
 
   return (
     <div className="flex items-center gap-2">
-      <Button asChild={false} variant="outline" size="sm" disabled={pending}>
+      <Button asChild variant="outline" size="sm" disabled={pending}>
         <Link href={editHref}>{locale === 'en' ? 'Edit' : 'Επεξεργασία'}</Link>
       </Button>
       <Button variant="ghost" size="sm" onClick={togglePublish} disabled={pending}>

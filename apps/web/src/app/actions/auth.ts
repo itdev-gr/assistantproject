@@ -32,6 +32,39 @@ export async function sendMagicLink(
   return { ok: true };
 }
 
+const passwordSchema = z.object({
+  email: z.string().email(),
+  password: z.string().min(6),
+});
+
+export async function signInWithPassword(
+  input: z.input<typeof passwordSchema>,
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  const parsed = passwordSchema.safeParse(input);
+  if (!parsed.success) return { ok: false, error: 'Invalid credentials' };
+  const supabase = await getServerClient();
+  const { error } = await supabase.auth.signInWithPassword(parsed.data);
+  if (error) return { ok: false, error: error.message };
+  revalidatePath('/', 'layout');
+  return { ok: true };
+}
+
+export async function signUpWithPassword(
+  input: z.input<typeof passwordSchema>,
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  const parsed = passwordSchema.safeParse(input);
+  if (!parsed.success) return { ok: false, error: 'Invalid email or password (min 6 chars)' };
+  const supabase = await getServerClient();
+  const { error } = await supabase.auth.signUp({
+    email: parsed.data.email,
+    password: parsed.data.password,
+    options: { emailRedirectTo: undefined },
+  });
+  if (error) return { ok: false, error: error.message };
+  revalidatePath('/', 'layout');
+  return { ok: true };
+}
+
 export async function signOut() {
   const supabase = await getServerClient();
   await supabase.auth.signOut();

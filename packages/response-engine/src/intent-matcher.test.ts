@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { matchIntent } from './intent-matcher.js';
+import { matchIntent } from './intent-matcher';
 
 describe('matchIntent — Greek', () => {
   it('classifies check-in question', () => {

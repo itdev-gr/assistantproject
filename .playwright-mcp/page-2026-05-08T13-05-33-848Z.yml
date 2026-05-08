@@ -1,0 +1,56 @@
+- generic [active] [ref=e1]:
+  - button "Open Next.js Dev Tools" [ref=e24] [cursor=pointer]:
+    - img [ref=e25]
+  - alert [ref=e28]
+  - generic [ref=e29]:
+    - navigation [ref=e30]:
+      - generic [ref=e31]: Super Admin
+      - list [ref=e32]:
+        - listitem [ref=e33]:
+          - link "Hotels" [ref=e34] [cursor=pointer]:
+            - /url: /en/admin
+            - img [ref=e35]
+            - text: Hotels
+        - listitem [ref=e39]:
+          - link "Businesses" [ref=e40] [cursor=pointer]:
+            - /url: /en/admin/businesses
+            - img [ref=e41]
+            - text: Businesses
+        - listitem [ref=e46]:
+          - link "Categories" [ref=e47] [cursor=pointer]:
+            - /url: /en/admin/categories
+            - img [ref=e48]
+            - text: Categories
+        - listitem [ref=e51]:
+          - link "Partnerships" [ref=e52] [cursor=pointer]:
+            - /url: /en/admin/partnerships
+            - img [ref=e53]
+            - text: Partnerships
+        - listitem [ref=e58]:
+          - link "Moderation" [ref=e59] [cursor=pointer]:
+            - /url: /en/admin/moderation
+            - img [ref=e60]
+            - text: Moderation
+        - listitem [ref=e63]:
+          - link "Recommendation rules" [ref=e64] [cursor=pointer]:
+            - /url: /en/admin/rules
+            - img [ref=e65]
+            - text: Recommendation rules
+        - listitem [ref=e66]:
+          - link "Feature flags" [ref=e67] [cursor=pointer]:
+            - /url: /en/admin/flags
+            - img [ref=e68]
+            - text: Feature flags
+        - listitem [ref=e70]:
+          - link "Usage" [ref=e71] [cursor=pointer]:
+            - /url: /en/admin/usage
+            - img [ref=e72]
+            - text: Usage
+    - main [ref=e74]:
+      - generic [ref=e75]:
+        - generic [ref=e76]:
+          - heading "Hotels" [level=1] [ref=e77]
+          - link "New tenant" [ref=e78] [cursor=pointer]:
+            - /url: /en/admin/new-tenant
+        - list [ref=e81]:
+          - listitem [ref=e82]: No hotels yet.

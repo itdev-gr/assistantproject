@@ -1,4 +1,4 @@
-export type { Database, Json } from './database.types.js';
+export type { Database, Json } from './database.types';
 
 export const TABLES = {
   hotels: 'hotels',

@@ -1,5 +1,5 @@
 import type { Locale } from '@aga/api-contracts';
-import { normalize, tokenize } from './normalize.js';
+import { normalize, tokenize } from './normalize';
 
 export type IntentSlug =
   | 'ask_checkin'

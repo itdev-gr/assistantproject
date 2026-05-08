@@ -1,5 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
-import type { Database } from './database.types.js';
+import type { Database } from './database.types';
 
 /**
  * Service-role client. Bypasses RLS — only use server-side in trusted Edge

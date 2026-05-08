@@ -25,7 +25,7 @@ export function AmenityRowActions({ id, editHref, locale }: Props) {
 
   return (
     <div className="flex items-center gap-2">
-      <Button asChild={false} variant="outline" size="sm">
+      <Button asChild variant="outline" size="sm">
         <Link href={editHref}>{locale === 'en' ? 'Edit' : 'Επεξεργασία'}</Link>
       </Button>
       <Button variant="ghost" size="sm" onClick={onDelete} disabled={pending}>

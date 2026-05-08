@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { localeSchema, slugSchema, uuidSchema } from './common.js';
+import { localeSchema, slugSchema, uuidSchema } from './common';
 
 export const hotelProfileSchema = z.object({
   name: z.string().min(2).max(120),

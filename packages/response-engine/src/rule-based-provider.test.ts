@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
-import { RuleBasedProvider, type ResponseDataPort } from './rule-based-provider.js';
-import { DEFAULT_RULES } from './ranking.js';
+import { RuleBasedProvider, type ResponseDataPort } from './rule-based-provider';
+import { DEFAULT_RULES } from './ranking';
 
 const HOTEL_ID = '00000000-0000-0000-0000-000000000001';
 const SESSION_ID = '00000000-0000-0000-0000-000000000002';

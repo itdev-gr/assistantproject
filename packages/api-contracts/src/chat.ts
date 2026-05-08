@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { localeSchema, uuidSchema } from './common.js';
+import { localeSchema, uuidSchema } from './common';
 
 export const messageRoleSchema = z.enum(['guest', 'assistant', 'system']);
 export type MessageRole = z.infer<typeof messageRoleSchema>;

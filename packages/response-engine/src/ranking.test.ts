@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { rank, DEFAULT_RULES, type RankingCandidate } from './ranking.js';
+import { rank, DEFAULT_RULES, type RankingCandidate } from './ranking';
 
 const baseCandidate = (overrides: Partial<RankingCandidate>): RankingCandidate => ({
   businessId: crypto.randomUUID(),

@@ -4,9 +4,9 @@ import type {
   ResponseProviderOutput,
 } from '@aga/chat';
 import type { Locale, RecommendationCard } from '@aga/api-contracts';
-import { matchIntent, isAskIntent, isRecommendationIntent, type IntentSlug } from './intent-matcher.js';
-import { rank, type RankingCandidate, type RecommendationRules } from './ranking.js';
-import { renderTemplate, FALLBACK } from './templates.js';
+import { matchIntent, isAskIntent, isRecommendationIntent, type IntentSlug } from './intent-matcher';
+import { rank, type RankingCandidate, type RecommendationRules } from './ranking';
+import { renderTemplate, FALLBACK } from './templates';
 
 /**
  * Adapter port: how the provider talks to the database. The Edge Function
@@ -20,7 +20,7 @@ export interface ResponseDataPort {
     locale: Locale;
     roomId?: string;
     text: string;
-  }): Promise<Record<string, string | number | null> | null>;
+  }): Promise<Record<string, string | number | null | undefined> | null>;
 
   searchRecommendationCandidates(input: {
     hotelId: string;

@@ -23,7 +23,7 @@ export default async function TenantsListPage({ params }: Props) {
     <div>
       <div className="mb-6 flex items-center justify-between">
         <h1 className="text-2xl font-semibold">{locale === 'en' ? 'Hotels' : 'Καταλύματα'}</h1>
-        <Button asChild={false}>
+        <Button asChild>
           <Link href="/admin/new-tenant">{locale === 'en' ? 'New tenant' : 'Νέο κατάλυμα'}</Link>
         </Button>
       </div>
@@ -46,7 +46,7 @@ export default async function TenantsListPage({ params }: Props) {
                       ? 'inactive'
                       : 'ανενεργό'}
                 </Badge>
-                <Button asChild={false} variant="outline" size="sm">
+                <Button asChild variant="outline" size="sm">
                   <Link href={`/admin/tenants/${h.id}`}>
                     {locale === 'en' ? 'Edit' : 'Επεξεργασία'}
                   </Link>

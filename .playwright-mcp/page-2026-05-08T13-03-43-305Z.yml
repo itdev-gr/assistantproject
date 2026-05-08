@@ -1,0 +1,16 @@
+- main [ref=e2]:
+  - generic [ref=e3]:
+    - heading "Create account" [level=3] [ref=e5]
+    - generic [ref=e7]:
+      - generic [ref=e8]:
+        - generic [ref=e9]:
+          - text: Email
+          - textbox "Email" [active] [ref=e10]
+        - generic [ref=e11]:
+          - text: Password (min 6 chars)
+          - textbox "Password (min 6 chars)" [ref=e12]
+        - button "Create account" [ref=e13] [cursor=pointer]
+      - paragraph [ref=e14]:
+        - text: Already have an account?
+        - link "Sign in" [ref=e15] [cursor=pointer]:
+          - /url: /en/login

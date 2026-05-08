@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { signSessionToken, verifySessionToken } from './session-token.js';
+import { signSessionToken, verifySessionToken } from './session-token';
 
 const SECRET = 'test-secret-32-bytes-long-aaaaaaaa';
 

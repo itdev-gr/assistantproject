@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { slugSchema, subscriptionTierSchema, uuidSchema } from './common.js';
+import { slugSchema, subscriptionTierSchema, uuidSchema } from './common';
 
 export const businessUpsertSchema = z.object({
   id: uuidSchema.optional(),

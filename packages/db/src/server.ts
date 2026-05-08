@@ -1,5 +1,5 @@
 import { createServerClient, type CookieOptions } from '@supabase/ssr';
-import type { Database } from './database.types.js';
+import type { Database } from './database.types';
 
 export interface CookieAdapter {
   getAll(): { name: string; value: string }[];
@@ -13,7 +13,8 @@ export function createSupabaseServerClient(cookies: CookieAdapter) {
     {
       cookies: {
         getAll: () => cookies.getAll(),
-        setAll: (toSet) => cookies.setAll(toSet),
+        setAll: (toSet: { name: string; value: string; options: CookieOptions }[]) =>
+          cookies.setAll(toSet),
       },
     },
   );
