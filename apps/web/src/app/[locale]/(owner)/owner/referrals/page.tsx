@@ -2,6 +2,7 @@ import { setRequestLocale } from 'next-intl/server';
 import { getServerClient } from '@/lib/supabase-server';
 import { requireOwner } from '@/lib/auth-context';
 import { Card, CardContent, CardHeader, CardTitle, Badge } from '@aga/ui';
+import { ConfirmBookingButton } from '@/components/owner/ConfirmBookingButton';
 
 interface Props {
   params: Promise<{ locale: string }>;
@@ -25,7 +26,8 @@ export default async function OwnerReferralsPage({ params }: Props) {
         id, shown_at, clicked_at,
         partnership:partnerships!inner ( hotel_id, commission_pct,
           business:businesses ( id, name )
-        )
+        ),
+        bookings ( id, status )
       `,
     )
     .eq('partnership.hotel_id', ctx.hotelId)
@@ -42,6 +44,7 @@ export default async function OwnerReferralsPage({ params }: Props) {
       commission_pct: number;
       business: { id: string; name: string };
     };
+    bookings: Array<{ id: string; status: string }>;
   }>;
 
   const total30 = rows.filter((r) => r.shown_at >= since30).length;
@@ -112,24 +115,34 @@ export default async function OwnerReferralsPage({ params }: Props) {
             </p>
           ) : (
             <ul className="divide-y">
-              {rows.slice(0, 50).map((r) => (
-                <li key={r.id} className="flex items-center gap-3 p-3 text-sm">
-                  <span className="flex-1 truncate font-medium">
-                    {r.partnership.business.name}
-                  </span>
-                  <span className="text-xs text-muted-foreground">
-                    {new Date(r.shown_at).toLocaleString(locale === 'en' ? 'en-GB' : 'el-GR', {
-                      day: '2-digit',
-                      month: 'short',
-                      hour: '2-digit',
-                      minute: '2-digit',
-                    })}
-                  </span>
-                  <Badge variant={r.clicked_at ? 'default' : 'secondary'}>
-                    {r.clicked_at ? t('clicked', 'κλικ') : t('shown', 'προβολή')}
-                  </Badge>
-                </li>
-              ))}
+              {rows.slice(0, 50).map((r) => {
+                const hasBooking = r.bookings && r.bookings.length > 0;
+                return (
+                  <li key={r.id} className="flex items-center gap-3 p-3 text-sm">
+                    <span className="flex-1 truncate font-medium">
+                      {r.partnership.business.name}
+                    </span>
+                    <span className="text-xs text-muted-foreground">
+                      {new Date(r.shown_at).toLocaleString(locale === 'en' ? 'en-GB' : 'el-GR', {
+                        day: '2-digit',
+                        month: 'short',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      })}
+                    </span>
+                    {hasBooking ? (
+                      <Badge variant="default">{t('booked', 'κράτηση')}</Badge>
+                    ) : (
+                      <Badge variant={r.clicked_at ? 'default' : 'secondary'}>
+                        {r.clicked_at ? t('clicked', 'κλικ') : t('shown', 'προβολή')}
+                      </Badge>
+                    )}
+                    {!hasBooking && r.clicked_at && (
+                      <ConfirmBookingButton referralId={r.id} locale={locale} />
+                    )}
+                  </li>
+                );
+              })}
             </ul>
           )}
         </CardContent>

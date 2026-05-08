@@ -12,6 +12,7 @@ import {
   DoorOpen,
   Handshake,
   ListChecks,
+  Receipt,
   Settings,
 } from 'lucide-react';
 
@@ -25,6 +26,7 @@ const items = [
   { href: '/owner/rooms', key: 'rooms', Icon: DoorOpen },
   { href: '/owner/partners', key: 'partners', Icon: Handshake },
   { href: '/owner/referrals', key: 'referrals', Icon: ListChecks },
+  { href: '/owner/bookings', key: 'bookings', Icon: Receipt },
   { href: '/owner/settings', key: 'settings', Icon: Settings },
 ] as const;
 
