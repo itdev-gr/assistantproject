@@ -1,7 +1,8 @@
 import { Link } from '@/i18n/routing';
 import type { DirectoryBusiness } from '@/lib/public-directory';
 import { Badge, Card, CardContent, cn } from '@aga/ui';
-import { MapPin } from 'lucide-react';
+import { MapPin, Navigation } from 'lucide-react';
+import { formatDistanceKm } from '@aga/i18n';
 
 interface Props {
   locale: string;
@@ -37,6 +38,12 @@ export function BusinessCard({ locale, business }: Props) {
           {business.priceBand != null && (
             <span className="absolute right-2 top-2 rounded-full bg-background/90 px-2 py-0.5 text-xs font-medium shadow-sm">
               {'€'.repeat(business.priceBand)}
+            </span>
+          )}
+          {business.distanceKm != null && (
+            <span className="absolute bottom-2 left-2 inline-flex items-center gap-1 rounded-full bg-background/90 px-2 py-0.5 text-xs font-medium shadow-sm">
+              <Navigation className="h-3 w-3" aria-hidden />
+              {formatDistanceKm(business.distanceKm, locale === 'en' ? 'en' : 'el')}
             </span>
           )}
         </div>

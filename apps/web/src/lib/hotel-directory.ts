@@ -1,6 +1,7 @@
 import { createSupabaseServiceClient } from '@aga/db/service';
 import type { Locale } from '@aga/api-contracts';
 import type { DirectoryBusiness } from './public-directory';
+import { haversineKm } from './geo';
 
 interface RawRow {
   id: string;
@@ -43,6 +44,17 @@ export async function listHotelDirectory(
     .maybeSingle();
   if (!hotel || !hotel.id || !hotel.slug || !hotel.name) return null;
 
+  // Fetch hotel coords for distance computation
+  const { data: hotelCoords } = await supabase
+    .from('hotels')
+    .select('lat, lng')
+    .eq('id', hotel.id)
+    .maybeSingle();
+  const hotelLatLng =
+    hotelCoords?.lat != null && hotelCoords?.lng != null
+      ? { lat: hotelCoords.lat, lng: hotelCoords.lng }
+      : null;
+
   const { data } = await supabase
     .from('businesses')
     .select(
@@ -72,6 +84,9 @@ export async function listHotelDirectory(
     const images = Array.isArray(b.images)
       ? (b.images as unknown[]).filter((i): i is string => typeof i === 'string')
       : [];
+    const distanceKm = hotelLatLng
+      ? haversineKm(hotelLatLng, { lat: b.lat, lng: b.lng })
+      : null;
     const card: DirectoryBusiness = {
       id: b.id,
       name: b.name,
@@ -93,17 +108,20 @@ export async function listHotelDirectory(
       images,
       hasPartner: ours !== null,
       topTier: ours?.subscription_tier ?? null,
+      distanceKm,
     };
     if (ours) partners.push(card);
     else others.push(card);
   }
 
-  // Sort partners by tier desc, then priority score desc
+  // Sort partners by tier desc, then by distance asc when both have it.
   partners.sort((a, b) => {
     const ta = a.topTier ? TIER_RANK[a.topTier] : -1;
     const tb = b.topTier ? TIER_RANK[b.topTier] : -1;
-    return tb - ta;
+    if (tb !== ta) return tb - ta;
+    return (a.distanceKm ?? Infinity) - (b.distanceKm ?? Infinity);
   });
+  others.sort((a, b) => (a.distanceKm ?? Infinity) - (b.distanceKm ?? Infinity));
 
   return {
     hotel: { id: hotel.id, slug: hotel.slug, name: hotel.name },

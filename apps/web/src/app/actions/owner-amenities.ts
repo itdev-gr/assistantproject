@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { amenityUpsertSchema } from '@aga/api-contracts';
+import type { Json } from '@aga/db/types';
 import { getServerClient } from '@/lib/supabase-server';
 import { requireOwner } from '@/lib/auth-context';
 
@@ -22,7 +23,7 @@ export async function upsertAmenity(raw: unknown): Promise<Result> {
         name: a.name,
         description: a.description,
         location_on_property: a.locationOnProperty,
-        hours_json: a.hours ?? {},
+        hours_json: (a.hours ?? {}) as Json,
         state: a.published ? 'published' : 'draft',
       })
       .eq('id', a.id)
@@ -41,7 +42,7 @@ export async function upsertAmenity(raw: unknown): Promise<Result> {
       name: a.name,
       description: a.description,
       location_on_property: a.locationOnProperty,
-      hours_json: a.hours ?? {},
+      hours_json: (a.hours ?? {}) as Json,
       state: a.published ? 'published' : 'draft',
     })
     .select('id')

@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import { getServerClient } from '@/lib/supabase-server';
 import { requireSuperAdmin } from '@/lib/auth-context';
 import { BusinessForm } from '@/components/admin/BusinessForm';
+import { WebhookSecretCard } from '@/components/admin/WebhookSecretCard';
 
 interface Props {
   params: Promise<{ locale: string; id: string }>;
@@ -18,7 +19,7 @@ export default async function EditBusinessPage({ params }: Props) {
     supabase
       .from('businesses')
       .select(
-        'id, name, category_id, description_i18n, lat, lng, address, phone, whatsapp, website, price_band, tags, opening_hours_json, images, verified, active',
+        'id, name, category_id, description_i18n, lat, lng, address, phone, whatsapp, website, price_band, tags, opening_hours_json, images, verified, active, webhook_secret',
       )
       .eq('id', id)
       .maybeSingle(),
@@ -26,9 +27,11 @@ export default async function EditBusinessPage({ params }: Props) {
   ]);
   if (!data) notFound();
 
+  const appOrigin = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000';
+
   return (
-    <div className="max-w-2xl">
-      <h1 className="mb-6 text-2xl font-semibold">{data.name}</h1>
+    <div className="max-w-2xl space-y-6">
+      <h1 className="text-2xl font-semibold">{data.name}</h1>
       <BusinessForm
         locale={locale}
         categories={(cats ?? []).map((c) => ({
@@ -54,6 +57,12 @@ export default async function EditBusinessPage({ params }: Props) {
           verified: data.verified,
           active: data.active,
         }}
+      />
+      <WebhookSecretCard
+        businessId={data.id}
+        webhookConfigured={!!data.webhook_secret}
+        appOrigin={appOrigin}
+        locale={locale}
       />
     </div>
   );

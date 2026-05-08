@@ -264,6 +264,7 @@ export type Database = {
           tags: string[]
           updated_at: string
           verified: boolean
+          webhook_secret: string | null
           website: string | null
           whatsapp: string | null
         }
@@ -285,6 +286,7 @@ export type Database = {
           tags?: string[]
           updated_at?: string
           verified?: boolean
+          webhook_secret?: string | null
           website?: string | null
           whatsapp?: string | null
         }
@@ -306,6 +308,7 @@ export type Database = {
           tags?: string[]
           updated_at?: string
           verified?: boolean
+          webhook_secret?: string | null
           website?: string | null
           whatsapp?: string | null
         }

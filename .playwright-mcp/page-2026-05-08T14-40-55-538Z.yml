@@ -1,0 +1,279 @@
+- generic [ref=e2]:
+  - banner [ref=e3]:
+    - generic [ref=e4]:
+      - link "Local Guide" [ref=e5] [cursor=pointer]:
+        - /url: /en
+        - generic [ref=e6]: 🌊
+        - text: Local Guide
+      - navigation [ref=e7]:
+        - link "Browse" [ref=e8] [cursor=pointer]:
+          - /url: /en
+        - link "Ελληνικά" [ref=e9] [cursor=pointer]:
+          - /url: /el
+        - link "Sign in" [ref=e10] [cursor=pointer]:
+          - /url: /en/login
+  - main [ref=e11]:
+    - generic [ref=e13]:
+      - paragraph [ref=e14]: Welcome to
+      - heading "Aegean Blue Suites" [level=1] [ref=e15]
+    - generic [ref=e16]:
+      - generic [ref=e18]:
+        - generic [ref=e19]:
+          - heading "Recommended by the hotel" [level=2] [ref=e20]
+          - paragraph [ref=e21]: "11"
+        - list [ref=e22]:
+          - listitem [ref=e23]:
+            - link "Featured €€ 126 m Restaurants Mezedopolio Pelagos Seaside meze with the day's catch Beach road, Naxos meze seafood sea-view" [ref=e24] [cursor=pointer]:
+              - /url: /en/p/1aa58dad-430c-4e63-82bc-0e1059a19bb6
+              - generic [ref=e25]:
+                - generic [ref=e26]:
+                  - generic [ref=e28]: 🍽️
+                  - generic [ref=e29]: Featured
+                  - generic [ref=e30]: €€
+                  - generic [ref=e31]:
+                    - img [ref=e32]
+                    - text: 126 m
+                - generic [ref=e34]:
+                  - paragraph [ref=e35]: Restaurants
+                  - heading "Mezedopolio Pelagos" [level=3] [ref=e36]
+                  - paragraph [ref=e37]: Seaside meze with the day's catch
+                  - paragraph [ref=e38]:
+                    - img [ref=e39]
+                    - generic [ref=e42]: Beach road, Naxos
+                  - list [ref=e43]:
+                    - listitem [ref=e44]: meze
+                    - listitem [ref=e45]: seafood
+                    - listitem [ref=e46]: sea-view
+          - listitem [ref=e47]:
+            - link "Featured €€€ 682 m Restaurants La Pasta Italiana Hand-made pasta and wood-fired pizza Naxos Town centre italian pasta vegetarian" [ref=e48] [cursor=pointer]:
+              - /url: /en/p/96edb714-1d50-4b28-8aba-ad40ad46a4a2
+              - generic [ref=e49]:
+                - generic [ref=e50]:
+                  - generic [ref=e52]: 🍽️
+                  - generic [ref=e53]: Featured
+                  - generic [ref=e54]: €€€
+                  - generic [ref=e55]:
+                    - img [ref=e56]
+                    - text: 682 m
+                - generic [ref=e58]:
+                  - paragraph [ref=e59]: Restaurants
+                  - heading "La Pasta Italiana" [level=3] [ref=e60]
+                  - paragraph [ref=e61]: Hand-made pasta and wood-fired pizza
+                  - paragraph [ref=e62]:
+                    - img [ref=e63]
+                    - generic [ref=e66]: Naxos Town centre
+                  - list [ref=e67]:
+                    - listitem [ref=e68]: italian
+                    - listitem [ref=e69]: pasta
+                    - listitem [ref=e70]: vegetarian
+          - listitem [ref=e71]:
+            - link "Featured €€€ 57 m Bars & Cafés Sea & Bar Cocktail bar by the water Beach road, Naxos cocktails sea-view sunset" [ref=e72] [cursor=pointer]:
+              - /url: /en/p/d7211dbe-8c7b-4d9c-8b7b-3aec1897bc5e
+              - generic [ref=e73]:
+                - generic [ref=e74]:
+                  - generic [ref=e76]: 🍸
+                  - generic [ref=e77]: Featured
+                  - generic [ref=e78]: €€€
+                  - generic [ref=e79]:
+                    - img [ref=e80]
+                    - text: 57 m
+                - generic [ref=e82]:
+                  - paragraph [ref=e83]: Bars & Cafés
+                  - heading "Sea & Bar" [level=3] [ref=e84]
+                  - paragraph [ref=e85]: Cocktail bar by the water
+                  - paragraph [ref=e86]:
+                    - img [ref=e87]
+                    - generic [ref=e90]: Beach road, Naxos
+                  - list [ref=e91]:
+                    - listitem [ref=e92]: cocktails
+                    - listitem [ref=e93]: sea-view
+                    - listitem [ref=e94]: sunset
+          - listitem [ref=e95]:
+            - link "Featured €€ 263 m Restaurants Taverna Apolafsi Traditional tavern with fresh seafood Agios Prokopios, Naxos seafood traditional family" [ref=e96] [cursor=pointer]:
+              - /url: /en/p/79fc5bf9-0ebc-446a-acd0-8cfc416b11f5
+              - generic [ref=e97]:
+                - generic [ref=e98]:
+                  - generic [ref=e100]: 🍽️
+                  - generic [ref=e101]: Featured
+                  - generic [ref=e102]: €€
+                  - generic [ref=e103]:
+                    - img [ref=e104]
+                    - text: 263 m
+                - generic [ref=e106]:
+                  - paragraph [ref=e107]: Restaurants
+                  - heading "Taverna Apolafsi" [level=3] [ref=e108]
+                  - paragraph [ref=e109]: Traditional tavern with fresh seafood
+                  - paragraph [ref=e110]:
+                    - img [ref=e111]
+                    - generic [ref=e114]: Agios Prokopios, Naxos
+                  - list [ref=e115]:
+                    - listitem [ref=e116]: seafood
+                    - listitem [ref=e117]: traditional
+                    - listitem [ref=e118]: family
+          - listitem [ref=e119]:
+            - link "Featured € 614 m Bars & Cafés Cafe Plateia Specialty coffee on the main square Main Square, Naxos coffee breakfast wifi" [ref=e120] [cursor=pointer]:
+              - /url: /en/p/c2018198-51a8-464c-8b6c-84d94af2c469
+              - generic [ref=e121]:
+                - generic [ref=e122]:
+                  - generic [ref=e124]: 🍸
+                  - generic [ref=e125]: Featured
+                  - generic [ref=e126]: €
+                  - generic [ref=e127]:
+                    - img [ref=e128]
+                    - text: 614 m
+                - generic [ref=e130]:
+                  - paragraph [ref=e131]: Bars & Cafés
+                  - heading "Cafe Plateia" [level=3] [ref=e132]
+                  - paragraph [ref=e133]: Specialty coffee on the main square
+                  - paragraph [ref=e134]:
+                    - img [ref=e135]
+                    - generic [ref=e138]: Main Square, Naxos
+                  - list [ref=e139]:
+                    - listitem [ref=e140]: coffee
+                    - listitem [ref=e141]: breakfast
+                    - listitem [ref=e142]: wifi
+          - listitem [ref=e143]:
+            - link "Featured €€€ 947 m Restaurants Sunset Grill Grill house with sunset views over Plaka Plaka, Naxos grill romantic sunset" [ref=e144] [cursor=pointer]:
+              - /url: /en/p/768d502b-da9a-4b33-b8d5-07b54e5e5eb7
+              - generic [ref=e145]:
+                - generic [ref=e146]:
+                  - generic [ref=e148]: 🍽️
+                  - generic [ref=e149]: Featured
+                  - generic [ref=e150]: €€€
+                  - generic [ref=e151]:
+                    - img [ref=e152]
+                    - text: 947 m
+                - generic [ref=e154]:
+                  - paragraph [ref=e155]: Restaurants
+                  - heading "Sunset Grill" [level=3] [ref=e156]
+                  - paragraph [ref=e157]: Grill house with sunset views over Plaka
+                  - paragraph [ref=e158]:
+                    - img [ref=e159]
+                    - generic [ref=e162]: Plaka, Naxos
+                  - list [ref=e163]:
+                    - listitem [ref=e164]: grill
+                    - listitem [ref=e165]: romantic
+                    - listitem [ref=e166]: sunset
+          - listitem [ref=e167]:
+            - link "€€€ 575 m Activities Aegean Diving PADI diving school for all levels Agia Anna diving water adventure" [ref=e168] [cursor=pointer]:
+              - /url: /en/p/30c89db8-a7ca-4e74-bc11-6d83603a4e34
+              - generic [ref=e169]:
+                - generic [ref=e170]:
+                  - generic [ref=e172]: 🥾
+                  - generic [ref=e173]: €€€
+                  - generic [ref=e174]:
+                    - img [ref=e175]
+                    - text: 575 m
+                - generic [ref=e177]:
+                  - paragraph [ref=e178]: Activities
+                  - heading "Aegean Diving" [level=3] [ref=e179]
+                  - paragraph [ref=e180]: PADI diving school for all levels
+                  - paragraph [ref=e181]:
+                    - img [ref=e182]
+                    - generic [ref=e185]: Agia Anna
+                  - list [ref=e186]:
+                    - listitem [ref=e187]: diving
+                    - listitem [ref=e188]: water
+                    - listitem [ref=e189]: adventure
+          - listitem [ref=e190]:
+            - link "€€€€ 868 m Boat Trips Sunset Sail Naxos Sailing sunset cruises Naxos Marina sailing sunset romantic" [ref=e191] [cursor=pointer]:
+              - /url: /en/p/c39b25d4-9bd4-44de-a38a-31144bd5e137
+              - generic [ref=e192]:
+                - generic [ref=e193]:
+                  - generic [ref=e195]: ⛵
+                  - generic [ref=e196]: €€€€
+                  - generic [ref=e197]:
+                    - img [ref=e198]
+                    - text: 868 m
+                - generic [ref=e200]:
+                  - paragraph [ref=e201]: Boat Trips
+                  - heading "Sunset Sail Naxos" [level=3] [ref=e202]
+                  - paragraph [ref=e203]: Sailing sunset cruises
+                  - paragraph [ref=e204]:
+                    - img [ref=e205]
+                    - generic [ref=e208]: Naxos Marina
+                  - list [ref=e209]:
+                    - listitem [ref=e210]: sailing
+                    - listitem [ref=e211]: sunset
+                    - listitem [ref=e212]: romantic
+          - listitem [ref=e213]:
+            - link "€€ 10.8 km Activities Naxos Hiking Tours Guided hikes including Mt Zas Pickup at hotel hiking nature outdoor" [ref=e214] [cursor=pointer]:
+              - /url: /en/p/55735f47-7d22-4e0c-813b-7a04423068f8
+              - generic [ref=e215]:
+                - generic [ref=e216]:
+                  - generic [ref=e218]: 🥾
+                  - generic [ref=e219]: €€
+                  - generic [ref=e220]:
+                    - img [ref=e221]
+                    - text: 10.8 km
+                - generic [ref=e223]:
+                  - paragraph [ref=e224]: Activities
+                  - heading "Naxos Hiking Tours" [level=3] [ref=e225]
+                  - paragraph [ref=e226]: Guided hikes including Mt Zas
+                  - paragraph [ref=e227]:
+                    - img [ref=e228]
+                    - generic [ref=e231]: Pickup at hotel
+                  - list [ref=e232]:
+                    - listitem [ref=e233]: hiking
+                    - listitem [ref=e234]: nature
+                    - listitem [ref=e235]: outdoor
+          - listitem [ref=e236]:
+            - link "€€ 403 m Taxis & Transfers Naxos Taxi Express 24/7 transfers, airport and port Pickup anywhere taxi airport 24-7" [ref=e237] [cursor=pointer]:
+              - /url: /en/p/8caa81f1-1b3d-4532-84fc-6e3c7454599a
+              - generic [ref=e238]:
+                - generic [ref=e239]:
+                  - generic [ref=e241]: 🚖
+                  - generic [ref=e242]: €€
+                  - generic [ref=e243]:
+                    - img [ref=e244]
+                    - text: 403 m
+                - generic [ref=e246]:
+                  - paragraph [ref=e247]: Taxis & Transfers
+                  - heading "Naxos Taxi Express" [level=3] [ref=e248]
+                  - paragraph [ref=e249]: 24/7 transfers, airport and port
+                  - paragraph [ref=e250]:
+                    - img [ref=e251]
+                    - generic [ref=e254]: Pickup anywhere
+                  - list [ref=e255]:
+                    - listitem [ref=e256]: taxi
+                    - listitem [ref=e257]: airport
+                    - listitem [ref=e258]: 24-7
+          - listitem [ref=e259]:
+            - link "€€ 685 m Shops Cycladic Crafts Hand-made Cycladic souvenirs Old Market, Naxos souvenirs handmade gifts" [ref=e260] [cursor=pointer]:
+              - /url: /en/p/192378d3-faee-49bd-858e-b29c3296a0f7
+              - generic [ref=e261]:
+                - generic [ref=e262]:
+                  - generic [ref=e264]: 🛍️
+                  - generic [ref=e265]: €€
+                  - generic [ref=e266]:
+                    - img [ref=e267]
+                    - text: 685 m
+                - generic [ref=e269]:
+                  - paragraph [ref=e270]: Shops
+                  - heading "Cycladic Crafts" [level=3] [ref=e271]
+                  - paragraph [ref=e272]: Hand-made Cycladic souvenirs
+                  - paragraph [ref=e273]:
+                    - img [ref=e274]
+                    - generic [ref=e277]: Old Market, Naxos
+                  - list [ref=e278]:
+                    - listitem [ref=e279]: souvenirs
+                    - listitem [ref=e280]: handmade
+                    - listitem [ref=e281]: gifts
+      - complementary [ref=e282]:
+        - generic [ref=e284]:
+          - generic [ref=e285]: Ask the assistant
+          - generic [ref=e286]:
+            - list [ref=e287]:
+              - listitem [ref=e288]: Ask me anything about the property or the area…
+            - generic [ref=e289]:
+              - textbox "Ask me anything about the property or the area…" [ref=e290]
+              - button "Send" [disabled]:
+                - img
+                - generic: Send
+  - contentinfo [ref=e291]:
+    - generic [ref=e292]:
+      - paragraph [ref=e293]: © Local Guide — curated places.
+      - paragraph [ref=e294]:
+        - text: Looking for hotel partners?
+        - link "Sign in" [ref=e295] [cursor=pointer]:
+          - /url: /login

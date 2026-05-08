@@ -19,18 +19,19 @@ export async function POST(req: Request) {
 
   const supabase = createSupabaseServiceClient();
 
-  const { data: hotel, error } = await supabase
+  const { data: hotelRow, error } = await supabase
     .from('public_hotels')
     .select('id, timezone, default_locale')
     .eq('slug', hotelSlug)
     .maybeSingle();
-  if (error || !hotel) {
+  if (error || !hotelRow || !hotelRow.id || !hotelRow.timezone) {
     return NextResponse.json({ error: 'hotel_not_found' }, { status: 404 });
   }
+  const hotel = hotelRow as { id: string; timezone: string; default_locale: string | null };
 
   const secret = requireEnv('SESSION_HMAC_SECRET');
   const cookie = req.headers.get('cookie') ?? '';
-  const tokenName = `aga_session_${(hotel.id as string).slice(0, 8)}`;
+  const tokenName = `aga_session_${hotel.id.slice(0, 8)}`;
   const cookieToken = parseCookie(cookie, tokenName);
   let sessionId = cookieToken ? verifySessionToken(cookieToken, secret) : null;
 

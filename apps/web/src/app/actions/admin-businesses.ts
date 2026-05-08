@@ -4,7 +4,10 @@ import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { businessUpsertSchema, businessCategoryUpsertSchema } from '@aga/api-contracts';
 import { createSupabaseServiceClient } from '@aga/db/service';
+import type { Database, Json } from '@aga/db/types';
 import { requireSuperAdmin } from '@/lib/auth-context';
+
+type BusinessRow = Database['public']['Tables']['businesses']['Insert'];
 
 const idSchema = z.object({ id: z.string().uuid() });
 
@@ -15,10 +18,10 @@ export async function upsertBusiness(raw: unknown) {
   const b = parsed.data;
   const admin = createSupabaseServiceClient();
 
-  const row = {
+  const row: BusinessRow = {
     name: b.name,
     category_id: b.categoryId,
-    description_i18n: b.description ?? {},
+    description_i18n: (b.description ?? {}) as Json,
     lat: b.lat,
     lng: b.lng,
     address: b.address,
@@ -27,8 +30,8 @@ export async function upsertBusiness(raw: unknown) {
     website: b.website,
     price_band: b.priceBand,
     tags: b.tags,
-    opening_hours_json: b.openingHours ?? {},
-    images: b.images,
+    opening_hours_json: (b.openingHours ?? {}) as Json,
+    images: b.images as unknown as Json,
     verified: b.verified,
     active: b.active,
   };

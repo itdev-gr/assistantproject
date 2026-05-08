@@ -31,20 +31,21 @@ export default async function RulesPage({ params, searchParams }: Props) {
 
   const hotelId = sp.hotel ?? null;
 
-  const [{ data: hotels }, { data: rule }] = await Promise.all([
+  const [{ data: hotels }, ruleRes] = await Promise.all([
     supabase.from('hotels').select('id, name').order('name'),
-    supabase
-      .from('recommendation_rules')
-      .select('*')
-      .eq(hotelId ? 'hotel_id' : 'hotel_id', hotelId ?? null)
-      .is(hotelId ? '__skip' : 'hotel_id', null)
-      .maybeSingle()
-      .then(async (res) => {
-        if (res.data) return res;
-        // Fall back to global row if per-hotel row missing
-        return supabase.from('recommendation_rules').select('*').is('hotel_id', null).maybeSingle();
-      }),
+    hotelId
+      ? supabase.from('recommendation_rules').select('*').eq('hotel_id', hotelId).maybeSingle()
+      : supabase.from('recommendation_rules').select('*').is('hotel_id', null).maybeSingle(),
   ]);
+  const rule =
+    ruleRes.data ??
+    (
+      await supabase
+        .from('recommendation_rules')
+        .select('*')
+        .is('hotel_id', null)
+        .maybeSingle()
+    ).data;
 
   const initial = rule
     ? {

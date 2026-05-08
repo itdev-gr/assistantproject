@@ -18,6 +18,8 @@ export interface DirectoryBusiness {
   images: string[];
   hasPartner: boolean;
   topTier: 'free' | 'standard' | 'featured' | 'exclusive' | null;
+  /** Populated only when there's a hotel context for the request */
+  distanceKm?: number | null;
 }
 
 export interface DirectoryCategory {
@@ -147,13 +149,14 @@ export async function getBusiness(
     .maybeSingle();
   if (!data) return null;
 
-  const row = data as unknown as RawBusinessRow & {
+  type DetailRow = Omit<RawBusinessRow, 'partnerships'> & {
     partnerships: Array<{
       active: boolean;
       subscription_tier: 'free' | 'standard' | 'featured' | 'exclusive';
       hotel: { slug: string; name: string } | null;
     }>;
   };
+  const row = data as unknown as DetailRow;
 
   const description =
     row.description_i18n?.[locale] ??
