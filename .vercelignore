@@ -1,5 +1,4 @@
 # Files Vercel doesn't need to upload — keeps deploys lean.
-.git
 .github
 .next/cache
 **/.next/cache
