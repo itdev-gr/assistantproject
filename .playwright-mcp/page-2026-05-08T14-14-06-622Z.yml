@@ -1,0 +1,80 @@
+- generic [ref=e2]:
+  - navigation [ref=e3]:
+    - generic [ref=e4]: AI Guest Assistant
+    - list [ref=e5]:
+      - listitem [ref=e6]:
+        - link "Dashboard" [ref=e7] [cursor=pointer]:
+          - /url: /en/owner
+          - img [ref=e8]
+          - text: Dashboard
+      - listitem [ref=e12]:
+        - link "Property" [ref=e13] [cursor=pointer]:
+          - /url: /en/owner/property
+          - img [ref=e14]
+          - text: Property
+      - listitem [ref=e18]:
+        - link "FAQs" [ref=e19] [cursor=pointer]:
+          - /url: /en/owner/faqs
+          - img [ref=e20]
+          - text: FAQs
+      - listitem [ref=e23]:
+        - link "Amenities" [ref=e24] [cursor=pointer]:
+          - /url: /en/owner/amenities
+          - img [ref=e25]
+          - text: Amenities
+      - listitem [ref=e27]:
+        - link "Hours" [ref=e28] [cursor=pointer]:
+          - /url: /en/owner/hours
+          - img [ref=e29]
+          - text: Hours
+      - listitem [ref=e32]:
+        - link "Policies" [ref=e33] [cursor=pointer]:
+          - /url: /en/owner/policies
+          - img [ref=e34]
+          - text: Policies
+      - listitem [ref=e37]:
+        - link "Rooms" [ref=e38] [cursor=pointer]:
+          - /url: /en/owner/rooms
+          - img [ref=e39]
+          - text: Rooms
+      - listitem [ref=e42]:
+        - link "Partners" [ref=e43] [cursor=pointer]:
+          - /url: /en/owner/partners
+          - img [ref=e44]
+          - text: Partners
+      - listitem [ref=e49]:
+        - link "Referrals" [ref=e50] [cursor=pointer]:
+          - /url: /en/owner/referrals
+          - img [ref=e51]
+          - text: Referrals
+      - listitem [ref=e54]:
+        - link "Bookings" [ref=e55] [cursor=pointer]:
+          - /url: /en/owner/bookings
+          - img [ref=e56]
+          - text: Bookings
+      - listitem [ref=e59]:
+        - link "Settings" [ref=e60] [cursor=pointer]:
+          - /url: /en/owner/settings
+          - img [ref=e61]
+          - text: Settings
+  - main [ref=e64]:
+    - generic [ref=e65]:
+      - heading "Bookings" [level=1] [ref=e66]
+      - generic [ref=e67]:
+        - generic [ref=e68]:
+          - heading "Confirmed" [level=3] [ref=e70]
+          - paragraph [ref=e72]: "1"
+        - generic [ref=e73]:
+          - heading "Gross revenue" [level=3] [ref=e75]
+          - paragraph [ref=e77]: €85.00
+        - generic [ref=e78]:
+          - heading "Estimated commission" [level=3] [ref=e80]
+          - paragraph [ref=e82]: €15.30
+      - generic [ref=e83]:
+        - heading "All bookings" [level=3] [ref=e85]
+        - list [ref=e87]:
+          - listitem [ref=e88]:
+            - generic [ref=e89]: Mezedopolio Pelagos
+            - generic [ref=e90]: €85.00
+            - generic [ref=e91]: €15.30
+            - generic [ref=e92]: confirmed

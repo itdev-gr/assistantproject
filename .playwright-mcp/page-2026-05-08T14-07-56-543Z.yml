@@ -1,0 +1,298 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - banner [ref=e3]:
+      - generic [ref=e4]:
+        - link "Local Guide" [ref=e5] [cursor=pointer]:
+          - /url: /en
+          - generic [ref=e6]: 🌊
+          - text: Local Guide
+        - navigation [ref=e7]:
+          - link "Browse" [ref=e8] [cursor=pointer]:
+            - /url: /en
+          - link "Ελληνικά" [ref=e9] [cursor=pointer]:
+            - /url: /el
+          - link "Sign in" [ref=e10] [cursor=pointer]:
+            - /url: /en/login
+    - main [ref=e11]:
+      - generic [ref=e13]:
+        - paragraph [ref=e14]: Welcome to
+        - heading "Aegean Blue Suites" [level=1] [ref=e15]
+      - generic [ref=e16]:
+        - generic [ref=e18]:
+          - generic [ref=e19]:
+            - heading "Recommended by the hotel" [level=2] [ref=e20]
+            - paragraph [ref=e21]: "11"
+          - list [ref=e22]:
+            - listitem [ref=e23]:
+              - link "Featured €€€ Restaurants La Pasta Italiana Hand-made pasta and wood-fired pizza Naxos Town centre italian pasta vegetarian" [ref=e24] [cursor=pointer]:
+                - /url: /en/p/96edb714-1d50-4b28-8aba-ad40ad46a4a2
+                - generic [ref=e25]:
+                  - generic [ref=e26]:
+                    - generic [ref=e28]: 🍽️
+                    - generic [ref=e29]: Featured
+                    - generic [ref=e30]: €€€
+                  - generic [ref=e31]:
+                    - paragraph [ref=e32]: Restaurants
+                    - heading "La Pasta Italiana" [level=3] [ref=e33]
+                    - paragraph [ref=e34]: Hand-made pasta and wood-fired pizza
+                    - paragraph [ref=e35]:
+                      - img [ref=e36]
+                      - generic [ref=e39]: Naxos Town centre
+                    - list [ref=e40]:
+                      - listitem [ref=e41]: italian
+                      - listitem [ref=e42]: pasta
+                      - listitem [ref=e43]: vegetarian
+            - listitem [ref=e44]:
+              - link "Featured €€ Restaurants Mezedopolio Pelagos Seaside meze with the day's catch Beach road, Naxos meze seafood sea-view" [ref=e45] [cursor=pointer]:
+                - /url: /en/p/1aa58dad-430c-4e63-82bc-0e1059a19bb6
+                - generic [ref=e46]:
+                  - generic [ref=e47]:
+                    - generic [ref=e49]: 🍽️
+                    - generic [ref=e50]: Featured
+                    - generic [ref=e51]: €€
+                  - generic [ref=e52]:
+                    - paragraph [ref=e53]: Restaurants
+                    - heading "Mezedopolio Pelagos" [level=3] [ref=e54]
+                    - paragraph [ref=e55]: Seaside meze with the day's catch
+                    - paragraph [ref=e56]:
+                      - img [ref=e57]
+                      - generic [ref=e60]: Beach road, Naxos
+                    - list [ref=e61]:
+                      - listitem [ref=e62]: meze
+                      - listitem [ref=e63]: seafood
+                      - listitem [ref=e64]: sea-view
+            - listitem [ref=e65]:
+              - link "Featured € Bars & Cafés Cafe Plateia Specialty coffee on the main square Main Square, Naxos coffee breakfast wifi" [ref=e66] [cursor=pointer]:
+                - /url: /en/p/c2018198-51a8-464c-8b6c-84d94af2c469
+                - generic [ref=e67]:
+                  - generic [ref=e68]:
+                    - generic [ref=e70]: 🍸
+                    - generic [ref=e71]: Featured
+                    - generic [ref=e72]: €
+                  - generic [ref=e73]:
+                    - paragraph [ref=e74]: Bars & Cafés
+                    - heading "Cafe Plateia" [level=3] [ref=e75]
+                    - paragraph [ref=e76]: Specialty coffee on the main square
+                    - paragraph [ref=e77]:
+                      - img [ref=e78]
+                      - generic [ref=e81]: Main Square, Naxos
+                    - list [ref=e82]:
+                      - listitem [ref=e83]: coffee
+                      - listitem [ref=e84]: breakfast
+                      - listitem [ref=e85]: wifi
+            - listitem [ref=e86]:
+              - link "Featured €€€ Bars & Cafés Sea & Bar Cocktail bar by the water Beach road, Naxos cocktails sea-view sunset" [ref=e87] [cursor=pointer]:
+                - /url: /en/p/d7211dbe-8c7b-4d9c-8b7b-3aec1897bc5e
+                - generic [ref=e88]:
+                  - generic [ref=e89]:
+                    - generic [ref=e91]: 🍸
+                    - generic [ref=e92]: Featured
+                    - generic [ref=e93]: €€€
+                  - generic [ref=e94]:
+                    - paragraph [ref=e95]: Bars & Cafés
+                    - heading "Sea & Bar" [level=3] [ref=e96]
+                    - paragraph [ref=e97]: Cocktail bar by the water
+                    - paragraph [ref=e98]:
+                      - img [ref=e99]
+                      - generic [ref=e102]: Beach road, Naxos
+                    - list [ref=e103]:
+                      - listitem [ref=e104]: cocktails
+                      - listitem [ref=e105]: sea-view
+                      - listitem [ref=e106]: sunset
+            - listitem [ref=e107]:
+              - link "Featured €€€ Restaurants Sunset Grill Grill house with sunset views over Plaka Plaka, Naxos grill romantic sunset" [ref=e108] [cursor=pointer]:
+                - /url: /en/p/768d502b-da9a-4b33-b8d5-07b54e5e5eb7
+                - generic [ref=e109]:
+                  - generic [ref=e110]:
+                    - generic [ref=e112]: 🍽️
+                    - generic [ref=e113]: Featured
+                    - generic [ref=e114]: €€€
+                  - generic [ref=e115]:
+                    - paragraph [ref=e116]: Restaurants
+                    - heading "Sunset Grill" [level=3] [ref=e117]
+                    - paragraph [ref=e118]: Grill house with sunset views over Plaka
+                    - paragraph [ref=e119]:
+                      - img [ref=e120]
+                      - generic [ref=e123]: Plaka, Naxos
+                    - list [ref=e124]:
+                      - listitem [ref=e125]: grill
+                      - listitem [ref=e126]: romantic
+                      - listitem [ref=e127]: sunset
+            - listitem [ref=e128]:
+              - link "Featured €€ Restaurants Taverna Apolafsi Traditional tavern with fresh seafood Agios Prokopios, Naxos seafood traditional family" [ref=e129] [cursor=pointer]:
+                - /url: /en/p/79fc5bf9-0ebc-446a-acd0-8cfc416b11f5
+                - generic [ref=e130]:
+                  - generic [ref=e131]:
+                    - generic [ref=e133]: 🍽️
+                    - generic [ref=e134]: Featured
+                    - generic [ref=e135]: €€
+                  - generic [ref=e136]:
+                    - paragraph [ref=e137]: Restaurants
+                    - heading "Taverna Apolafsi" [level=3] [ref=e138]
+                    - paragraph [ref=e139]: Traditional tavern with fresh seafood
+                    - paragraph [ref=e140]:
+                      - img [ref=e141]
+                      - generic [ref=e144]: Agios Prokopios, Naxos
+                    - list [ref=e145]:
+                      - listitem [ref=e146]: seafood
+                      - listitem [ref=e147]: traditional
+                      - listitem [ref=e148]: family
+            - listitem [ref=e149]:
+              - link "€€€ Activities Aegean Diving PADI diving school for all levels Agia Anna diving water adventure" [ref=e150] [cursor=pointer]:
+                - /url: /en/p/30c89db8-a7ca-4e74-bc11-6d83603a4e34
+                - generic [ref=e151]:
+                  - generic [ref=e152]:
+                    - generic [ref=e154]: 🥾
+                    - generic [ref=e155]: €€€
+                  - generic [ref=e156]:
+                    - paragraph [ref=e157]: Activities
+                    - heading "Aegean Diving" [level=3] [ref=e158]
+                    - paragraph [ref=e159]: PADI diving school for all levels
+                    - paragraph [ref=e160]:
+                      - img [ref=e161]
+                      - generic [ref=e164]: Agia Anna
+                    - list [ref=e165]:
+                      - listitem [ref=e166]: diving
+                      - listitem [ref=e167]: water
+                      - listitem [ref=e168]: adventure
+            - listitem [ref=e169]:
+              - link "€€ Activities Naxos Hiking Tours Guided hikes including Mt Zas Pickup at hotel hiking nature outdoor" [ref=e170] [cursor=pointer]:
+                - /url: /en/p/55735f47-7d22-4e0c-813b-7a04423068f8
+                - generic [ref=e171]:
+                  - generic [ref=e172]:
+                    - generic [ref=e174]: 🥾
+                    - generic [ref=e175]: €€
+                  - generic [ref=e176]:
+                    - paragraph [ref=e177]: Activities
+                    - heading "Naxos Hiking Tours" [level=3] [ref=e178]
+                    - paragraph [ref=e179]: Guided hikes including Mt Zas
+                    - paragraph [ref=e180]:
+                      - img [ref=e181]
+                      - generic [ref=e184]: Pickup at hotel
+                    - list [ref=e185]:
+                      - listitem [ref=e186]: hiking
+                      - listitem [ref=e187]: nature
+                      - listitem [ref=e188]: outdoor
+            - listitem [ref=e189]:
+              - link "€€€€ Boat Trips Sunset Sail Naxos Sailing sunset cruises Naxos Marina sailing sunset romantic" [ref=e190] [cursor=pointer]:
+                - /url: /en/p/c39b25d4-9bd4-44de-a38a-31144bd5e137
+                - generic [ref=e191]:
+                  - generic [ref=e192]:
+                    - generic [ref=e194]: ⛵
+                    - generic [ref=e195]: €€€€
+                  - generic [ref=e196]:
+                    - paragraph [ref=e197]: Boat Trips
+                    - heading "Sunset Sail Naxos" [level=3] [ref=e198]
+                    - paragraph [ref=e199]: Sailing sunset cruises
+                    - paragraph [ref=e200]:
+                      - img [ref=e201]
+                      - generic [ref=e204]: Naxos Marina
+                    - list [ref=e205]:
+                      - listitem [ref=e206]: sailing
+                      - listitem [ref=e207]: sunset
+                      - listitem [ref=e208]: romantic
+            - listitem [ref=e209]:
+              - link "€€ Shops Cycladic Crafts Hand-made Cycladic souvenirs Old Market, Naxos souvenirs handmade gifts" [ref=e210] [cursor=pointer]:
+                - /url: /en/p/192378d3-faee-49bd-858e-b29c3296a0f7
+                - generic [ref=e211]:
+                  - generic [ref=e212]:
+                    - generic [ref=e214]: 🛍️
+                    - generic [ref=e215]: €€
+                  - generic [ref=e216]:
+                    - paragraph [ref=e217]: Shops
+                    - heading "Cycladic Crafts" [level=3] [ref=e218]
+                    - paragraph [ref=e219]: Hand-made Cycladic souvenirs
+                    - paragraph [ref=e220]:
+                      - img [ref=e221]
+                      - generic [ref=e224]: Old Market, Naxos
+                    - list [ref=e225]:
+                      - listitem [ref=e226]: souvenirs
+                      - listitem [ref=e227]: handmade
+                      - listitem [ref=e228]: gifts
+            - listitem [ref=e229]:
+              - link "€€ Taxis & Transfers Naxos Taxi Express 24/7 transfers, airport and port Pickup anywhere taxi airport 24-7" [ref=e230] [cursor=pointer]:
+                - /url: /en/p/8caa81f1-1b3d-4532-84fc-6e3c7454599a
+                - generic [ref=e231]:
+                  - generic [ref=e232]:
+                    - generic [ref=e234]: 🚖
+                    - generic [ref=e235]: €€
+                  - generic [ref=e236]:
+                    - paragraph [ref=e237]: Taxis & Transfers
+                    - heading "Naxos Taxi Express" [level=3] [ref=e238]
+                    - paragraph [ref=e239]: 24/7 transfers, airport and port
+                    - paragraph [ref=e240]:
+                      - img [ref=e241]
+                      - generic [ref=e244]: Pickup anywhere
+                    - list [ref=e245]:
+                      - listitem [ref=e246]: taxi
+                      - listitem [ref=e247]: airport
+                      - listitem [ref=e248]: 24-7
+        - complementary [ref=e249]:
+          - generic [ref=e251]:
+            - generic [ref=e252]: Ask the assistant
+            - generic [ref=e253]:
+              - list [ref=e254]:
+                - listitem [ref=e273]:
+                  - generic [ref=e275]: Where can I have dinner tonight?
+                - listitem [ref=e276]:
+                  - generic [ref=e278]: "Here are some great spots to eat:"
+                  - generic [ref=e279]:
+                    - generic [ref=e281]:
+                      - generic [ref=e283]:
+                        - generic [ref=e284]:
+                          - paragraph [ref=e285]: Mezedopolio Pelagos
+                          - generic [ref=e286]: Partner
+                        - paragraph [ref=e287]: restaurants
+                        - paragraph [ref=e288]: Seaside meze with the day's catch
+                      - link "View more" [ref=e290] [cursor=pointer]:
+                        - /url: http://localhost:3000/api/r/ca295782-b831-48a2-8937-7baccd943e95.1778508475.9r8ZQGrXup2BclgsJnOR0nRhzPVN4GffHRYtDoW-knI
+                        - img [ref=e291]
+                        - text: View more
+                    - generic [ref=e296]:
+                      - generic [ref=e298]:
+                        - generic [ref=e299]:
+                          - paragraph [ref=e300]: La Pasta Italiana
+                          - generic [ref=e301]: Partner
+                        - paragraph [ref=e302]: restaurants
+                        - paragraph [ref=e303]: Hand-made pasta and wood-fired pizza
+                      - link "View more" [ref=e305] [cursor=pointer]:
+                        - /url: http://localhost:3000/api/r/56bf41f3-fde8-4534-80a1-17ed849296c4.1778508475.cwVctjMmqBoU2fUNAtDnY-L3521V3yFFFCC6VcGO97c
+                        - img [ref=e306]
+                        - text: View more
+                    - generic [ref=e311]:
+                      - generic [ref=e313]:
+                        - generic [ref=e314]:
+                          - paragraph [ref=e315]: Sunset Grill
+                          - generic [ref=e316]: Partner
+                        - paragraph [ref=e317]: restaurants
+                        - paragraph [ref=e318]: Grill house with sunset views over Plaka
+                      - link "View more" [ref=e320] [cursor=pointer]:
+                        - /url: http://localhost:3000/api/r/2c00375a-9fe2-42d5-b8c6-9411e978bf0d.1778508475.F_uX6HcVyrnEQkPTqpGP0yzSP9JpH6rbFzfbGB7t6g4
+                        - img [ref=e321]
+                        - text: View more
+                    - generic [ref=e326]:
+                      - generic [ref=e328]:
+                        - generic [ref=e329]:
+                          - paragraph [ref=e330]: Taverna Apolafsi
+                          - generic [ref=e331]: Partner
+                        - paragraph [ref=e332]: restaurants
+                        - paragraph [ref=e333]: Traditional tavern with fresh seafood
+                      - link "View more" [ref=e335] [cursor=pointer]:
+                        - /url: http://localhost:3000/api/r/600ea9d6-3971-4d40-85b0-c4e00a318af1.1778508475.WbA7Kq9fiHgH53mbP04U3PFkLNYNpXYr3HFN_1iEJdQ
+                        - img [ref=e336]
+                        - text: View more
+              - generic [ref=e256]:
+                - textbox "Ask me anything about the property or the area…" [ref=e257]
+                - button "Send" [disabled]:
+                  - img
+                  - generic: Send
+    - contentinfo [ref=e258]:
+      - generic [ref=e259]:
+        - paragraph [ref=e260]: © Local Guide — curated places.
+        - paragraph [ref=e261]:
+          - text: Looking for hotel partners?
+          - link "Sign in" [ref=e262] [cursor=pointer]:
+            - /url: /login
+  - button "Open Next.js Dev Tools" [ref=e268] [cursor=pointer]:
+    - img [ref=e269]
+  - alert [ref=e272]

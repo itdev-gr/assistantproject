@@ -1,0 +1,74 @@
+- generic [active] [ref=e1]:
+  - button "Open Next.js Dev Tools" [ref=e24] [cursor=pointer]:
+    - img [ref=e25]
+  - alert [ref=e28]
+  - generic [ref=e29]:
+    - navigation [ref=e30]:
+      - generic [ref=e31]: AI Guest Assistant
+      - list [ref=e32]:
+        - listitem [ref=e33]:
+          - link "Dashboard" [ref=e34] [cursor=pointer]:
+            - /url: /en/owner
+            - img [ref=e35]
+            - text: Dashboard
+        - listitem [ref=e39]:
+          - link "Property" [ref=e40] [cursor=pointer]:
+            - /url: /en/owner/property
+            - img [ref=e41]
+            - text: Property
+        - listitem [ref=e45]:
+          - link "FAQs" [ref=e46] [cursor=pointer]:
+            - /url: /en/owner/faqs
+            - img [ref=e47]
+            - text: FAQs
+        - listitem [ref=e50]:
+          - link "Amenities" [ref=e51] [cursor=pointer]:
+            - /url: /en/owner/amenities
+            - img [ref=e52]
+            - text: Amenities
+        - listitem [ref=e54]:
+          - link "Hours" [ref=e55] [cursor=pointer]:
+            - /url: /en/owner/hours
+            - img [ref=e56]
+            - text: Hours
+        - listitem [ref=e59]:
+          - link "Policies" [ref=e60] [cursor=pointer]:
+            - /url: /en/owner/policies
+            - img [ref=e61]
+            - text: Policies
+        - listitem [ref=e64]:
+          - link "Rooms" [ref=e65] [cursor=pointer]:
+            - /url: /en/owner/rooms
+            - img [ref=e66]
+            - text: Rooms
+        - listitem [ref=e69]:
+          - link "Partners" [ref=e70] [cursor=pointer]:
+            - /url: /en/owner/partners
+            - img [ref=e71]
+            - text: Partners
+        - listitem [ref=e76]:
+          - link "Referrals" [ref=e77] [cursor=pointer]:
+            - /url: /en/owner/referrals
+            - img [ref=e78]
+            - text: Referrals
+        - listitem [ref=e81]:
+          - link "Bookings" [ref=e82] [cursor=pointer]:
+            - /url: /en/owner/bookings
+            - img [ref=e83]
+            - text: Bookings
+        - listitem [ref=e86]:
+          - link "Settings" [ref=e87] [cursor=pointer]:
+            - /url: /en/owner/settings
+            - img [ref=e88]
+            - text: Settings
+    - main [ref=e91]:
+      - generic [ref=e92]:
+        - generic [ref=e93]:
+          - heading "Messages today" [level=3] [ref=e95]
+          - paragraph [ref=e97]: —
+        - generic [ref=e98]:
+          - heading "Top partners" [level=3] [ref=e100]
+          - paragraph [ref=e102]: —
+        - generic [ref=e103]:
+          - heading "Estimated commission" [level=3] [ref=e105]
+          - paragraph [ref=e107]: €—
