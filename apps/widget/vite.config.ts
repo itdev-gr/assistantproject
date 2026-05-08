@@ -12,7 +12,7 @@ export default defineConfig({
   build: {
     target: 'es2020',
     cssCodeSplit: false,
-    minify: 'terser',
+    minify: 'esbuild',
     lib: {
       entry: fileURLToPath(new URL('./src/widget.tsx', import.meta.url)),
       formats: ['iife'],

@@ -1,0 +1,26 @@
+# Files Vercel doesn't need to upload — keeps deploys lean.
+.git
+.github
+.next/cache
+**/.next/cache
+**/dist
+node_modules
+
+# Dev-only directories
+supabase
+tests
+.playwright-mcp
+playwright-report
+test-results
+
+# Local artifacts
+*.png
+*.log
+*.local
+.env.local
+.env.*.local
+
+# Local Supabase / IDE files
+.vscode
+.idea
+.DS_Store
