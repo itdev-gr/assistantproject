@@ -1,7 +1,7 @@
 -- ====== Tenancy ======
 
 create table if not exists hotels (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   slug text not null unique,
   name text not null,
   timezone text not null default 'Europe/Athens',
@@ -16,7 +16,7 @@ create table if not exists hotels (
 );
 
 create table if not exists hotel_users (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   hotel_id uuid not null references hotels(id) on delete cascade,
   auth_user_id uuid not null references auth.users(id) on delete cascade,
   role hotel_role not null default 'owner',
@@ -36,7 +36,7 @@ create table if not exists super_admins (
 -- ====== Property content ======
 
 create table if not exists faqs (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   hotel_id uuid not null references hotels(id) on delete cascade,
   locale text not null check (locale in ('el','en')),
   question text not null,
@@ -74,7 +74,7 @@ create trigger faqs_tsv_update before insert or update on faqs
   for each row execute function faqs_tsv_trigger();
 
 create table if not exists amenities (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   hotel_id uuid not null references hotels(id) on delete cascade,
   name text not null,
   description text,
@@ -87,7 +87,7 @@ create table if not exists amenities (
 create index if not exists amenities_hotel_idx on amenities(hotel_id, state);
 
 create table if not exists hours (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   hotel_id uuid not null references hotels(id) on delete cascade,
   entity_type hours_entity_type not null,
   entity_ref uuid,
@@ -101,7 +101,7 @@ create table if not exists hours (
 create index if not exists hours_lookup_idx on hours(hotel_id, entity_type, weekday);
 
 create table if not exists policies (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   hotel_id uuid not null references hotels(id) on delete cascade,
   kind policy_kind not null,
   body text not null,
@@ -112,7 +112,7 @@ create table if not exists policies (
 );
 
 create table if not exists events_internal (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   hotel_id uuid not null references hotels(id) on delete cascade,
   title text not null,
   description text,
@@ -125,7 +125,7 @@ create table if not exists events_internal (
 create index if not exists events_internal_hotel_idx on events_internal(hotel_id, starts_at);
 
 create table if not exists rooms (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   hotel_id uuid not null references hotels(id) on delete cascade,
   code text not null,
   floor int,
@@ -139,7 +139,7 @@ create table if not exists rooms (
 -- ====== Guests & conversations ======
 
 create table if not exists guest_sessions (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   hotel_id uuid not null references hotels(id) on delete cascade,
   room_id uuid references rooms(id) on delete set null,
   device_fingerprint text,
@@ -151,7 +151,7 @@ create table if not exists guest_sessions (
 create index if not exists guest_sessions_hotel_idx on guest_sessions(hotel_id, last_seen_at);
 
 create table if not exists messages (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   session_id uuid not null references guest_sessions(id) on delete cascade,
   role message_role not null,
   content text not null,

@@ -1,7 +1,7 @@
 -- ====== Partner network ======
 
 create table if not exists business_categories (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   slug text not null unique,
   name_i18n jsonb not null default '{}'::jsonb,
   parent_id uuid references business_categories(id) on delete set null,
@@ -9,7 +9,7 @@ create table if not exists business_categories (
 );
 
 create table if not exists businesses (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   name text not null,
   category_id uuid not null references business_categories(id),
   description_i18n jsonb not null default '{}'::jsonb,
@@ -49,7 +49,7 @@ create trigger businesses_tsv_update before insert or update on businesses
   for each row execute function businesses_tsv_trigger();
 
 create table if not exists business_offerings (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   business_id uuid not null references businesses(id) on delete cascade,
   title text not null,
   description text,
@@ -63,7 +63,7 @@ create table if not exists business_offerings (
 create index if not exists offerings_business_idx on business_offerings(business_id, active);
 
 create table if not exists partnerships (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   hotel_id uuid not null references hotels(id) on delete cascade,
   business_id uuid not null references businesses(id) on delete cascade,
   commission_pct numeric(5,2) not null default 0 check (commission_pct between 0 and 100),
@@ -83,7 +83,7 @@ create index if not exists partnerships_rank_idx
 -- ====== Revenue tracking ======
 
 create table if not exists referrals (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   session_id uuid not null references guest_sessions(id) on delete cascade,
   partnership_id uuid not null references partnerships(id) on delete cascade,
   offering_id uuid references business_offerings(id) on delete set null,
@@ -96,7 +96,7 @@ create index if not exists referrals_partnership_idx on referrals(partnership_id
 create index if not exists referrals_session_idx on referrals(session_id);
 
 create table if not exists bookings (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   referral_id uuid not null references referrals(id) on delete cascade,
   status booking_status not null default 'pending',
   gross_amount numeric(10,2),
@@ -110,7 +110,7 @@ create table if not exists bookings (
 create index if not exists bookings_status_idx on bookings(status, created_at);
 
 create table if not exists commission_events (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   booking_id uuid not null references bookings(id) on delete cascade,
   partnership_id uuid not null references partnerships(id) on delete cascade,
   commission_amount numeric(10,2) not null,
@@ -124,7 +124,7 @@ create index if not exists commission_partnership_idx
 -- ====== Configuration & ops ======
 
 create table if not exists recommendation_rules (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   hotel_id uuid references hotels(id) on delete cascade,
   semantic_weight numeric(4,2) not null default 1.0,
   proximity_weight numeric(4,2) not null default 1.5,
@@ -142,7 +142,7 @@ create table if not exists recommendation_rules (
 );
 
 create table if not exists intents (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   slug text not null unique,
   description text,
   keywords_el text[] not null default '{}',
@@ -152,7 +152,7 @@ create table if not exists intents (
 );
 
 create table if not exists feature_flags (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   hotel_id uuid references hotels(id) on delete cascade,
   flag text not null,
   enabled boolean not null default false,
@@ -161,7 +161,7 @@ create table if not exists feature_flags (
 );
 
 create table if not exists audit_log (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   hotel_id uuid references hotels(id) on delete cascade,
   actor_id uuid,
   action text not null,
