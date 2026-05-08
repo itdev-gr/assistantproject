@@ -1,19 +1,25 @@
 import { setRequestLocale } from 'next-intl/server';
+import { listDirectory } from '@/lib/public-directory';
+import { SiteHeader } from '@/components/public/SiteHeader';
+import { DirectoryHero } from '@/components/public/DirectoryHero';
+import { DirectoryBrowser } from '@/components/public/DirectoryBrowser';
+import { SiteFooter } from '@/components/public/SiteFooter';
 
 interface Props {
   params: Promise<{ locale: string }>;
 }
 
-export default async function MarketingHomePage({ params }: Props) {
+export default async function HomePage({ params }: Props) {
   const { locale } = await params;
   setRequestLocale(locale);
+  const { businesses, categories } = await listDirectory(locale === 'en' ? 'en' : 'el');
+
   return (
-    <main className="mx-auto flex min-h-screen max-w-3xl flex-col items-center justify-center px-6 py-16 text-center">
-      <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl">AI Guest Assistant</h1>
-      <p className="mt-4 max-w-prose text-muted-foreground">
-        Curated answers and trusted local recommendations for guests of partner hotels and short-term
-        rentals.
-      </p>
-    </main>
+    <div className="flex min-h-dvh flex-col bg-background">
+      <SiteHeader locale={locale} />
+      <DirectoryHero locale={locale} totalCount={businesses.length} />
+      <DirectoryBrowser locale={locale} businesses={businesses} categories={categories} />
+      <SiteFooter locale={locale} />
+    </div>
   );
 }

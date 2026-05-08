@@ -1,0 +1,61 @@
+- generic [ref=e2]:
+  - banner [ref=e3]:
+    - generic [ref=e4]:
+      - link "Local Guide" [ref=e5] [cursor=pointer]:
+        - /url: /en
+        - generic [ref=e6]: 🌊
+        - text: Local Guide
+      - navigation [ref=e7]:
+        - link "Browse" [ref=e8] [cursor=pointer]:
+          - /url: /en
+        - link "Ελληνικά" [ref=e9] [cursor=pointer]:
+          - /url: /el
+        - link "Sign in" [ref=e10] [cursor=pointer]:
+          - /url: /en/login
+  - main [ref=e11]:
+    - generic [ref=e13]:
+      - paragraph [ref=e14]: Welcome to
+      - heading "Aegean Blue Suites" [level=1] [ref=e15]
+    - generic [ref=e16]:
+      - generic [ref=e18]:
+        - generic [ref=e19]:
+          - heading "Recommended by the hotel" [level=2] [ref=e20]
+          - paragraph [ref=e21]: "1"
+        - list [ref=e22]:
+          - listitem [ref=e23]:
+            - link "Featured €€ Restaurants Taverna Apolafsi Traditional tavern with fresh seafood Agios Prokopios, Naxos seafood traditional family" [ref=e24] [cursor=pointer]:
+              - /url: /en/p/79fc5bf9-0ebc-446a-acd0-8cfc416b11f5
+              - generic [ref=e25]:
+                - generic [ref=e26]:
+                  - generic [ref=e28]: 🍽️
+                  - generic [ref=e29]: Featured
+                  - generic [ref=e30]: €€
+                - generic [ref=e31]:
+                  - paragraph [ref=e32]: Restaurants
+                  - heading "Taverna Apolafsi" [level=3] [ref=e33]
+                  - paragraph [ref=e34]: Traditional tavern with fresh seafood
+                  - paragraph [ref=e35]:
+                    - img [ref=e36]
+                    - generic [ref=e39]: Agios Prokopios, Naxos
+                  - list [ref=e40]:
+                    - listitem [ref=e41]: seafood
+                    - listitem [ref=e42]: traditional
+                    - listitem [ref=e43]: family
+      - complementary [ref=e44]:
+        - generic [ref=e46]:
+          - generic [ref=e47]: Ask the assistant
+          - generic [ref=e48]:
+            - list [ref=e49]:
+              - listitem [ref=e50]: Ask me anything about the property or the area…
+            - generic [ref=e51]:
+              - textbox "Ask me anything about the property or the area…" [ref=e52]
+              - button "Send" [disabled]:
+                - img
+                - generic: Send
+  - contentinfo [ref=e53]:
+    - generic [ref=e54]:
+      - paragraph [ref=e55]: © Local Guide — curated places.
+      - paragraph [ref=e56]:
+        - text: Looking for hotel partners?
+        - link "Sign in" [ref=e57] [cursor=pointer]:
+          - /url: /login
