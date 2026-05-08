@@ -1,0 +1,17 @@
+{
+  "nav": {
+    "tenants": "Καταλύματα",
+    "businesses": "Επιχειρήσεις",
+    "categories": "Κατηγορίες",
+    "partnerships": "Συνεργασίες",
+    "moderation": "Έλεγχος περιεχομένου",
+    "rules": "Κανόνες προτάσεων",
+    "flags": "Feature flags",
+    "usage": "Χρήση"
+  },
+  "moderation": {
+    "approve": "Έγκριση",
+    "reject": "Απόρριψη",
+    "queueEmpty": "Δεν εκκρεμεί τίποτα προς έγκριση"
+  }
+}

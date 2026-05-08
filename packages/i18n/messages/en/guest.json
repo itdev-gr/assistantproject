@@ -1,0 +1,24 @@
+{
+  "chat": {
+    "placeholder": "Ask me anything about the property or the area…",
+    "send": "Send",
+    "thinking": "Looking that up…",
+    "promotedBadge": "Partner",
+    "openNow": "Open now",
+    "closedNow": "Closed now",
+    "viewMore": "View more",
+    "callPartner": "Call",
+    "directions": "Directions"
+  },
+  "fallback": {
+    "noInfo": "I don't have that information. Reception can help — would you like me to notify them?",
+    "staffNotified": "I've notified the team — they'll be in touch shortly.",
+    "outOfScope": "I can help with questions about the property and local recommendations."
+  },
+  "consent": {
+    "title": "About your data",
+    "body": "Your conversations are stored anonymously for 30 days so we can improve answers. We don't collect personal data.",
+    "accept": "I agree",
+    "more": "Learn more"
+  }
+}

@@ -1,0 +1,4 @@
+{
+  "extends": "@aga/config/tsconfig-base",
+  "include": ["src/**/*"]
+}

@@ -1,0 +1,45 @@
+# dependencies
+node_modules/
+.pnpm-store/
+
+# build outputs
+dist/
+build/
+.next/
+out/
+.turbo/
+*.tsbuildinfo
+
+# env files
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# coverage / test
+coverage/
+.nyc_output/
+playwright-report/
+test-results/
+
+# supabase
+supabase/.branches/
+supabase/.temp/
+supabase/.env

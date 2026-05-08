@@ -1,0 +1,23 @@
+{
+  "name": "@aga/widget",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "lint": "eslint src",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@aga/api-contracts": "workspace:*",
+    "preact": "^10.24.0"
+  },
+  "devDependencies": {
+    "@aga/config": "workspace:*",
+    "@preact/preset-vite": "^2.9.0",
+    "typescript": "^5.5.0",
+    "vite": "^5.4.0"
+  }
+}

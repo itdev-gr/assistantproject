@@ -1,0 +1,9 @@
+{
+  "extends": "@aga/config/tsconfig-next",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": { "@/*": ["./src/*"] }
+  },
+  "include": ["next-env.d.ts", "src/**/*", ".next/types/**/*.ts"],
+  "exclude": ["node_modules", ".next"]
+}

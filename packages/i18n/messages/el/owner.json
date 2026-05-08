@@ -1,0 +1,31 @@
+{
+  "nav": {
+    "dashboard": "Πίνακας",
+    "property": "Κατάλυμα",
+    "faqs": "Συχνές ερωτήσεις",
+    "amenities": "Παροχές",
+    "hours": "Ωράρια",
+    "policies": "Πολιτικές",
+    "rooms": "Δωμάτια",
+    "partners": "Συνεργάτες",
+    "referrals": "Παραπομπές",
+    "settings": "Ρυθμίσεις",
+    "logout": "Αποσύνδεση"
+  },
+  "common": {
+    "save": "Αποθήκευση",
+    "cancel": "Ακύρωση",
+    "delete": "Διαγραφή",
+    "edit": "Επεξεργασία",
+    "publish": "Δημοσίευση",
+    "unpublish": "Απόσυρση",
+    "draft": "Πρόχειρο",
+    "published": "Δημοσιευμένο"
+  },
+  "stats": {
+    "messagesToday": "Μηνύματα σήμερα",
+    "topIntents": "Συχνότερες ερωτήσεις",
+    "topPartners": "Δημοφιλέστεροι συνεργάτες",
+    "estimatedCommission": "Εκτιμώμενη προμήθεια"
+  }
+}

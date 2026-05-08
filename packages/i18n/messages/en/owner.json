@@ -1,0 +1,31 @@
+{
+  "nav": {
+    "dashboard": "Dashboard",
+    "property": "Property",
+    "faqs": "FAQs",
+    "amenities": "Amenities",
+    "hours": "Hours",
+    "policies": "Policies",
+    "rooms": "Rooms",
+    "partners": "Partners",
+    "referrals": "Referrals",
+    "settings": "Settings",
+    "logout": "Sign out"
+  },
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "publish": "Publish",
+    "unpublish": "Unpublish",
+    "draft": "Draft",
+    "published": "Published"
+  },
+  "stats": {
+    "messagesToday": "Messages today",
+    "topIntents": "Top questions",
+    "topPartners": "Top partners",
+    "estimatedCommission": "Estimated commission"
+  }
+}

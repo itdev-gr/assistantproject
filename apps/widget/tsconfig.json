@@ -1,0 +1,7 @@
+{
+  "extends": "@aga/config/tsconfig-react",
+  "compilerOptions": {
+    "jsxImportSource": "preact"
+  },
+  "include": ["src/**/*"]
+}

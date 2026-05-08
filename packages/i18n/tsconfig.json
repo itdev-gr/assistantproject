@@ -1,0 +1,5 @@
+{
+  "extends": "@aga/config/tsconfig-base",
+  "compilerOptions": { "resolveJsonModule": true },
+  "include": ["src/**/*", "messages/**/*.json"]
+}

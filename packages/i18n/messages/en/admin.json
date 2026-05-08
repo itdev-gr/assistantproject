@@ -1,0 +1,17 @@
+{
+  "nav": {
+    "tenants": "Hotels",
+    "businesses": "Businesses",
+    "categories": "Categories",
+    "partnerships": "Partnerships",
+    "moderation": "Moderation",
+    "rules": "Recommendation rules",
+    "flags": "Feature flags",
+    "usage": "Usage"
+  },
+  "moderation": {
+    "approve": "Approve",
+    "reject": "Reject",
+    "queueEmpty": "Nothing pending approval"
+  }
+}
