@@ -1,0 +1,10 @@
+- main [ref=e2]:
+  - heading "aegean-blue" [level=1] [ref=e4]
+  - generic [ref=e5]:
+    - list [ref=e6]:
+      - listitem [ref=e7]: Ask me anything about the property or the area…
+    - generic [ref=e8]:
+      - textbox "Ask me anything about the property or the area…" [ref=e9]
+      - button "Send" [disabled]:
+        - img
+        - generic: Send

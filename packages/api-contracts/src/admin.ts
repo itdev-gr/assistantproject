@@ -1,6 +1,26 @@
 import { z } from 'zod';
 import { slugSchema, subscriptionTierSchema, uuidSchema } from './common';
 
+/** A value that's either a real URL, or empty/null (treated as not provided). */
+const optionalUrl = z.preprocess(
+  (v) => (v === '' || v == null ? null : v),
+  z.string().url().nullable(),
+);
+
+const optionalText = z.preprocess(
+  (v) => (v === '' || v == null ? null : v),
+  z.string().nullable(),
+);
+
+/** Accepts a comma-separated string from a text input, or an actual array. */
+const tagsField = z.preprocess(
+  (v) =>
+    typeof v === 'string'
+      ? v.split(',').map((s) => s.trim()).filter(Boolean)
+      : v,
+  z.array(z.string()).default([]),
+);
+
 export const businessUpsertSchema = z.object({
   id: uuidSchema.optional(),
   name: z.string().min(2).max(120),
@@ -9,11 +29,11 @@ export const businessUpsertSchema = z.object({
   lat: z.number().min(-90).max(90),
   lng: z.number().min(-180).max(180),
   address: z.string().max(500),
-  phone: z.string().nullable(),
-  whatsapp: z.string().nullable(),
-  website: z.string().url().nullable(),
+  phone: optionalText,
+  whatsapp: optionalText,
+  website: optionalUrl,
   priceBand: z.number().int().min(1).max(4),
-  tags: z.array(z.string()).default([]),
+  tags: tagsField,
   openingHours: z.record(z.string(), z.unknown()).nullable(),
   images: z.array(z.string().url()).default([]),
   verified: z.boolean().default(false),

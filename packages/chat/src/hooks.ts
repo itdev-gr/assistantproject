@@ -1,17 +1,29 @@
 import { useCallback, useState } from 'react';
-import type { ChatMessage, ChatRequest, ChatResponse, ChatStatus } from './types';
+import type {
+  ChatMessage,
+  ChatRequest,
+  ChatResponse,
+  ChatStatus,
+  RecommendationCard,
+} from './types';
+
+/** Assistant messages can carry recommendation cards alongside the reply text. */
+export interface ConversationMessage extends ChatMessage {
+  recommendations?: RecommendationCard[];
+  needsStaff?: boolean;
+}
 
 export interface UseConversationOptions {
   /** Override the API endpoint. Defaults to /api/chat */
   endpoint?: string;
   /** Initial messages (e.g. system welcome) */
-  initial?: ChatMessage[];
+  initial?: ConversationMessage[];
   /** Hotel slug — required */
   hotelSlug: string;
 }
 
 export interface UseConversationResult {
-  messages: ChatMessage[];
+  messages: ConversationMessage[];
   status: ChatStatus;
   error: Error | null;
   send: (text: string) => Promise<void>;
@@ -23,7 +35,7 @@ export function useConversation({
   initial = [],
   hotelSlug,
 }: UseConversationOptions): UseConversationResult {
-  const [messages, setMessages] = useState<ChatMessage[]>(initial);
+  const [messages, setMessages] = useState<ConversationMessage[]>(initial);
   const [status, setStatus] = useState<ChatStatus>('idle');
   const [error, setError] = useState<Error | null>(null);
 
@@ -61,6 +73,8 @@ export function useConversation({
             content: data.reply,
             intent: data.intent,
             createdAt: new Date().toISOString(),
+            recommendations: data.recommendations,
+            needsStaff: data.needsStaff,
           },
         ]);
         setStatus('idle');

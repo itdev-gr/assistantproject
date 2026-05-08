@@ -1,0 +1,85 @@
+- generic [ref=e2]:
+  - navigation [ref=e3]:
+    - generic [ref=e4]: Super Admin
+    - list [ref=e5]:
+      - listitem [ref=e6]:
+        - link "Hotels" [ref=e7] [cursor=pointer]:
+          - /url: /en/admin
+          - img [ref=e8]
+          - text: Hotels
+      - listitem [ref=e12]:
+        - link "Businesses" [ref=e13] [cursor=pointer]:
+          - /url: /en/admin/businesses
+          - img [ref=e14]
+          - text: Businesses
+      - listitem [ref=e19]:
+        - link "Categories" [ref=e20] [cursor=pointer]:
+          - /url: /en/admin/categories
+          - img [ref=e21]
+          - text: Categories
+      - listitem [ref=e24]:
+        - link "Partnerships" [ref=e25] [cursor=pointer]:
+          - /url: /en/admin/partnerships
+          - img [ref=e26]
+          - text: Partnerships
+      - listitem [ref=e31]:
+        - link "Moderation" [ref=e32] [cursor=pointer]:
+          - /url: /en/admin/moderation
+          - img [ref=e33]
+          - text: Moderation
+      - listitem [ref=e36]:
+        - link "Recommendation rules" [ref=e37] [cursor=pointer]:
+          - /url: /en/admin/rules
+          - img [ref=e38]
+          - text: Recommendation rules
+      - listitem [ref=e39]:
+        - link "Feature flags" [ref=e40] [cursor=pointer]:
+          - /url: /en/admin/flags
+          - img [ref=e41]
+          - text: Feature flags
+      - listitem [ref=e43]:
+        - link "Usage" [ref=e44] [cursor=pointer]:
+          - /url: /en/admin/usage
+          - img [ref=e45]
+          - text: Usage
+  - main [ref=e47]:
+    - generic [ref=e48]:
+      - heading "Partnerships" [level=1] [ref=e49]
+      - generic [ref=e52]:
+        - generic [ref=e53]:
+          - paragraph [ref=e54]: "Set up the prerequisites first:"
+          - list [ref=e55]:
+            - listitem [ref=e56]:
+              - link "Create a hotel" [ref=e57] [cursor=pointer]:
+                - /url: /en/admin/new-tenant
+            - listitem [ref=e58]:
+              - link "Create a business" [ref=e59] [cursor=pointer]:
+                - /url: /en/admin/businesses/new
+        - table [ref=e60]:
+          - rowgroup [ref=e61]:
+            - row "Hotel Business Tier % comm. Priority" [ref=e62]:
+              - columnheader "Hotel" [ref=e63]
+              - columnheader "Business" [ref=e64]
+              - columnheader "Tier" [ref=e65]
+              - columnheader "% comm." [ref=e66]
+              - columnheader "Priority" [ref=e67]
+              - columnheader [ref=e68]
+          - rowgroup [ref=e69]:
+            - row "No partnerships yet." [ref=e70]:
+              - cell "No partnerships yet." [ref=e71]
+        - generic [ref=e72]:
+          - paragraph [ref=e73]: Add partnership
+          - generic [ref=e74]:
+            - combobox [disabled] [ref=e75]:
+              - option "— no hotels yet —" [selected]
+            - combobox [disabled] [ref=e76]:
+              - option "— no businesses yet —" [selected]
+            - combobox [ref=e77]:
+              - option "free"
+              - option "standard" [selected]
+              - option "featured"
+              - option "exclusive"
+          - generic [ref=e78]:
+            - spinbutton [ref=e79]: "10"
+            - spinbutton [ref=e80]: "50"
+            - button "Add" [disabled]

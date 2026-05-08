@@ -57,7 +57,10 @@ export async function POST(req: Request) {
     content: message,
   });
 
-  const provider = new RuleBasedProvider(buildDataPort(supabase));
+  const appOrigin = process.env.NEXT_PUBLIC_APP_URL ?? new URL(req.url).origin;
+  const provider = new RuleBasedProvider(
+    buildDataPort(supabase, { sessionId, appOrigin, hmacSecret: secret }),
+  );
   const result = await provider.respond({
     sessionId,
     hotelId: hotel.id,

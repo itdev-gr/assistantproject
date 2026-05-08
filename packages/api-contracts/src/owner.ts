@@ -1,20 +1,41 @@
 import { z } from 'zod';
 import { localeSchema, slugSchema, uuidSchema } from './common';
 
+const optionalUrl = z.preprocess(
+  (v) => (v === '' || v == null ? null : v),
+  z.string().url().nullable(),
+);
+const optionalHexColor = z.preprocess(
+  (v) => (v === '' || v == null ? null : v),
+  z
+    .string()
+    .regex(/^#[0-9a-fA-F]{6}$/)
+    .nullable(),
+);
+const optionalNumber = z.preprocess(
+  (v) => (v === '' || v == null || (typeof v === 'number' && Number.isNaN(v)) ? null : v),
+  z.number().nullable(),
+);
+
+const tagsField = z.preprocess(
+  (v) =>
+    typeof v === 'string'
+      ? v.split(',').map((s) => s.trim()).filter(Boolean)
+      : v,
+  z.array(z.string()).default([]),
+);
+
 export const hotelProfileSchema = z.object({
   name: z.string().min(2).max(120),
   slug: slugSchema,
   timezone: z.string(),
   defaultLocale: localeSchema,
-  lat: z.number().min(-90).max(90).nullable(),
-  lng: z.number().min(-180).max(180).nullable(),
+  lat: optionalNumber.pipe(z.number().min(-90).max(90).nullable()),
+  lng: optionalNumber.pipe(z.number().min(-180).max(180).nullable()),
   brand: z
     .object({
-      logoUrl: z.string().url().nullable(),
-      primaryColor: z
-        .string()
-        .regex(/^#[0-9a-fA-F]{6}$/)
-        .nullable(),
+      logoUrl: optionalUrl,
+      primaryColor: optionalHexColor,
     })
     .partial(),
 });
@@ -25,8 +46,8 @@ export const faqUpsertSchema = z.object({
   locale: localeSchema,
   question: z.string().min(3).max(500),
   answer: z.string().min(3).max(4000),
-  tags: z.array(z.string()).default([]),
-  intentSlug: z.string().nullable(),
+  tags: tagsField,
+  intentSlug: z.preprocess((v) => (v === '' || v == null ? null : v), z.string().nullable()),
   published: z.boolean().default(false),
 });
 export type FaqUpsert = z.infer<typeof faqUpsertSchema>;

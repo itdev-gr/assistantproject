@@ -34,18 +34,31 @@ export function BusinessForm({ locale, categories, initial }: Props) {
 
   async function onSubmit(values: BusinessUpsert) {
     setError(null);
+    const tags =
+      typeof (values.tags as unknown) === 'string'
+        ? (values.tags as unknown as string)
+            .split(',')
+            .map((s) => s.trim())
+            .filter(Boolean)
+        : values.tags;
+    // Accept blank inputs for optional fields by coercing empty strings to null
+    const blankToNull = (v: string | null | undefined) =>
+      v == null || v === '' ? null : v;
     const r = await upsertBusiness({
       ...values,
-      tags:
-        typeof (values.tags as unknown) === 'string'
-          ? (values.tags as unknown as string)
-              .split(',')
-              .map((s) => s.trim())
-              .filter(Boolean)
-          : values.tags,
+      phone: blankToNull(values.phone),
+      whatsapp: blankToNull(values.whatsapp),
+      website: blankToNull(values.website),
+      description: hasAnyValue(values.description) ? values.description : null,
+      tags,
     });
     if (r.ok) router.push('/admin/businesses');
     else setError(r.error);
+  }
+
+  function hasAnyValue(d: Record<string, string> | null | undefined): boolean {
+    if (!d) return false;
+    return Object.values(d).some((v) => v != null && v !== '');
   }
 
   async function onDelete() {
@@ -56,8 +69,25 @@ export function BusinessForm({ locale, categories, initial }: Props) {
     else setError(r.error ?? 'error');
   }
 
+  const errorList = Object.entries(errors)
+    .map(([field, e]) => {
+      const msg = (e as { message?: string } | undefined)?.message;
+      return msg ? `${field}: ${msg}` : null;
+    })
+    .filter((s): s is string => s !== null);
+
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+      {errorList.length > 0 && (
+        <div className="rounded-md border border-destructive/30 bg-destructive/5 p-3 text-xs text-destructive">
+          <p className="font-medium">{locale === 'en' ? 'Please fix:' : 'Διορθώστε:'}</p>
+          <ul className="mt-1 list-disc pl-5">
+            {errorList.map((e) => (
+              <li key={e}>{e}</li>
+            ))}
+          </ul>
+        </div>
+      )}
       <Card>
         <CardContent className="space-y-4 p-6">
           <div className="grid gap-4 md:grid-cols-2">

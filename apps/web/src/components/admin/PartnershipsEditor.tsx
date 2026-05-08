@@ -105,8 +105,36 @@ export function PartnershipsEditor({ locale, hotels, businesses, rows }: Props) 
     });
   }
 
+  const missing: string[] = [];
+  if (hotels.length === 0) missing.push(locale === 'en' ? 'a hotel' : 'ένα κατάλυμα');
+  if (businesses.length === 0) missing.push(locale === 'en' ? 'a business' : 'μια επιχείρηση');
+
   return (
     <div className="space-y-6">
+      {missing.length > 0 && (
+        <div className="rounded-md border border-dashed bg-muted/40 p-4 text-sm">
+          <p className="mb-2 font-medium">
+            {locale === 'en' ? 'Set up the prerequisites first:' : 'Πρώτα οριστε τα παρακάτω:'}
+          </p>
+          <ul className="list-disc pl-5 text-muted-foreground">
+            {hotels.length === 0 && (
+              <li>
+                <a href="/en/admin/new-tenant" className="text-primary hover:underline">
+                  {locale === 'en' ? 'Create a hotel' : 'Δημιουργήστε ένα κατάλυμα'}
+                </a>
+              </li>
+            )}
+            {businesses.length === 0 && (
+              <li>
+                <a href="/en/admin/businesses/new" className="text-primary hover:underline">
+                  {locale === 'en' ? 'Create a business' : 'Δημιουργήστε μια επιχείρηση'}
+                </a>
+              </li>
+            )}
+          </ul>
+        </div>
+      )}
+
       <table className="w-full text-sm">
         <thead>
           <tr className="border-b text-left text-xs uppercase text-muted-foreground">
@@ -119,6 +147,13 @@ export function PartnershipsEditor({ locale, hotels, businesses, rows }: Props) 
           </tr>
         </thead>
         <tbody>
+          {rows.length === 0 && (
+            <tr>
+              <td colSpan={6} className="py-6 text-center text-sm text-muted-foreground">
+                {locale === 'en' ? 'No partnerships yet.' : 'Καμία συνεργασία ακόμη.'}
+              </td>
+            </tr>
+          )}
           {rows.map((r) => (
             <tr key={r.id} className="border-b">
               <td className="py-2">{r.hotelName}</td>
@@ -169,8 +204,18 @@ export function PartnershipsEditor({ locale, hotels, businesses, rows }: Props) 
           <select
             value={draft.hotelId}
             onChange={(e) => setDraft({ ...draft, hotelId: e.target.value })}
-            className="flex h-10 rounded-md border border-input bg-background px-3 py-2 text-sm"
+            disabled={hotels.length === 0}
+            className="flex h-10 rounded-md border border-input bg-background px-3 py-2 text-sm disabled:opacity-50"
           >
+            <option value="">
+              {hotels.length === 0
+                ? locale === 'en'
+                  ? '— no hotels yet —'
+                  : '— καμία εγγραφή —'
+                : locale === 'en'
+                  ? 'Select hotel…'
+                  : 'Επιλέξτε κατάλυμα…'}
+            </option>
             {hotels.map((h) => (
               <option key={h.id} value={h.id}>
                 {h.name}
@@ -180,8 +225,18 @@ export function PartnershipsEditor({ locale, hotels, businesses, rows }: Props) 
           <select
             value={draft.businessId}
             onChange={(e) => setDraft({ ...draft, businessId: e.target.value })}
-            className="flex h-10 rounded-md border border-input bg-background px-3 py-2 text-sm"
+            disabled={businesses.length === 0}
+            className="flex h-10 rounded-md border border-input bg-background px-3 py-2 text-sm disabled:opacity-50"
           >
+            <option value="">
+              {businesses.length === 0
+                ? locale === 'en'
+                  ? '— no businesses yet —'
+                  : '— καμία εγγραφή —'
+                : locale === 'en'
+                  ? 'Select business…'
+                  : 'Επιλέξτε επιχείρηση…'}
+            </option>
             {businesses.map((b) => (
               <option key={b.id} value={b.id}>
                 {b.name}
@@ -218,7 +273,10 @@ export function PartnershipsEditor({ locale, hotels, businesses, rows }: Props) 
             value={draft.paidPriorityScore}
             onChange={(e) => setDraft({ ...draft, paidPriorityScore: Number(e.target.value) })}
           />
-          <Button onClick={add} disabled={pending}>
+          <Button
+            onClick={add}
+            disabled={pending || !draft.hotelId || !draft.businessId}
+          >
             {locale === 'en' ? 'Add' : 'Προσθήκη'}
           </Button>
         </div>

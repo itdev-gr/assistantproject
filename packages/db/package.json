@@ -11,7 +11,8 @@
     "./server": "./src/server.ts",
     "./browser": "./src/browser.ts",
     "./service": "./src/service.ts",
-    "./session-token": "./src/session-token.ts"
+    "./session-token": "./src/session-token.ts",
+    "./referral-token": "./src/referral-token.ts"
   },
   "scripts": {
     "lint": "eslint src",

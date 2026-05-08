@@ -3,16 +3,22 @@ import type { Database } from '@aga/db/types';
 import type { ResponseDataPort } from '@aga/response-engine';
 import { DEFAULT_RULES, type RecommendationRules } from '@aga/response-engine';
 import type { RecommendationCard } from '@aga/api-contracts';
+import { signReferral } from '@aga/db/referral-token';
 
 type DB = SupabaseClient<Database>;
 
+interface RequestCtx {
+  sessionId: string;
+  appOrigin: string;
+  hmacSecret: string;
+}
+
 /**
- * Concrete adapter wiring RuleBasedProvider to Supabase. The Edge Function /
- * API route calls this with a service-role client (RLS bypassed) and is
- * responsible for sanitizing what is returned to guests — never expose
- * commission_pct or paid_priority_score in the response payload.
+ * Concrete adapter wiring RuleBasedProvider to Supabase. Called per-request
+ * with a service-role client and the guest's session context. Sanitizes
+ * commission/priority out of guest-facing payloads.
  */
-export function buildDataPort(supabase: DB): ResponseDataPort {
+export function buildDataPort(supabase: DB, ctx: RequestCtx): ResponseDataPort {
   return {
     async resolveAskFacts({ hotelId, intent, locale }) {
       switch (intent) {
@@ -81,13 +87,13 @@ export function buildDataPort(supabase: DB): ResponseDataPort {
         .from('businesses')
         .select(
           `
-            id, name, lat, lng,
+            id, name, lat, lng, website, phone,
             description_i18n,
             opening_hours_json,
             images,
             price_band,
             category:business_categories!inner ( slug ),
-            partnerships ( hotel_id, subscription_tier, paid_priority_score, commission_pct, active )
+            partnerships ( id, hotel_id, subscription_tier, paid_priority_score, commission_pct, active )
           `,
         )
         .eq('active', true)
@@ -100,10 +106,13 @@ export function buildDataPort(supabase: DB): ResponseDataPort {
         name: string;
         lat: number;
         lng: number;
+        website: string | null;
+        phone: string | null;
         description_i18n: Record<string, string>;
         price_band: number | null;
         category: { slug: string };
         partnerships: Array<{
+          id: string;
           hotel_id: string;
           subscription_tier: 'free' | 'standard' | 'featured' | 'exclusive';
           paid_priority_score: number;
@@ -139,10 +148,32 @@ export function buildDataPort(supabase: DB): ResponseDataPort {
           const b = byId.get(id);
           if (!b) return null;
           const partnership = b.partnerships.find((p) => p.hotel_id === hotelId && p.active) ?? null;
-          // Create a referral row to get a signed URL.
-          // (For now, synthesize a placeholder URL — wired up properly once the
-          // referral-redirect Edge Function lands in week 10.)
-          const referralUrl = new URL(`/api/r/pending`, 'http://localhost').toString();
+
+          let referralUrl: string;
+          if (partnership) {
+            // Insert a referral row and sign a token that points back at our redirect.
+            const expiresAt = new Date(Date.now() + 72 * 60 * 60 * 1000);
+            const { data: created, error } = await supabase
+              .from('referrals')
+              .insert({
+                session_id: ctx.sessionId,
+                partnership_id: partnership.id,
+                expires_at: expiresAt.toISOString(),
+              })
+              .select('id')
+              .single();
+            if (error || !created) {
+              referralUrl = b.website ?? `${ctx.appOrigin}/`;
+            } else {
+              const expSec = Math.floor(expiresAt.getTime() / 1000);
+              const token = signReferral(created.id, expSec, ctx.hmacSecret);
+              referralUrl = `${ctx.appOrigin}/api/r/${token}`;
+            }
+          } else {
+            // Non-partner: send straight to the business's own website (no commission tracked)
+            referralUrl = b.website ?? `${ctx.appOrigin}/`;
+          }
+
           return {
             businessId: b.id,
             name: b.name,
@@ -152,8 +183,7 @@ export function buildDataPort(supabase: DB): ResponseDataPort {
             openNow: null,
             priceBand: b.price_band,
             imageUrl: null,
-            promoted:
-              partnership !== null && partnership.subscription_tier !== 'free',
+            promoted: partnership !== null && partnership.subscription_tier !== 'free',
             referralUrl,
           };
         },

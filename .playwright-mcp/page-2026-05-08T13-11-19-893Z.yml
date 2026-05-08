@@ -1,0 +1,73 @@
+- generic [ref=e2]:
+  - navigation [ref=e3]:
+    - generic [ref=e4]: Super Admin
+    - list [ref=e5]:
+      - listitem [ref=e6]:
+        - link "Hotels" [ref=e7] [cursor=pointer]:
+          - /url: /en/admin
+          - img [ref=e8]
+          - text: Hotels
+      - listitem [ref=e12]:
+        - link "Businesses" [ref=e13] [cursor=pointer]:
+          - /url: /en/admin/businesses
+          - img [ref=e14]
+          - text: Businesses
+      - listitem [ref=e19]:
+        - link "Categories" [ref=e20] [cursor=pointer]:
+          - /url: /en/admin/categories
+          - img [ref=e21]
+          - text: Categories
+      - listitem [ref=e24]:
+        - link "Partnerships" [ref=e25] [cursor=pointer]:
+          - /url: /en/admin/partnerships
+          - img [ref=e26]
+          - text: Partnerships
+      - listitem [ref=e31]:
+        - link "Moderation" [ref=e32] [cursor=pointer]:
+          - /url: /en/admin/moderation
+          - img [ref=e33]
+          - text: Moderation
+      - listitem [ref=e36]:
+        - link "Recommendation rules" [ref=e37] [cursor=pointer]:
+          - /url: /en/admin/rules
+          - img [ref=e38]
+          - text: Recommendation rules
+      - listitem [ref=e39]:
+        - link "Feature flags" [ref=e40] [cursor=pointer]:
+          - /url: /en/admin/flags
+          - img [ref=e41]
+          - text: Feature flags
+      - listitem [ref=e43]:
+        - link "Usage" [ref=e44] [cursor=pointer]:
+          - /url: /en/admin/usage
+          - img [ref=e45]
+          - text: Usage
+  - main [ref=e47]:
+    - generic [ref=e48]:
+      - heading "New tenant" [level=1] [ref=e49]
+      - generic [ref=e50]:
+        - generic [ref=e52]:
+          - generic [ref=e53]:
+            - text: Name
+            - textbox "Name" [ref=e54]
+          - generic [ref=e55]:
+            - text: Slug
+            - textbox "Slug" [ref=e56]:
+              - /placeholder: aegean-blue
+          - generic [ref=e57]:
+            - generic [ref=e58]:
+              - text: Timezone
+              - textbox "Timezone" [ref=e59]
+            - generic [ref=e60]:
+              - text: Subscription tier
+              - combobox "Subscription tier" [ref=e61]:
+                - option "free" [selected]
+                - option "standard"
+                - option "featured"
+                - option "exclusive"
+          - generic [ref=e62]:
+            - text: Owner email (will be invited)
+            - textbox "Owner email (will be invited)" [ref=e63]
+        - generic [ref=e64]:
+          - button "Create" [ref=e65] [cursor=pointer]
+          - button "Cancel" [ref=e66] [cursor=pointer]
