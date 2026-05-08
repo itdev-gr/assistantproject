@@ -1,0 +1,59 @@
+- generic [ref=e2]:
+  - navigation [ref=e3]:
+    - generic [ref=e4]: Super Admin
+    - list [ref=e5]:
+      - listitem [ref=e6]:
+        - link "Hotels" [ref=e7] [cursor=pointer]:
+          - /url: /en/admin
+          - img [ref=e8]
+          - text: Hotels
+      - listitem [ref=e12]:
+        - link "Businesses" [ref=e13] [cursor=pointer]:
+          - /url: /en/admin/businesses
+          - img [ref=e14]
+          - text: Businesses
+      - listitem [ref=e19]:
+        - link "Categories" [ref=e20] [cursor=pointer]:
+          - /url: /en/admin/categories
+          - img [ref=e21]
+          - text: Categories
+      - listitem [ref=e24]:
+        - link "Partnerships" [ref=e25] [cursor=pointer]:
+          - /url: /en/admin/partnerships
+          - img [ref=e26]
+          - text: Partnerships
+      - listitem [ref=e31]:
+        - link "Moderation" [ref=e32] [cursor=pointer]:
+          - /url: /en/admin/moderation
+          - img [ref=e33]
+          - text: Moderation
+      - listitem [ref=e36]:
+        - link "Recommendation rules" [ref=e37] [cursor=pointer]:
+          - /url: /en/admin/rules
+          - img [ref=e38]
+          - text: Recommendation rules
+      - listitem [ref=e39]:
+        - link "Feature flags" [ref=e40] [cursor=pointer]:
+          - /url: /en/admin/flags
+          - img [ref=e41]
+          - text: Feature flags
+      - listitem [ref=e43]:
+        - link "Usage" [ref=e44] [cursor=pointer]:
+          - /url: /en/admin/usage
+          - img [ref=e45]
+          - text: Usage
+  - main [ref=e47]:
+    - generic [ref=e48]:
+      - generic [ref=e49]:
+        - heading "Hotels" [level=1] [ref=e50]
+        - link "New tenant" [ref=e51] [cursor=pointer]:
+          - /url: /en/admin/new-tenant
+      - list [ref=e54]:
+        - listitem [ref=e55]:
+          - generic [ref=e56]:
+            - paragraph [ref=e57]: Aegean Blue Suites
+            - paragraph [ref=e58]: /h/aegean-blue
+          - generic [ref=e59]: standard
+          - generic [ref=e60]: active
+          - link "Edit" [ref=e61] [cursor=pointer]:
+            - /url: /en/admin/tenants/b11c66ba-0311-4b72-9b9d-f3d3a4ceb490

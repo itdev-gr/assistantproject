@@ -2,11 +2,12 @@
 
 import { useState } from 'react';
 import { useRouter } from '@/i18n/routing';
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { businessUpsertSchema, type BusinessUpsert } from '@aga/api-contracts';
 import { Button, Input, Label, Card, CardContent, Textarea } from '@aga/ui';
 import { upsertBusiness, deleteBusiness } from '@/app/actions/admin-businesses';
+import { ImageUploader } from './ImageUploader';
 
 interface CategoryOpt {
   id: string;
@@ -26,6 +27,7 @@ export function BusinessForm({ locale, categories, initial }: Props) {
   const {
     register,
     handleSubmit,
+    control,
     formState: { errors, isSubmitting },
   } = useForm<BusinessUpsert>({
     resolver: zodResolver(businessUpsertSchema),
@@ -174,6 +176,22 @@ export function BusinessForm({ locale, categories, initial }: Props) {
             >
               <Textarea id="descEn" rows={3} {...register('description.en')} />
             </Field>
+          </div>
+
+          <div className="space-y-2">
+            <Label>{locale === 'en' ? 'Photos' : 'Φωτογραφίες'}</Label>
+            <Controller
+              control={control}
+              name="images"
+              render={({ field }) => (
+                <ImageUploader
+                  locale={locale}
+                  pathPrefix={initial.id ?? 'pending'}
+                  value={(field.value ?? []) as string[]}
+                  onChange={(next) => field.onChange(next)}
+                />
+              )}
+            />
           </div>
 
           <div className="flex flex-wrap gap-4">

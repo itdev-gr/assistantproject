@@ -1,0 +1,116 @@
+- generic [ref=e2]:
+  - navigation [ref=e3]:
+    - generic [ref=e4]: Super Admin
+    - list [ref=e5]:
+      - listitem [ref=e6]:
+        - link "Hotels" [ref=e7] [cursor=pointer]:
+          - /url: /en/admin
+          - img [ref=e8]
+          - text: Hotels
+      - listitem [ref=e12]:
+        - link "Businesses" [ref=e13] [cursor=pointer]:
+          - /url: /en/admin/businesses
+          - img [ref=e14]
+          - text: Businesses
+      - listitem [ref=e19]:
+        - link "Categories" [ref=e20] [cursor=pointer]:
+          - /url: /en/admin/categories
+          - img [ref=e21]
+          - text: Categories
+      - listitem [ref=e24]:
+        - link "Partnerships" [ref=e25] [cursor=pointer]:
+          - /url: /en/admin/partnerships
+          - img [ref=e26]
+          - text: Partnerships
+      - listitem [ref=e31]:
+        - link "Moderation" [ref=e32] [cursor=pointer]:
+          - /url: /en/admin/moderation
+          - img [ref=e33]
+          - text: Moderation
+      - listitem [ref=e36]:
+        - link "Recommendation rules" [ref=e37] [cursor=pointer]:
+          - /url: /en/admin/rules
+          - img [ref=e38]
+          - text: Recommendation rules
+      - listitem [ref=e39]:
+        - link "Feature flags" [ref=e40] [cursor=pointer]:
+          - /url: /en/admin/flags
+          - img [ref=e41]
+          - text: Feature flags
+      - listitem [ref=e43]:
+        - link "Usage" [ref=e44] [cursor=pointer]:
+          - /url: /en/admin/usage
+          - img [ref=e45]
+          - text: Usage
+  - main [ref=e47]:
+    - generic [ref=e48]:
+      - heading "Taverna Apolafsi" [level=1] [ref=e49]
+      - generic [ref=e50]:
+        - generic [ref=e52]:
+          - generic [ref=e53]:
+            - generic [ref=e54]:
+              - text: Name
+              - textbox "Name" [ref=e55]
+            - generic [ref=e56]:
+              - text: Category
+              - combobox "Category" [ref=e57]:
+                - option "Activities" [selected]
+                - option "Bars & Cafés"
+                - option "Boat Trips"
+                - option "Events"
+                - option "Restaurants"
+                - option "Shops"
+                - option "Taxis & Transfers"
+          - generic [ref=e58]:
+            - text: Address
+            - textbox "Address" [ref=e59]
+          - generic [ref=e60]:
+            - generic [ref=e61]:
+              - text: Latitude
+              - spinbutton "Latitude" [ref=e62]
+            - generic [ref=e63]:
+              - text: Longitude
+              - spinbutton "Longitude" [ref=e64]
+          - generic [ref=e65]:
+            - generic [ref=e66]:
+              - text: Phone
+              - textbox "Phone" [ref=e67]
+            - generic [ref=e68]:
+              - text: WhatsApp
+              - textbox "WhatsApp" [ref=e69]
+            - generic [ref=e70]:
+              - text: Website
+              - textbox "Website" [ref=e71]:
+                - /placeholder: https://…
+          - generic [ref=e72]:
+            - generic [ref=e73]:
+              - text: Price band (1-4)
+              - spinbutton "Price band (1-4)" [ref=e74]
+            - generic [ref=e75]:
+              - text: Tags (comma separated)
+              - textbox "Tags (comma separated)" [ref=e76]
+          - generic [ref=e77]:
+            - generic [ref=e78]:
+              - text: Description (Greek)
+              - textbox "Description (Greek)" [ref=e79]
+            - generic [ref=e80]:
+              - text: Description (English)
+              - textbox "Description (English)" [ref=e81]
+          - generic [ref=e82]:
+            - text: Photos
+            - generic [ref=e83]:
+              - button "Add images" [ref=e85] [cursor=pointer]:
+                - img [ref=e86]
+                - generic [ref=e90]: Add images
+              - paragraph [ref=e91]: JPEG, PNG, WEBP or GIF · 5 MB max each
+          - generic [ref=e92]:
+            - generic [ref=e93]:
+              - checkbox "Verified" [ref=e94]
+              - text: Verified
+            - generic [ref=e95]:
+              - checkbox "Active" [ref=e96]
+              - text: Active
+        - generic [ref=e97]:
+          - button "Save" [ref=e98] [cursor=pointer]
+          - button "Cancel" [ref=e99] [cursor=pointer]
+          - button "Delete" [ref=e100] [cursor=pointer]
