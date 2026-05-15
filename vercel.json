@@ -3,6 +3,7 @@
   "buildCommand": "pnpm turbo run build --filter=@aga/web",
   "installCommand": "pnpm install --frozen-lockfile",
   "framework": "nextjs",
+  "outputDirectory": ".next",
   "headers": [
     {
       "source": "/api/widget/loader.js",
