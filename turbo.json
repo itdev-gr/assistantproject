@@ -5,6 +5,7 @@
     "build": {
       "dependsOn": ["^build"],
       "inputs": ["$TURBO_DEFAULT$", ".env*"],
+      "env": ["SUPABASE_SERVICE_ROLE_KEY", "SESSION_HMAC_SECRET", "NODE_ENV", "VERCEL", "VERCEL_ENV", "VERCEL_URL"],
       "outputs": [".next/**", "!.next/cache/**", "dist/**", "build/**"]
     },
     "lint": {

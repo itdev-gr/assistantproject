@@ -43,3 +43,4 @@ test-results/
 supabase/.branches/
 supabase/.temp/
 supabase/.env
+.vercel
