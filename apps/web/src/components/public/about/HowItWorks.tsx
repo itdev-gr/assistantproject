@@ -54,7 +54,7 @@ export function HowItWorks({ locale }: Props) {
   const t = (en: string, el: string) => (locale === 'en' ? en : el);
 
   return (
-    <section className="border-b bg-background">
+    <section className="bg-background border-b">
       <Reveal className="mx-auto max-w-6xl px-4 py-16 md:py-20">
         <motion.h2
           variants={fadeUp}
@@ -67,19 +67,19 @@ export function HowItWorks({ locale }: Props) {
             <motion.li
               key={audience.titleEn}
               variants={fadeUp}
-              className="relative rounded-xl border bg-card p-6 shadow-sm transition-shadow duration-200 hover:shadow-md"
+              className="bg-card relative rounded-xl border p-6 shadow-sm transition-shadow duration-200 hover:shadow-md"
             >
               <span
-                className="absolute right-5 top-4 font-serif text-4xl font-semibold text-primary/15"
+                className="text-primary/15 absolute right-5 top-4 font-serif text-4xl font-semibold"
                 aria-hidden
               >
                 {audience.step}
               </span>
-              <div className="mb-4 inline-flex h-11 w-11 items-center justify-center rounded-full bg-primary/10">
-                <audience.icon className="h-5 w-5 text-primary" aria-hidden />
+              <div className="bg-primary/10 mb-4 inline-flex h-11 w-11 items-center justify-center rounded-full">
+                <audience.icon className="text-primary h-5 w-5" aria-hidden />
               </div>
               <h3 className="text-base font-semibold">{t(audience.titleEn, audience.titleEl)}</h3>
-              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+              <p className="text-muted-foreground mt-2 text-sm leading-relaxed">
                 {t(audience.bodyEn, audience.bodyEl)}
               </p>
             </motion.li>

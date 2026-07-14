@@ -12,6 +12,10 @@ import { AboutFaq } from '@/components/public/about/AboutFaq';
 import { AboutCta } from '@/components/public/about/AboutCta';
 import { FAQ_ITEMS } from '@/components/public/about/faq-data';
 
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://assistantproject-web.vercel.app';
+const TITLE_EN = 'About us — Local Guide';
+const TITLE_EL = 'Σχετικά με εμάς — Τοπικός Οδηγός';
+
 interface Props {
   params: Promise<{ locale: string }>;
 }
@@ -19,7 +23,7 @@ interface Props {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params;
   const en = locale === 'en';
-  const title = en ? 'About us — Local Guide' : 'Σχετικά με εμάς — Τοπικός Οδηγός';
+  const title = en ? TITLE_EN : TITLE_EL;
   const description = en
     ? 'Who we are and why we built Local Guide: honest, hand-picked recommendations connecting island visitors with trusted local businesses.'
     : 'Ποιοι είμαστε και γιατί φτιάξαμε τον Τοπικό Οδηγό: ειλικρινείς, επιλεγμένες προτάσεις που συνδέουν τους επισκέπτες του νησιού με αξιόπιστες τοπικές επιχειρήσεις.';
@@ -56,12 +60,12 @@ export default async function AboutPage({ params }: Props) {
   const aboutJsonLd = {
     '@context': 'https://schema.org',
     '@type': 'AboutPage',
-    name: en ? 'About us — Local Guide' : 'Σχετικά με εμάς — Τοπικός Οδηγός',
-    url: en ? '/en/about' : '/about',
+    name: en ? TITLE_EN : TITLE_EL,
+    url: en ? `${SITE_URL}/en/about` : `${SITE_URL}/about`,
     mainEntity: {
       '@type': 'Organization',
       name: 'Local Guide',
-      url: '/',
+      url: SITE_URL,
       areaServed: 'Rhodes, Greece',
     },
   };
@@ -78,7 +82,7 @@ export default async function AboutPage({ params }: Props) {
 
   return (
     <PageMotion>
-      <div className="flex min-h-dvh flex-col bg-background">
+      <div className="bg-background flex min-h-dvh flex-col">
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: jsonLd(aboutJsonLd) }}

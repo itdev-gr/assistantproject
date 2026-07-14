@@ -38,11 +38,17 @@ const PHOTOS: Photo[] = [
 
 export function PhotoMosaic({ locale }: Props) {
   return (
-    <section className="border-b bg-background" aria-label={locale === 'en' ? 'Island photos' : 'Φωτογραφίες του νησιού'}>
+    <section
+      className="bg-background border-b"
+      aria-label={locale === 'en' ? 'Island photos' : 'Φωτογραφίες του νησιού'}
+    >
       <div className="mx-auto max-w-6xl px-4 py-16 md:py-20">
         <ul className="grid auto-rows-[170px] grid-cols-2 gap-3 md:auto-rows-[220px] md:grid-cols-4 md:gap-4">
           {PHOTOS.map((photo) => (
-            <li key={photo.src} className={`relative overflow-hidden rounded-2xl ${photo.className}`}>
+            <li
+              key={photo.src}
+              className={`relative overflow-hidden rounded-2xl ${photo.className}`}
+            >
               <Image
                 src={photo.src}
                 alt={locale === 'en' ? photo.altEn : photo.altEl}
