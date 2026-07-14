@@ -249,6 +249,7 @@ export type Database = {
         Row: {
           active: boolean
           address: string
+          billing_email: string | null
           category_id: string
           created_at: string
           description_i18n: Json
@@ -261,6 +262,7 @@ export type Database = {
           phone: string | null
           price_band: number | null
           search_tsv: unknown
+          stripe_customer_id: string | null
           tags: string[]
           updated_at: string
           verified: boolean
@@ -271,6 +273,7 @@ export type Database = {
         Insert: {
           active?: boolean
           address: string
+          billing_email?: string | null
           category_id: string
           created_at?: string
           description_i18n?: Json
@@ -283,6 +286,7 @@ export type Database = {
           phone?: string | null
           price_band?: number | null
           search_tsv?: unknown
+          stripe_customer_id?: string | null
           tags?: string[]
           updated_at?: string
           verified?: boolean
@@ -293,6 +297,7 @@ export type Database = {
         Update: {
           active?: boolean
           address?: string
+          billing_email?: string | null
           category_id?: string
           created_at?: string
           description_i18n?: Json
@@ -305,6 +310,7 @@ export type Database = {
           phone?: string | null
           price_band?: number | null
           search_tsv?: unknown
+          stripe_customer_id?: string | null
           tags?: string[]
           updated_at?: string
           verified?: boolean
@@ -331,6 +337,7 @@ export type Database = {
           partnership_id: string
           payable_to: string
           state: Database["public"]["Enums"]["commission_state"]
+          stripe_invoice_id: string | null
         }
         Insert: {
           booking_id: string
@@ -340,6 +347,7 @@ export type Database = {
           partnership_id: string
           payable_to: string
           state?: Database["public"]["Enums"]["commission_state"]
+          stripe_invoice_id?: string | null
         }
         Update: {
           booking_id?: string
@@ -349,6 +357,7 @@ export type Database = {
           partnership_id?: string
           payable_to?: string
           state?: Database["public"]["Enums"]["commission_state"]
+          stripe_invoice_id?: string | null
         }
         Relationships: [
           {
@@ -617,6 +626,7 @@ export type Database = {
       hotels: {
         Row: {
           active: boolean
+          billing_status: Database["public"]["Enums"]["billing_status"]
           brand_json: Json
           created_at: string
           default_locale: string
@@ -625,12 +635,15 @@ export type Database = {
           lng: number | null
           name: string
           slug: string
+          stripe_customer_id: string | null
+          stripe_subscription_id: string | null
           subscription_tier: Database["public"]["Enums"]["subscription_tier"]
           timezone: string
           updated_at: string
         }
         Insert: {
           active?: boolean
+          billing_status?: Database["public"]["Enums"]["billing_status"]
           brand_json?: Json
           created_at?: string
           default_locale?: string
@@ -639,12 +652,15 @@ export type Database = {
           lng?: number | null
           name: string
           slug: string
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
           subscription_tier?: Database["public"]["Enums"]["subscription_tier"]
           timezone?: string
           updated_at?: string
         }
         Update: {
           active?: boolean
+          billing_status?: Database["public"]["Enums"]["billing_status"]
           brand_json?: Json
           created_at?: string
           default_locale?: string
@@ -653,6 +669,8 @@ export type Database = {
           lng?: number | null
           name?: string
           slug?: string
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
           subscription_tier?: Database["public"]["Enums"]["subscription_tier"]
           timezone?: string
           updated_at?: string
@@ -787,6 +805,7 @@ export type Database = {
       partnerships: {
         Row: {
           active: boolean
+          billing_status: Database["public"]["Enums"]["billing_status"]
           business_id: string
           commission_pct: number
           contract_ends: string | null
@@ -796,11 +815,13 @@ export type Database = {
           id: string
           notes: string | null
           paid_priority_score: number
+          stripe_subscription_id: string | null
           subscription_tier: Database["public"]["Enums"]["subscription_tier"]
           updated_at: string
         }
         Insert: {
           active?: boolean
+          billing_status?: Database["public"]["Enums"]["billing_status"]
           business_id: string
           commission_pct?: number
           contract_ends?: string | null
@@ -810,11 +831,13 @@ export type Database = {
           id?: string
           notes?: string | null
           paid_priority_score?: number
+          stripe_subscription_id?: string | null
           subscription_tier?: Database["public"]["Enums"]["subscription_tier"]
           updated_at?: string
         }
         Update: {
           active?: boolean
+          billing_status?: Database["public"]["Enums"]["billing_status"]
           business_id?: string
           commission_pct?: number
           contract_ends?: string | null
@@ -824,6 +847,7 @@ export type Database = {
           id?: string
           notes?: string | null
           paid_priority_score?: number
+          stripe_subscription_id?: string | null
           subscription_tier?: Database["public"]["Enums"]["subscription_tier"]
           updated_at?: string
         }
@@ -1065,6 +1089,30 @@ export type Database = {
           },
         ]
       }
+      stripe_webhook_events: {
+        Row: {
+          id: string
+          payload: Json
+          processed_at: string | null
+          received_at: string
+          type: string
+        }
+        Insert: {
+          id: string
+          payload: Json
+          processed_at?: string | null
+          received_at?: string
+          type: string
+        }
+        Update: {
+          id?: string
+          payload?: Json
+          processed_at?: string | null
+          received_at?: string
+          type?: string
+        }
+        Relationships: []
+      }
       super_admins: {
         Row: {
           auth_user_id: string
@@ -1124,6 +1172,12 @@ export type Database = {
       show_trgm: { Args: { "": string }; Returns: string[] }
     }
     Enums: {
+      billing_status:
+        | "unbilled"
+        | "checkout_sent"
+        | "active"
+        | "past_due"
+        | "canceled"
       booking_status: "pending" | "confirmed" | "cancelled" | "no_show"
       commission_state: "accrued" | "invoiced" | "paid"
       confirmation_source: "partner_webhook" | "manual" | "self_reported"
@@ -1271,6 +1325,13 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      billing_status: [
+        "unbilled",
+        "checkout_sent",
+        "active",
+        "past_due",
+        "canceled",
+      ],
       booking_status: ["pending", "confirmed", "cancelled", "no_show"],
       commission_state: ["accrued", "invoiced", "paid"],
       confirmation_source: ["partner_webhook", "manual", "self_reported"],
