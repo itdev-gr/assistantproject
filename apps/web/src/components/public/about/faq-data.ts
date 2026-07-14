@@ -34,7 +34,7 @@ export const FAQ_ITEMS: FaqItem[] = [
     qEn: 'How does my business get listed?',
     qEl: 'Πώς μπορεί να καταχωριστεί η επιχείρησή μου;',
     aEn:
-      'Reach out through the "List your business" link below. If your place fits the guide — quality, honesty, and a genuine local footprint — we will visit and take it from there.',
+      'Reach out through the “List your business” link below. If your place fits the guide — quality, honesty, and a genuine local footprint — we will visit and take it from there.',
     aEl:
       'Επικοινωνήστε μέσω του συνδέσμου «Καταχωρίστε την επιχείρησή σας» παρακάτω. Αν το μέρος σας ταιριάζει στον οδηγό — ποιότητα, ειλικρίνεια και πραγματικό τοπικό αποτύπωμα — θα σας επισκεφθούμε και θα τα πούμε από κοντά.',
   },
@@ -42,7 +42,7 @@ export const FAQ_ITEMS: FaqItem[] = [
     qEn: 'What is the AI guest assistant for hotels?',
     qEl: 'Τι είναι ο AI βοηθός επισκεπτών για ξενοδοχεία;',
     aEn:
-      'Hotels embed our assistant so their guests can ask in their own words — "where can we eat fresh fish nearby?" — and instantly get curated local recommendations, day and night.',
+      'Hotels embed our assistant so their guests can ask in their own words — “where can we eat fresh fish nearby?” — and instantly get curated local recommendations, day and night.',
     aEl:
       'Τα ξενοδοχεία ενσωματώνουν τον βοηθό μας ώστε οι επισκέπτες τους να ρωτούν με δικά τους λόγια — «πού να φάμε φρέσκο ψάρι κοντά;» — και να λαμβάνουν άμεσα επιλεγμένες τοπικές προτάσεις, μέρα και νύχτα.',
   },
