@@ -51,6 +51,7 @@ export function BusinessForm({ locale, categories, initial }: Props) {
       phone: blankToNull(values.phone),
       whatsapp: blankToNull(values.whatsapp),
       website: blankToNull(values.website),
+      billingEmail: blankToNull(values.billingEmail),
       description: hasAnyValue(values.description) ? values.description : null,
       tags,
     });
@@ -143,6 +144,19 @@ export function BusinessForm({ locale, categories, initial }: Props) {
               <Input id="website" placeholder="https://…" {...register('website')} />
             </Field>
           </div>
+
+          <Field
+            id="billingEmail"
+            label={locale === 'en' ? 'Billing email' : 'Email χρέωσης'}
+            error={errors.billingEmail?.message}
+          >
+            <Input
+              id="billingEmail"
+              type="email"
+              placeholder="billing@example.com"
+              {...register('billingEmail')}
+            />
+          </Field>
 
           <div className="grid gap-4 md:grid-cols-2">
             <Field

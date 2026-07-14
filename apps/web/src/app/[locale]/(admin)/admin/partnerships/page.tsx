@@ -20,7 +20,7 @@ export default async function PartnershipsPage({ params }: Props) {
     supabase
       .from('partnerships')
       .select(
-        'id, hotel_id, business_id, commission_pct, paid_priority_score, subscription_tier, active, contract_starts, contract_ends, hotel:hotels(name), business:businesses(name)',
+        'id, hotel_id, business_id, commission_pct, paid_priority_score, subscription_tier, active, contract_starts, contract_ends, billing_status, stripe_subscription_id, hotel:hotels(name), business:businesses(name, billing_email)',
       )
       .order('updated_at', { ascending: false }),
   ]);
@@ -44,9 +44,13 @@ export default async function PartnershipsPage({ params }: Props) {
               businessId: r.business_id,
               businessName:
                 (r.business as unknown as { name?: string } | null)?.name ?? r.business_id,
+              billingEmail:
+                (r.business as unknown as { billing_email?: string | null } | null)
+                  ?.billing_email ?? null,
               commissionPct: Number(r.commission_pct),
               paidPriorityScore: r.paid_priority_score,
               subscriptionTier: r.subscription_tier,
+              billingStatus: r.billing_status,
               active: r.active,
               contractStarts: r.contract_starts,
               contractEnds: r.contract_ends,

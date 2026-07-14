@@ -5,6 +5,7 @@ import { useRouter } from '@/i18n/routing';
 import type { SubscriptionTier } from '@aga/api-contracts';
 import { Button, Input, Badge } from '@aga/ui';
 import { upsertPartnership, deletePartnership } from '@/app/actions/admin-partnerships';
+import { PartnershipBillingPanel } from './PartnershipBillingPanel';
 
 interface Row {
   id: string;
@@ -12,9 +13,11 @@ interface Row {
   hotelName: string;
   businessId: string;
   businessName: string;
+  billingEmail: string | null;
   commissionPct: number;
   paidPriorityScore: number;
   subscriptionTier: SubscriptionTier;
+  billingStatus: string;
   active: boolean;
   contractStarts: string | null;
   contractEnds: string | null;
@@ -143,13 +146,14 @@ export function PartnershipsEditor({ locale, hotels, businesses, rows }: Props) 
             <th className="py-2">Tier</th>
             <th className="py-2">% comm.</th>
             <th className="py-2">Priority</th>
+            <th className="py-2">{locale === 'en' ? 'Billing' : 'Χρέωση'}</th>
             <th />
           </tr>
         </thead>
         <tbody>
           {rows.length === 0 && (
             <tr>
-              <td colSpan={6} className="py-6 text-center text-sm text-muted-foreground">
+              <td colSpan={7} className="py-6 text-center text-sm text-muted-foreground">
                 {locale === 'en' ? 'No partnerships yet.' : 'Καμία συνεργασία ακόμη.'}
               </td>
             </tr>
@@ -174,6 +178,14 @@ export function PartnershipsEditor({ locale, hotels, businesses, rows }: Props) 
               </td>
               <td className="py-2">{r.commissionPct.toFixed(1)}</td>
               <td className="py-2">{r.paidPriorityScore}</td>
+              <td className="py-2">
+                <PartnershipBillingPanel
+                  partnershipId={r.id}
+                  tier={r.subscriptionTier}
+                  billingStatus={r.billingStatus}
+                  billingEmail={r.billingEmail}
+                />
+              </td>
               <td className="py-2 text-right">
                 <Badge
                   variant={r.active ? 'default' : 'secondary'}

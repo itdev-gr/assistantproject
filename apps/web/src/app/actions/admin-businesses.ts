@@ -28,6 +28,7 @@ export async function upsertBusiness(raw: unknown) {
     phone: b.phone,
     whatsapp: b.whatsapp,
     website: b.website,
+    billing_email: b.billingEmail,
     price_band: b.priceBand,
     tags: b.tags,
     opening_hours_json: (b.openingHours ?? {}) as Json,
