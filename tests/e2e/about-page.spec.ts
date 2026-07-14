@@ -56,9 +56,27 @@ test.describe('about page navigation on small screens', () => {
     await expect(
       page.getByRole('navigation').getByRole('link', { name: 'About', exact: true }),
     ).toBeVisible();
+    await expect(page.getByRole('navigation').getByRole('link', { name: 'Sign in' })).toBeVisible();
+
+    const overflow = await page.evaluate(
+      () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+    );
+    expect(overflow).toBeLessThanOrEqual(0);
+  });
+});
+
+test.describe('about page navigation on small screens (Greek locale)', () => {
+  test.use({ locale: 'el', viewport: { width: 375, height: 667 } });
+
+  test('Greek header fits at 375px with Σχετικά link and Είσοδος visible, no horizontal overflow', async ({
+    page,
+  }) => {
+    await page.goto('/about');
+
     await expect(
-      page.getByRole('navigation').getByRole('link', { name: 'Sign in' }),
+      page.getByRole('navigation').getByRole('link', { name: 'Σχετικά', exact: true }),
     ).toBeVisible();
+    await expect(page.getByRole('navigation').getByRole('link', { name: 'Είσοδος' })).toBeVisible();
 
     const overflow = await page.evaluate(
       () => document.documentElement.scrollWidth - document.documentElement.clientWidth,

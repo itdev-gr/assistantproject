@@ -76,9 +76,7 @@ export function SiteHeader({ locale, overlay = false }: Props) {
             )}
           >
             <span className="sm:hidden">{locale === 'en' ? 'ΕΛ' : 'EN'}</span>
-            <span className="hidden sm:inline">
-              {locale === 'en' ? 'Ελληνικά' : 'English'}
-            </span>
+            <span className="hidden sm:inline">{locale === 'en' ? 'Ελληνικά' : 'English'}</span>
           </a>
           <Button
             asChild
