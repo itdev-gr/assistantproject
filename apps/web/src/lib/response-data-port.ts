@@ -4,6 +4,7 @@ import type { ResponseDataPort } from '@aga/response-engine';
 import { DEFAULT_RULES, type RecommendationRules } from '@aga/response-engine';
 import type { RecommendationCard } from '@aga/api-contracts';
 import { signReferral } from '@aga/db/referral-token';
+import { keywordMatchScore, haversineKm, isOpenNow } from './recommendation-signals';
 
 type DB = SupabaseClient<Database>;
 
@@ -11,6 +12,8 @@ interface RequestCtx {
   sessionId: string;
   appOrigin: string;
   hmacSecret: string;
+  /** Hotel's own coordinates, when known — enables real proximity ranking/display. */
+  hotelLocation?: { lat: number; lng: number };
 }
 
 /**
@@ -78,7 +81,7 @@ export function buildDataPort(supabase: DB, ctx: RequestCtx): ResponseDataPort {
       }
     },
 
-    async searchRecommendationCandidates({ hotelId, intent }) {
+    async searchRecommendationCandidates({ hotelId, intent, locale, text, guestLocalTime }) {
       const categorySlug = INTENT_TO_CATEGORY[intent];
       if (!categorySlug) return { candidates: [], cardFor: async () => null };
 
@@ -90,6 +93,7 @@ export function buildDataPort(supabase: DB, ctx: RequestCtx): ResponseDataPort {
             id, name, lat, lng, website, phone,
             description_i18n,
             opening_hours_json,
+            tags,
             images,
             price_band,
             category:business_categories!inner ( slug ),
@@ -109,6 +113,8 @@ export function buildDataPort(supabase: DB, ctx: RequestCtx): ResponseDataPort {
         website: string | null;
         phone: string | null;
         description_i18n: Record<string, string>;
+        opening_hours_json: unknown;
+        tags: string[];
         price_band: number | null;
         category: { slug: string };
         partnerships: Array<{
@@ -121,13 +127,36 @@ export function buildDataPort(supabase: DB, ctx: RequestCtx): ResponseDataPort {
         }>;
       }>;
 
+      // Real relevance signals per candidate (see recommendation-signals.ts).
+      // `openNow` here feeds the ranking engine, whose RankingCandidate.openNow
+      // is a strict boolean (no "unknown" state) — see cardFor below for the
+      // guest-facing nullable value. When hours are unknown we pass `true`:
+      // that reproduces this data port's previous behavior (which hardcoded
+      // `openNow: true` for every candidate, since no hotel had hours data),
+      // so today's ranking doesn't regress for businesses that still lack
+      // opening_hours_json. It is *not* neutral in scoreOne's math (timeMatch
+      // is 1.0 when true vs 0.3 when false — there's no third, neutral value
+      // in a boolean field), but it is the least-surprising choice: an unknown
+      // schedule is treated as "no evidence it's closed" rather than penalized.
+      const computeSignals = (b: (typeof rows)[number]) => {
+        const keywordMatch = keywordMatchScore(text, {
+          name: b.name,
+          tags: b.tags,
+          description: b.description_i18n?.[locale] ?? null,
+        });
+        const distanceKm = ctx.hotelLocation ? haversineKm(ctx.hotelLocation, { lat: b.lat, lng: b.lng }) : 1.0;
+        const isOpen = isOpenNow(b.opening_hours_json, guestLocalTime);
+        return { keywordMatch, distanceKm, isOpen };
+      };
+
       const candidates = rows.map((b) => {
         const ours = b.partnerships.find((p) => p.hotel_id === hotelId && p.active) ?? null;
+        const { keywordMatch, distanceKm, isOpen } = computeSignals(b);
         return {
           businessId: b.id,
-          keywordMatch: 0.5,
-          distanceKm: 1.0,
-          openNow: true,
+          keywordMatch,
+          distanceKm,
+          openNow: isOpen ?? true,
           categoryFit: true,
           preferenceMatch: 0,
           partnership: ours
@@ -148,6 +177,11 @@ export function buildDataPort(supabase: DB, ctx: RequestCtx): ResponseDataPort {
           const b = byId.get(id);
           if (!b) return null;
           const partnership = b.partnerships.find((p) => p.hotel_id === hotelId && p.active) ?? null;
+          // Guest-facing card: unlike the ranking candidate above, an unknown
+          // distance/openNow status is surfaced as null rather than a neutral
+          // stub — we never want to show a fabricated distance or "open" badge.
+          const distanceKm = ctx.hotelLocation ? haversineKm(ctx.hotelLocation, { lat: b.lat, lng: b.lng }) : null;
+          const isOpen = isOpenNow(b.opening_hours_json, guestLocalTime);
 
           let referralUrl: string;
           if (partnership) {
@@ -179,8 +213,8 @@ export function buildDataPort(supabase: DB, ctx: RequestCtx): ResponseDataPort {
             name: b.name,
             category: b.category.slug,
             description: b.description_i18n.en ?? b.description_i18n.el ?? null,
-            distanceKm: null,
-            openNow: null,
+            distanceKm,
+            openNow: isOpen,
             priceBand: b.price_band,
             imageUrl: null,
             promoted: partnership !== null && partnership.subscription_tier !== 'free',

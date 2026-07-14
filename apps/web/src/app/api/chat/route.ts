@@ -31,6 +31,18 @@ export async function POST(req: Request) {
   }
   const hotel = hotelRow as { id: string; name: string; timezone: string; default_locale: string | null };
 
+  // public_hotels doesn't expose lat/lng (see supabase/migrations/0004_rls_helpers_and_views.sql),
+  // so fetch coordinates from the underlying table via the service client.
+  const { data: hotelCoords } = await supabase
+    .from('hotels')
+    .select('lat, lng')
+    .eq('id', hotel.id)
+    .maybeSingle();
+  const hotelLocation =
+    hotelCoords?.lat != null && hotelCoords?.lng != null
+      ? { lat: hotelCoords.lat, lng: hotelCoords.lng }
+      : undefined;
+
   const secret = requireEnv('SESSION_HMAC_SECRET');
   const cookie = req.headers.get('cookie') ?? '';
   const tokenName = `aga_session_${hotel.id.slice(0, 8)}`;
@@ -85,7 +97,7 @@ export async function POST(req: Request) {
   });
 
   const appOrigin = process.env.NEXT_PUBLIC_APP_URL ?? new URL(req.url).origin;
-  const dataPort = buildDataPort(supabase, { sessionId, appOrigin, hmacSecret: secret });
+  const dataPort = buildDataPort(supabase, { sessionId, appOrigin, hmacSecret: secret, hotelLocation });
   const ruleProvider = new RuleBasedProvider(dataPort);
   const { data: flag } = await supabase
     .from('feature_flags')
@@ -105,6 +117,7 @@ export async function POST(req: Request) {
     locale,
     message,
     history,
+    hotelLocation,
     guestLocalTime: nowInTimeZone(hotel.timezone),
     roomId,
   });
