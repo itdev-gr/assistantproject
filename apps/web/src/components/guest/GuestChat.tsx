@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useConversation, type ConversationMessage } from '@aga/chat';
 import type { RecommendationCard } from '@aga/api-contracts';
@@ -17,6 +17,11 @@ export function GuestChat({ hotelSlug }: Props) {
   const tFb = useTranslations('guest.fallback');
   const [input, setInput] = useState('');
   const { messages, status, send } = useConversation({ hotelSlug });
+  const messagesEndRef = useRef<HTMLLIElement>(null);
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }, [messages, status]);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -27,7 +32,7 @@ export function GuestChat({ hotelSlug }: Props) {
   }
 
   return (
-    <div className="flex flex-1 flex-col">
+    <div className="flex min-h-0 flex-1 flex-col">
       <ol className="flex-1 space-y-3 overflow-y-auto p-4">
         {messages.length === 0 && (
           <li className="pt-12 text-center text-sm text-muted-foreground">{t('placeholder')}</li>
@@ -41,6 +46,7 @@ export function GuestChat({ hotelSlug }: Props) {
         {status === 'error' && (
           <li className="text-center text-xs text-destructive">{tFb('noInfo')}</li>
         )}
+        <li ref={messagesEndRef} aria-hidden className="h-px" />
       </ol>
 
       <form onSubmit={onSubmit} className="flex items-center gap-2 border-t bg-background p-3">
