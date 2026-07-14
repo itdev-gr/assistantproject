@@ -4,6 +4,7 @@ import { GuestChat } from '@/components/guest/GuestChat';
 import { SiteHeader } from '@/components/public/SiteHeader';
 import { SiteFooter } from '@/components/public/SiteFooter';
 import { BusinessCard } from '@/components/public/BusinessCard';
+import { FloatingAssistant } from '@/components/public/FloatingAssistant';
 import { listHotelDirectory } from '@/lib/hotel-directory';
 import { Card, CardContent } from '@aga/ui';
 
@@ -91,7 +92,7 @@ export default async function GuestHotelPage({ params, searchParams }: Props) {
             )}
           </div>
 
-          <aside className="lg:sticky lg:top-20 lg:self-start">
+          <aside className="hidden lg:sticky lg:top-20 lg:block lg:self-start">
             <Card className="h-[600px] overflow-hidden">
               <CardContent className="flex h-full flex-col p-0">
                 <div className="border-b px-4 py-3 text-sm font-semibold">
@@ -105,6 +106,10 @@ export default async function GuestHotelPage({ params, searchParams }: Props) {
       </main>
 
       <SiteFooter locale={locale} />
+
+      <div className="lg:hidden">
+        <FloatingAssistant locale={locale} hotelSlug={hotelSlug} />
+      </div>
     </div>
   );
 }

@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { setRequestLocale } from 'next-intl/server';
 import { SiteHeader } from '@/components/public/SiteHeader';
 import { SiteFooter } from '@/components/public/SiteFooter';
+import { FloatingAssistant } from '@/components/public/FloatingAssistant';
 import { PageMotion } from '@/components/public/motion';
 import { AboutHero } from '@/components/public/about/AboutHero';
 import { AboutStory } from '@/components/public/about/AboutStory';
@@ -102,6 +103,10 @@ export default async function AboutPage({ params }: Props) {
           <AboutCta locale={locale} />
         </main>
         <SiteFooter locale={locale} />
+        <FloatingAssistant
+          locale={locale}
+          hotelSlug={process.env.NEXT_PUBLIC_DEMO_HOTEL_SLUG ?? 'aegean-blue'}
+        />
       </div>
     </PageMotion>
   );

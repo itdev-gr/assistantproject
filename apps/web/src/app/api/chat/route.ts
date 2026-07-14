@@ -5,6 +5,8 @@ import { detectLocale } from '@aga/i18n';
 import { createSupabaseServiceClient } from '@aga/db/service';
 import { signSessionToken, verifySessionToken } from '@aga/db/session-token';
 import { buildDataPort } from '@/lib/response-data-port';
+import { OpenAiProvider } from '@/lib/openai-provider';
+import { checkAndRecordRateLimit, hashRateKey } from '@/lib/rate-limit';
 
 export const runtime = 'nodejs';
 
@@ -21,19 +23,26 @@ export async function POST(req: Request) {
 
   const { data: hotelRow, error } = await supabase
     .from('public_hotels')
-    .select('id, timezone, default_locale')
+    .select('id, name, timezone, default_locale')
     .eq('slug', hotelSlug)
     .maybeSingle();
-  if (error || !hotelRow || !hotelRow.id || !hotelRow.timezone) {
+  if (error || !hotelRow || !hotelRow.id || !hotelRow.name || !hotelRow.timezone) {
     return NextResponse.json({ error: 'hotel_not_found' }, { status: 404 });
   }
-  const hotel = hotelRow as { id: string; timezone: string; default_locale: string | null };
+  const hotel = hotelRow as { id: string; name: string; timezone: string; default_locale: string | null };
 
   const secret = requireEnv('SESSION_HMAC_SECRET');
   const cookie = req.headers.get('cookie') ?? '';
   const tokenName = `aga_session_${hotel.id.slice(0, 8)}`;
   const cookieToken = parseCookie(cookie, tokenName);
   let sessionId = cookieToken ? verifySessionToken(cookieToken, secret) : null;
+
+  const ip = (req.headers.get('x-forwarded-for') ?? '').split(',')[0]?.trim() || 'unknown';
+  const { limited } = await checkAndRecordRateLimit(supabase, {
+    session: sessionId ? hashRateKey('session', sessionId, secret) : undefined,
+    ip: hashRateKey('ip', ip, secret),
+  });
+  if (limited) return NextResponse.json({ error: 'rate_limited' }, { status: 429 });
 
   if (!sessionId) {
     const { data: created, error: sessionErr } = await supabase
@@ -51,6 +60,23 @@ export async function POST(req: Request) {
     sessionId = created.id;
   }
 
+  // Fetch recent conversation history BEFORE inserting the new guest message,
+  // so history holds prior turns only, not the current message.
+  const { data: recent } = await supabase
+    .from('messages')
+    .select('id, role, content, intent_slug, created_at')
+    .eq('session_id', sessionId)
+    .in('role', ['guest', 'assistant'])
+    .order('created_at', { ascending: false })
+    .limit(10);
+  const history = (recent ?? []).reverse().map((m) => ({
+    id: m.id,
+    role: m.role as 'guest' | 'assistant',
+    content: m.content,
+    intent: m.intent_slug,
+    createdAt: m.created_at,
+  }));
+
   // Persist guest message
   await supabase.from('messages').insert({
     session_id: sessionId,
@@ -59,15 +85,26 @@ export async function POST(req: Request) {
   });
 
   const appOrigin = process.env.NEXT_PUBLIC_APP_URL ?? new URL(req.url).origin;
-  const provider = new RuleBasedProvider(
-    buildDataPort(supabase, { sessionId, appOrigin, hmacSecret: secret }),
-  );
+  const dataPort = buildDataPort(supabase, { sessionId, appOrigin, hmacSecret: secret });
+  const ruleProvider = new RuleBasedProvider(dataPort);
+  const { data: flag } = await supabase
+    .from('feature_flags')
+    .select('enabled')
+    .eq('flag', 'llm_chat')
+    .or(`hotel_id.eq.${hotel.id},hotel_id.is.null`)
+    .order('hotel_id', { ascending: false, nullsFirst: false })
+    .limit(1)
+    .maybeSingle();
+  const provider =
+    flag?.enabled && process.env.OPENAI_API_KEY
+      ? new OpenAiProvider({ admin: supabase, data: dataPort, fallback: ruleProvider, hotelName: hotel.name })
+      : ruleProvider;
   const result = await provider.respond({
     sessionId,
     hotelId: hotel.id,
     locale,
     message,
-    history: [],
+    history,
     guestLocalTime: nowInTimeZone(hotel.timezone),
     roomId,
   });
