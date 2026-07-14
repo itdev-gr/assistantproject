@@ -108,3 +108,31 @@ test.describe('about page redesign', () => {
     await expect(firstAnswer).toBeVisible();
   });
 });
+
+test.describe('about page SEO', () => {
+  test('has hreflang alternates and canonical', async ({ page }) => {
+    await page.goto('/en/about');
+    await expect(page.locator('link[rel="alternate"][hreflang="en"]')).toBeAttached();
+    await expect(page.locator('link[rel="alternate"][hreflang="el"]')).toBeAttached();
+    await expect(page.locator('link[rel="alternate"][hreflang="x-default"]')).toBeAttached();
+    await expect(page.locator('link[rel="canonical"]')).toBeAttached();
+  });
+
+  test('has OpenGraph image and JSON-LD structured data', async ({ page }) => {
+    await page.goto('/en/about');
+    const ogImage = page.locator('meta[property="og:image"]');
+    await expect(ogImage).toBeAttached();
+    expect(await ogImage.getAttribute('content')).toContain('about-hero');
+
+    const scripts = await page
+      .locator('script[type="application/ld+json"]')
+      .allTextContents();
+    const parsed = scripts.map((s) => JSON.parse(s));
+    const types = parsed.map((p) => p['@type']);
+    expect(types).toContain('AboutPage');
+    expect(types).toContain('FAQPage');
+    const faq = parsed.find((p) => p['@type'] === 'FAQPage');
+    expect(faq.mainEntity).toHaveLength(6);
+    expect(faq.mainEntity[0]['@type']).toBe('Question');
+  });
+});

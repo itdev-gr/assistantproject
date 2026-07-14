@@ -2,6 +2,7 @@ import './globals.css';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? 'https://assistantproject-web.vercel.app'),
   title: 'AI Guest Assistant',
   description: 'Curated answers and recommendations for guests of partner hotels.',
 };
