@@ -17,9 +17,9 @@ export function ReindexKnowledgeButton({ locale }: { locale: string }) {
         setMessage(t('Reindex failed — try again.', 'Η επανευρετηρίαση απέτυχε — δοκιμάστε ξανά.'));
         return;
       }
-      const updated = res.results.reduce((sum, r) => sum + r.upserted, 0);
-      const deleted = res.results.reduce((sum, r) => sum + r.deleted, 0);
-      const unchanged = res.results.reduce((sum, r) => sum + r.skipped, 0);
+      const updated = res.results.reduce((sum, r) => sum + ('error' in r ? 0 : r.upserted), 0);
+      const deleted = res.results.reduce((sum, r) => sum + ('error' in r ? 0 : r.deleted), 0);
+      const unchanged = res.results.reduce((sum, r) => sum + ('error' in r ? 0 : r.skipped), 0);
       setMessage(
         t(
           `Indexed: ${updated} updated, ${deleted} deleted, ${unchanged} unchanged.`,

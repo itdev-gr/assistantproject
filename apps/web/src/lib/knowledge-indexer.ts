@@ -24,6 +24,8 @@ export interface ReindexResult {
   skipped: number;
 }
 
+export type ReindexOutcome = ReindexResult | { hotelId: string; error: string };
+
 interface RawOfferingRow {
   title: string;
   description: string | null;
@@ -257,13 +259,18 @@ export async function reindexHotelKnowledge(admin: DB, hotelId: string): Promise
 }
 
 /** Reindexes every active hotel, sequentially (keeps embedding-API load predictable). */
-export async function reindexAllHotels(admin: DB): Promise<ReindexResult[]> {
+export async function reindexAllHotels(admin: DB): Promise<ReindexOutcome[]> {
   const { data: hotels, error } = await admin.from('hotels').select('id').eq('active', true);
   assertNoError(error, 'Failed to fetch active hotels');
 
-  const results: ReindexResult[] = [];
+  const results: ReindexOutcome[] = [];
   for (const hotel of hotels ?? []) {
-    results.push(await reindexHotelKnowledge(admin, hotel.id));
+    try {
+      results.push(await reindexHotelKnowledge(admin, hotel.id));
+    } catch (err) {
+      console.error('reindex failed for hotel', hotel.id, err instanceof Error ? err.message : err);
+      results.push({ hotelId: hotel.id, error: err instanceof Error ? err.message : 'unknown' });
+    }
   }
   return results;
 }
