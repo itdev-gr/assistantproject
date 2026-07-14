@@ -82,7 +82,7 @@ export const DEFAULT_INTENTS: IntentDefinition[] = [
   },
   {
     slug: 'recommend_restaurant',
-    keywordsEl: ['εστιατοριο', 'ταβερνα', 'φαγητο', 'γευμα', 'δειπνο'],
+    keywordsEl: ['εστιατοριο', 'ταβερνα', 'φαγητο', 'γευμα', 'δειπνο', 'φαμε', 'φαω', 'τρωμε', 'ψαρι', 'πειναω'],
     keywordsEn: ['restaurant', 'tavern', 'food', 'eat', 'dinner', 'lunch', 'where to eat'],
     priority: 6,
   },
