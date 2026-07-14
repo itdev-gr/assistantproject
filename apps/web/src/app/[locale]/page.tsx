@@ -6,6 +6,7 @@ import { FeaturedStrip } from '@/components/public/FeaturedStrip';
 import { AboutSection } from '@/components/public/AboutSection';
 import { DirectoryBrowser } from '@/components/public/DirectoryBrowser';
 import { SiteFooter } from '@/components/public/SiteFooter';
+import { FloatingAssistant } from '@/components/public/FloatingAssistant';
 import { PageMotion } from '@/components/public/motion';
 
 export const revalidate = 300;
@@ -32,6 +33,10 @@ export default async function HomePage({ params }: Props) {
         <AboutSection locale={locale} />
         <DirectoryBrowser locale={locale} businesses={businesses} categories={categories} />
         <SiteFooter locale={locale} categories={categories} />
+        <FloatingAssistant
+          locale={locale}
+          hotelSlug={process.env.NEXT_PUBLIC_DEMO_HOTEL_SLUG ?? 'aegean-blue'}
+        />
       </div>
     </PageMotion>
   );
