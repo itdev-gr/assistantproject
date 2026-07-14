@@ -52,7 +52,7 @@ Key structural fact driving the design: **businesses have no app logins** (only 
 ### Error handling
 - Webhook always 200s after recording the event (Stripe retries on non-2xx); processing failures are logged and the event row kept without `processed_at` for reprocessing.
 - Checkout link creation fails loudly in the admin UI if `billing_email` is missing or Stripe errors.
-- Tier is only ever changed by webhook events (single writer), so admin UI and Stripe can't fight.
+- Tier is only ever changed by webhook events (single writer), so admin UI and Stripe can't fight. One deliberate exception: the pre-existing partnerships editor lets the super-admin set `subscription_tier` directly as a manual override (comps, migrations, corrections) — such overrides are not synced to Stripe and the next webhook event for that partnership's subscription wins.
 
 ### Testing
 - Unit tests (vitest, colocated like existing web tests) for `applyStripeEvent` covering: completed checkout sets tier/status; payment failure sets `past_due` without demoting; deletion demotes to `free`; duplicate event ids are no-ops.

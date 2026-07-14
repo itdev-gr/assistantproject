@@ -13,6 +13,7 @@ import {
   Handshake,
   ListChecks,
   Receipt,
+  CreditCard,
   Settings,
 } from 'lucide-react';
 
@@ -27,6 +28,7 @@ const items = [
   { href: '/owner/partners', key: 'partners', Icon: Handshake },
   { href: '/owner/referrals', key: 'referrals', Icon: ListChecks },
   { href: '/owner/bookings', key: 'bookings', Icon: Receipt },
+  { href: '/owner/billing', key: 'billing', Icon: CreditCard },
   { href: '/owner/settings', key: 'settings', Icon: Settings },
 ] as const;
 

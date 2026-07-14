@@ -5,7 +5,7 @@
     "build": {
       "dependsOn": ["^build"],
       "inputs": ["$TURBO_DEFAULT$", ".env*"],
-      "env": ["SUPABASE_SERVICE_ROLE_KEY", "SESSION_HMAC_SECRET", "NODE_ENV", "VERCEL", "VERCEL_ENV", "VERCEL_URL"],
+      "env": ["SUPABASE_SERVICE_ROLE_KEY", "SESSION_HMAC_SECRET", "NODE_ENV", "VERCEL", "VERCEL_ENV", "VERCEL_URL", "STRIPE_SECRET_KEY", "STRIPE_WEBHOOK_SECRET", "STRIPE_PRICE_STANDARD", "STRIPE_PRICE_FEATURED", "STRIPE_PRICE_EXCLUSIVE", "STRIPE_PRICE_HOTEL", "CRON_SECRET"],
       "outputs": [".next/**", "!.next/cache/**", "dist/**", "build/**"]
     },
     "lint": {

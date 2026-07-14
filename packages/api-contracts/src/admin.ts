@@ -12,6 +12,11 @@ const optionalText = z.preprocess(
   z.string().nullable(),
 );
 
+const optionalEmail = z.preprocess(
+  (v) => (v === '' || v == null ? null : v),
+  z.string().email().nullable(),
+);
+
 /** Accepts a comma-separated string from a text input, or an actual array. */
 const tagsField = z.preprocess(
   (v) =>
@@ -32,6 +37,7 @@ export const businessUpsertSchema = z.object({
   phone: optionalText,
   whatsapp: optionalText,
   website: optionalUrl,
+  billingEmail: optionalEmail,
   priceBand: z.number().int().min(1).max(4),
   tags: tagsField,
   openingHours: z.record(z.string(), z.unknown()).nullable(),

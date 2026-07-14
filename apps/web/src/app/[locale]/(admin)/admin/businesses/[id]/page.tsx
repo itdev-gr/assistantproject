@@ -19,7 +19,7 @@ export default async function EditBusinessPage({ params }: Props) {
     supabase
       .from('businesses')
       .select(
-        'id, name, category_id, description_i18n, lat, lng, address, phone, whatsapp, website, price_band, tags, opening_hours_json, images, verified, active, webhook_secret',
+        'id, name, category_id, description_i18n, lat, lng, address, phone, whatsapp, website, billing_email, price_band, tags, opening_hours_json, images, verified, active, webhook_secret',
       )
       .eq('id', id)
       .maybeSingle(),
@@ -50,6 +50,7 @@ export default async function EditBusinessPage({ params }: Props) {
           phone: data.phone,
           whatsapp: data.whatsapp,
           website: data.website,
+          billingEmail: data.billing_email,
           priceBand: data.price_band ?? 2,
           tags: data.tags ?? [],
           openingHours: (data.opening_hours_json as Record<string, unknown>) ?? null,

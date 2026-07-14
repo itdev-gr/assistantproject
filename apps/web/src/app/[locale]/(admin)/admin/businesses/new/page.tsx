@@ -39,6 +39,7 @@ export default async function NewBusinessPage({ params }: Props) {
           phone: null,
           whatsapp: null,
           website: null,
+          billingEmail: null,
           priceBand: 2,
           tags: [],
           openingHours: null,
