@@ -1,5 +1,9 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
+  "buildCommand": "pnpm turbo run build --filter=@aga/web",
+  "installCommand": "pnpm install --frozen-lockfile",
+  "framework": "nextjs",
+  "outputDirectory": ".next",
   "crons": [{ "path": "/api/cron/invoice-commissions", "schedule": "0 6 1 * *" }],
   "headers": [
     {
