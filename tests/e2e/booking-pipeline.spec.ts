@@ -1,9 +1,19 @@
 import { test, expect } from '@playwright/test';
 
+const OWNER_EMAIL = process.env.AGA_E2E_OWNER_EMAIL;
+const OWNER_PASSWORD = process.env.AGA_E2E_OWNER_PASSWORD;
+
+if (!OWNER_EMAIL || !OWNER_PASSWORD) {
+  throw new Error(
+    'Set AGA_E2E_OWNER_EMAIL / AGA_E2E_OWNER_PASSWORD — see README §Tests',
+  );
+}
+
 /**
  * End-to-end booking pipeline. Assumes the live database has at least one hotel
- * (slug 'aegean-blue') with active partnerships, plus an owner user
- * 'owner-aegean@itdev.gr' with password 'Owner12345'.
+ * (slug 'aegean-blue') with active partnerships, plus an owner user identified
+ * by AGA_E2E_OWNER_EMAIL / AGA_E2E_OWNER_PASSWORD (see README §Tests — run
+ * scripts/reset-e2e-owner.ts once to sync the remote demo owner's password).
  *
  * Run locally:  pnpm exec playwright test
  */
@@ -31,8 +41,8 @@ test.describe('booking pipeline', () => {
 
     // 3. Owner signs in.
     await page.goto('/en/login');
-    await page.getByRole('textbox', { name: 'Email' }).fill('owner-aegean@itdev.gr');
-    await page.getByRole('textbox', { name: 'Password' }).fill('Owner12345');
+    await page.getByRole('textbox', { name: 'Email' }).fill(OWNER_EMAIL);
+    await page.getByRole('textbox', { name: 'Password' }).fill(OWNER_PASSWORD);
     await page.getByRole('button', { name: 'Sign in' }).click();
     await page.waitForURL(/\/owner/);
 

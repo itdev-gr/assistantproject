@@ -71,7 +71,29 @@ pnpm test             # all unit tests (response-engine, db helpers)
 pnpm db:test          # pgTAP RLS tests against local Supabase
 pnpm typecheck
 pnpm lint
+pnpm exec playwright test   # e2e (needs the dev server running + creds below)
 ```
+
+### E2E credentials
+
+`tests/e2e/booking-pipeline.spec.ts` signs in as the demo hotel owner and
+reads its credentials from `AGA_E2E_OWNER_EMAIL` / `AGA_E2E_OWNER_PASSWORD`
+(see `.env.example`) — the spec fails fast at load time if either is unset.
+
+The demo owner user already exists in the linked Supabase project; if its
+password is unknown or has drifted, reset it **once** with
+`scripts/reset-e2e-owner.ts`, which uses the Supabase Admin API (service-role
+key) to set a new password:
+
+```bash
+NEXT_PUBLIC_SUPABASE_URL=... SUPABASE_SERVICE_ROLE_KEY=... \
+AGA_E2E_OWNER_EMAIL=owner-aegean@itdev.gr AGA_E2E_OWNER_PASSWORD=... \
+  node scripts/reset-e2e-owner.ts
+```
+
+Then export `AGA_E2E_OWNER_EMAIL` / `AGA_E2E_OWNER_PASSWORD` (same values)
+before running the playwright suite. Never commit real values — `.env.local`
+is git-ignored and `.env.example` only carries placeholders.
 
 ## Embedding the widget on a hotel website
 
