@@ -3,6 +3,7 @@ import type { DirectoryBusiness } from '@/lib/public-directory';
 import { Badge, Card, CardContent, cn } from '@aga/ui';
 import { MapPin, Navigation } from 'lucide-react';
 import { formatDistanceKm } from '@aga/i18n';
+import { CategoryGlyph } from './category-icons';
 
 interface Props {
   locale: string;
@@ -18,7 +19,7 @@ export function BusinessCard({ locale, business }: Props) {
       href={`/p/${business.id}`}
       className="group block focus:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-lg"
     >
-      <Card className="h-full overflow-hidden transition-shadow hover:shadow-md">
+      <Card className="h-full overflow-hidden transition-[box-shadow,transform] duration-200 hover:-translate-y-1 hover:shadow-lg">
         <div className="relative aspect-[16/10] w-full overflow-hidden bg-gradient-to-br from-accent/40 to-muted">
           {business.images[0] ? (
             <img
@@ -81,20 +82,3 @@ export function BusinessCard({ locale, business }: Props) {
   );
 }
 
-const ICONS: Record<string, string> = {
-  restaurants: '🍽️',
-  'bars-cafes': '🍸',
-  activities: '🥾',
-  'boat-trips': '⛵',
-  taxis: '🚖',
-  shops: '🛍️',
-  events: '🎉',
-};
-
-function CategoryGlyph({ slug }: { slug: string }) {
-  return (
-    <div className="flex h-full w-full items-center justify-center text-5xl opacity-60">
-      <span aria-hidden>{ICONS[slug] ?? '📍'}</span>
-    </div>
-  );
-}

@@ -1,37 +1,84 @@
+'use client';
+
+import { useState } from 'react';
+import { motion, useMotionValueEvent, useScroll } from 'framer-motion';
+import { Waves } from 'lucide-react';
 import { Link } from '@/i18n/routing';
-import { Button } from '@aga/ui';
+import { Button, cn } from '@aga/ui';
 
 interface Props {
   locale: string;
+  /** Transparent over the hero, turning solid after scrolling. */
+  overlay?: boolean;
 }
 
-export function SiteHeader({ locale }: Props) {
+export function SiteHeader({ locale, overlay = false }: Props) {
   const otherLocale = locale === 'en' ? 'el' : 'en';
+  const { scrollY } = useScroll();
+  const [scrolled, setScrolled] = useState(false);
+  useMotionValueEvent(scrollY, 'change', (y) => setScrolled(y > 40));
+
+  const transparent = overlay && !scrolled;
+
   return (
-    <header className="sticky top-0 z-30 border-b bg-background/80 backdrop-blur">
-      <div className="mx-auto flex h-14 max-w-6xl items-center gap-4 px-4">
-        <Link href="/" className="flex items-center gap-2 text-base font-semibold">
-          <span aria-hidden>🌊</span>
+    <motion.header
+      initial={false}
+      className={cn(
+        'top-0 z-30 transition-colors duration-300',
+        overlay ? 'fixed inset-x-0' : 'sticky border-b bg-background/80 backdrop-blur',
+        overlay &&
+          (transparent
+            ? 'border-b border-transparent bg-transparent'
+            : 'border-b border-border bg-background/80 backdrop-blur'),
+      )}
+    >
+      <div className="mx-auto flex h-16 max-w-6xl items-center gap-4 px-4">
+        <Link
+          href="/"
+          className={cn(
+            'flex items-center gap-2 whitespace-nowrap text-base font-semibold transition-colors duration-300',
+            transparent ? 'text-white' : 'text-foreground',
+          )}
+        >
+          <Waves className="h-5 w-5 shrink-0" aria-hidden />
           {locale === 'en' ? 'Local Guide' : 'Τοπικός Οδηγός'}
         </Link>
         <nav className="ml-auto flex items-center gap-1 text-sm">
           <Link
             href="/"
-            className="rounded-md px-3 py-1.5 text-muted-foreground hover:text-foreground"
+            className={cn(
+              'hidden rounded-md px-3 py-2 transition-colors duration-200 sm:block',
+              transparent
+                ? 'text-white/80 hover:text-white'
+                : 'text-muted-foreground hover:text-foreground',
+            )}
           >
             {locale === 'en' ? 'Browse' : 'Περιήγηση'}
           </Link>
           <a
             href={`/${otherLocale}`}
-            className="rounded-md px-3 py-1.5 text-muted-foreground hover:text-foreground"
+            className={cn(
+              'rounded-md px-3 py-2 transition-colors duration-200',
+              transparent
+                ? 'text-white/80 hover:text-white'
+                : 'text-muted-foreground hover:text-foreground',
+            )}
           >
             {locale === 'en' ? 'Ελληνικά' : 'English'}
           </a>
-          <Button asChild size="sm" variant="outline">
+          <Button
+            asChild
+            size="sm"
+            variant="outline"
+            className={cn(
+              transparent &&
+                'border-white/40 bg-white/10 text-white backdrop-blur-sm hover:bg-white/20 hover:text-white',
+            )}
+          >
             <Link href="/login">{locale === 'en' ? 'Sign in' : 'Είσοδος'}</Link>
           </Button>
         </nav>
       </div>
-    </header>
+    </motion.header>
   );
 }
