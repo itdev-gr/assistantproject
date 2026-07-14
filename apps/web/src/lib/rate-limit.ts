@@ -29,51 +29,71 @@ export function hashRateKey(kind: 'session' | 'ip', value: string, secret: strin
  */
 export async function checkAndRecordRateLimit(
   admin: SupabaseClient<Database>,
-  keys: { session: string; ip: string },
+  keys: { session?: string; ip: string },
 ): Promise<{ limited: boolean }> {
   const windowStart = new Date(Date.now() - RATE_LIMITS.windowMinutes * 60_000).toISOString();
 
   try {
-    const [sessionResult, ipResult] = await Promise.all([
-      admin
-        .from('rate_limit_events')
-        .select('*', { count: 'exact', head: true })
-        .eq('key', keys.session)
-        .gt('created_at', windowStart),
-      admin
+    let sessionResult: { count: number | null; error: { message: string } | null } | undefined;
+    let ipResult: { count: number | null; error: { message: string } | null };
+
+    if (keys.session) {
+      [sessionResult, ipResult] = await Promise.all([
+        admin
+          .from('rate_limit_events')
+          .select('*', { count: 'exact', head: true })
+          .eq('key', keys.session)
+          .gt('created_at', windowStart),
+        admin
+          .from('rate_limit_events')
+          .select('*', { count: 'exact', head: true })
+          .eq('key', keys.ip)
+          .gt('created_at', windowStart),
+      ]);
+    } else {
+      ipResult = await admin
         .from('rate_limit_events')
         .select('*', { count: 'exact', head: true })
         .eq('key', keys.ip)
-        .gt('created_at', windowStart),
-    ]);
-    if (sessionResult.error || ipResult.error) {
+        .gt('created_at', windowStart);
+    }
+
+    if ((sessionResult && sessionResult.error) || ipResult.error) {
       console.error(
         'rate limit count failed:',
-        (sessionResult.error ?? ipResult.error)?.message,
+        (sessionResult?.error ?? ipResult.error)?.message,
       );
       return { limited: false };
     }
 
-    if (isRateLimited({ session: sessionResult.count ?? 0, ip: ipResult.count ?? 0 })) {
+    if (isRateLimited({ session: sessionResult?.count ?? 0, ip: ipResult.count ?? 0 })) {
       return { limited: true };
     }
 
+    const insertKeys = [];
+    if (keys.session) insertKeys.push({ key: keys.session });
+    insertKeys.push({ key: keys.ip });
+
     const { error: insertErr } = await admin
       .from('rate_limit_events')
-      .insert([{ key: keys.session }, { key: keys.ip }]);
+      .insert(insertKeys);
     if (insertErr) {
       console.error('rate limit record failed:', insertErr.message);
       return { limited: false };
     }
 
-    // Fire-and-forget: prune rows older than 2 windows for these two keys.
+    // Fire-and-forget: prune rows older than 2 windows for these keys.
     const cleanupBefore = new Date(
       Date.now() - 2 * RATE_LIMITS.windowMinutes * 60_000,
     ).toISOString();
+    const cleanupKeys = [];
+    if (keys.session) cleanupKeys.push(keys.session);
+    cleanupKeys.push(keys.ip);
+
     void admin
       .from('rate_limit_events')
       .delete()
-      .in('key', [keys.session, keys.ip])
+      .in('key', cleanupKeys)
       .lt('created_at', cleanupBefore)
       .then(({ error }) => {
         if (error) console.error('rate limit cleanup failed:', error.message);

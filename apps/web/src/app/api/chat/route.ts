@@ -37,6 +37,13 @@ export async function POST(req: Request) {
   const cookieToken = parseCookie(cookie, tokenName);
   let sessionId = cookieToken ? verifySessionToken(cookieToken, secret) : null;
 
+  const ip = (req.headers.get('x-forwarded-for') ?? '').split(',')[0]?.trim() || 'unknown';
+  const { limited } = await checkAndRecordRateLimit(supabase, {
+    session: sessionId ? hashRateKey('session', sessionId, secret) : undefined,
+    ip: hashRateKey('ip', ip, secret),
+  });
+  if (limited) return NextResponse.json({ error: 'rate_limited' }, { status: 429 });
+
   if (!sessionId) {
     const { data: created, error: sessionErr } = await supabase
       .from('guest_sessions')
@@ -52,13 +59,6 @@ export async function POST(req: Request) {
     }
     sessionId = created.id;
   }
-
-  const ip = (req.headers.get('x-forwarded-for') ?? '').split(',')[0]?.trim() || 'unknown';
-  const { limited } = await checkAndRecordRateLimit(supabase, {
-    session: hashRateKey('session', sessionId, secret),
-    ip: hashRateKey('ip', ip, secret),
-  });
-  if (limited) return NextResponse.json({ error: 'rate_limited' }, { status: 429 });
 
   // Persist guest message
   await supabase.from('messages').insert({

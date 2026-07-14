@@ -113,4 +113,13 @@ describe('checkAndRecordRateLimit', () => {
     const result = await checkAndRecordRateLimit(admin, keys);
     expect(result).toEqual({ limited: false });
   });
+
+  it('counts only IP when session key is omitted', async () => {
+    const keysIpOnly = { ip: 'ip:def' };
+    const admin = makeStubAdmin([{ count: 0 }, { error: null }, { error: null }]);
+    const result = await checkAndRecordRateLimit(admin, keysIpOnly);
+    expect(result).toEqual({ limited: false });
+    // Only one count query (for IP) should have run, then insert, then cleanup.
+    expect(admin.from).toHaveBeenCalledTimes(3);
+  });
 });
