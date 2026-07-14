@@ -5,6 +5,7 @@ import { z } from 'zod';
 import { createSupabaseServiceClient } from '@aga/db/service';
 import { requireSuperAdmin } from '@/lib/auth-context';
 import { getStripe, priceIdForTier } from '@/lib/stripe';
+import { runCommissionInvoicing } from '@/lib/commission-invoicing-runner';
 
 const checkoutSchema = z.object({
   partnershipId: z.string().uuid(),
@@ -85,6 +86,17 @@ export async function cancelTierSubscription(raw: unknown) {
     return { ok: true as const };
   } catch (err) {
     console.error('cancelTierSubscription stripe call failed', err instanceof Error ? err.message : err);
+    return { ok: false as const, error: 'stripe_error' };
+  }
+}
+
+export async function invoiceAccruedCommissions() {
+  await requireSuperAdmin();
+  try {
+    const { invoiced, failed } = await runCommissionInvoicing(createSupabaseServiceClient(), getStripe());
+    return { ok: true as const, invoiced, failed };
+  } catch (err) {
+    console.error('invoiceAccruedCommissions failed', err instanceof Error ? err.message : err);
     return { ok: false as const, error: 'stripe_error' };
   }
 }

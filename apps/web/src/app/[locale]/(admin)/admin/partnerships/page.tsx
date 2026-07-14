@@ -3,6 +3,7 @@ import { getServerClient } from '@/lib/supabase-server';
 import { requireSuperAdmin } from '@/lib/auth-context';
 import { Card, CardContent } from '@aga/ui';
 import { PartnershipsEditor } from '@/components/admin/PartnershipsEditor';
+import { InvoiceCommissionsButton } from '@/components/admin/InvoiceCommissionsButton';
 
 interface Props {
   params: Promise<{ locale: string }>;
@@ -27,9 +28,12 @@ export default async function PartnershipsPage({ params }: Props) {
 
   return (
     <div>
-      <h1 className="mb-6 text-2xl font-semibold">
-        {locale === 'en' ? 'Partnerships' : 'Συνεργασίες'}
-      </h1>
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-2">
+        <h1 className="text-2xl font-semibold">
+          {locale === 'en' ? 'Partnerships' : 'Συνεργασίες'}
+        </h1>
+        <InvoiceCommissionsButton locale={locale} />
+      </div>
       <Card>
         <CardContent className="p-6">
           <PartnershipsEditor
