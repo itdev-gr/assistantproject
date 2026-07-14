@@ -761,6 +761,60 @@ export type Database = {
         }
         Relationships: []
       }
+      knowledge_chunks: {
+        Row: {
+          content: string
+          content_hash: string
+          embedding: string
+          hotel_id: string
+          id: string
+          locale: string
+          source_id: string
+          source_table: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          content: string
+          content_hash: string
+          embedding: string
+          hotel_id: string
+          id?: string
+          locale: string
+          source_id: string
+          source_table: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          content?: string
+          content_hash?: string
+          embedding?: string
+          hotel_id?: string
+          id?: string
+          locale?: string
+          source_id?: string
+          source_table?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "knowledge_chunks_hotel_id_fkey"
+            columns: ["hotel_id"]
+            isOneToOne: false
+            referencedRelation: "hotels"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "knowledge_chunks_hotel_id_fkey"
+            columns: ["hotel_id"]
+            isOneToOne: false
+            referencedRelation: "public_hotels"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       messages: {
         Row: {
           content: string
@@ -919,6 +973,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      rate_limit_events: {
+        Row: {
+          created_at: string
+          id: number
+          key: string
+        }
+        Insert: {
+          created_at?: string
+          id?: number
+          key: string
+        }
+        Update: {
+          created_at?: string
+          id?: number
+          key?: string
+        }
+        Relationships: []
       }
       recommendation_rules: {
         Row: {
@@ -1168,6 +1240,22 @@ export type Database = {
       is_hotel_member: { Args: { h: string }; Returns: boolean }
       is_hotel_owner: { Args: { h: string }; Returns: boolean }
       is_super_admin: { Args: never; Returns: boolean }
+      match_knowledge_chunks: {
+        Args: {
+          p_hotel: string
+          p_embedding: string
+          p_locale: string
+          p_count?: number
+        }
+        Returns: {
+          id: string
+          title: string
+          content: string
+          source_table: string
+          source_id: string
+          similarity: number
+        }[]
+      }
       show_limit: { Args: never; Returns: number }
       show_trgm: { Args: { "": string }; Returns: string[] }
     }
