@@ -3,6 +3,7 @@ import { Link } from '@/i18n/routing';
 import { getServerClient } from '@/lib/supabase-server';
 import { requireSuperAdmin } from '@/lib/auth-context';
 import { Badge, Button, Card, CardContent } from '@aga/ui';
+import { ReindexKnowledgeButton } from '@/components/admin/ReindexKnowledgeButton';
 
 interface Props {
   params: Promise<{ locale: string }>;
@@ -21,11 +22,14 @@ export default async function TenantsListPage({ params }: Props) {
 
   return (
     <div>
-      <div className="mb-6 flex items-center justify-between">
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-2">
         <h1 className="text-2xl font-semibold">{locale === 'en' ? 'Hotels' : 'Καταλύματα'}</h1>
-        <Button asChild>
-          <Link href="/admin/new-tenant">{locale === 'en' ? 'New tenant' : 'Νέο κατάλυμα'}</Link>
-        </Button>
+        <div className="flex items-center gap-2">
+          <ReindexKnowledgeButton locale={locale} />
+          <Button asChild>
+            <Link href="/admin/new-tenant">{locale === 'en' ? 'New tenant' : 'Νέο κατάλυμα'}</Link>
+          </Button>
+        </div>
       </div>
       <Card>
         <CardContent className="p-0">

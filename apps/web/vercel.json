@@ -4,7 +4,10 @@
   "installCommand": "pnpm install --frozen-lockfile",
   "framework": "nextjs",
   "outputDirectory": ".next",
-  "crons": [{ "path": "/api/cron/invoice-commissions", "schedule": "0 6 1 * *" }],
+  "crons": [
+    { "path": "/api/cron/invoice-commissions", "schedule": "0 6 1 * *" },
+    { "path": "/api/cron/reindex-knowledge", "schedule": "0 3 * * *" }
+  ],
   "headers": [
     {
       "source": "/api/widget/loader.js",
