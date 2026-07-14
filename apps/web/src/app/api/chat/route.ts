@@ -60,6 +60,23 @@ export async function POST(req: Request) {
     sessionId = created.id;
   }
 
+  // Fetch recent conversation history BEFORE inserting the new guest message,
+  // so history holds prior turns only, not the current message.
+  const { data: recent } = await supabase
+    .from('messages')
+    .select('id, role, content, intent_slug, created_at')
+    .eq('session_id', sessionId)
+    .in('role', ['guest', 'assistant'])
+    .order('created_at', { ascending: false })
+    .limit(10);
+  const history = (recent ?? []).reverse().map((m) => ({
+    id: m.id,
+    role: m.role as 'guest' | 'assistant',
+    content: m.content,
+    intent: m.intent_slug,
+    createdAt: m.created_at,
+  }));
+
   // Persist guest message
   await supabase.from('messages').insert({
     session_id: sessionId,
@@ -87,7 +104,7 @@ export async function POST(req: Request) {
     hotelId: hotel.id,
     locale,
     message,
-    history: [],
+    history,
     guestLocalTime: nowInTimeZone(hotel.timezone),
     roomId,
   });

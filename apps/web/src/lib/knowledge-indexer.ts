@@ -229,7 +229,11 @@ export async function reindexHotelKnowledge(admin: DB, hotelId: string): Promise
 
   let upserted = 0;
   if (changed.length > 0) {
-    const vectors = await embedTexts(changed.map(({ doc }) => `${doc.title}\n${doc.content}`));
+    // Truncate to stay under the embedding model's input token limit — one
+    // oversized policy/FAQ shouldn't permanently fail a hotel's reindex.
+    const vectors = await embedTexts(
+      changed.map(({ doc }) => `${doc.title}\n${doc.content}`.slice(0, 6000)),
+    );
     const rows = changed.map(({ doc, hash }, i) => ({
       hotel_id: hotelId,
       locale: doc.locale,
