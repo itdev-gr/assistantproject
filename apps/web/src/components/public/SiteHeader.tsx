@@ -32,7 +32,7 @@ export function SiteHeader({ locale, overlay = false }: Props) {
             : 'border-b border-border bg-background/80 backdrop-blur'),
       )}
     >
-      <div className="mx-auto flex h-16 max-w-6xl items-center gap-4 px-4">
+      <div className="mx-auto flex h-16 max-w-6xl items-center gap-2 px-4 sm:gap-4">
         <Link
           href="/"
           className={cn(
@@ -47,7 +47,7 @@ export function SiteHeader({ locale, overlay = false }: Props) {
           <Link
             href="/"
             className={cn(
-              'hidden rounded-md px-3 py-2 transition-colors duration-200 sm:block',
+              'hidden rounded-md px-2 py-2 transition-colors duration-200 sm:block sm:px-3',
               transparent
                 ? 'text-white/80 hover:text-white'
                 : 'text-muted-foreground hover:text-foreground',
@@ -58,7 +58,7 @@ export function SiteHeader({ locale, overlay = false }: Props) {
           <Link
             href="/about"
             className={cn(
-              'rounded-md px-3 py-2 transition-colors duration-200',
+              'rounded-md px-2 py-2 transition-colors duration-200 sm:px-3',
               transparent
                 ? 'text-white/80 hover:text-white'
                 : 'text-muted-foreground hover:text-foreground',
@@ -69,19 +69,23 @@ export function SiteHeader({ locale, overlay = false }: Props) {
           <a
             href={`/${otherLocale}`}
             className={cn(
-              'rounded-md px-3 py-2 transition-colors duration-200',
+              'rounded-md px-2 py-2 transition-colors duration-200 sm:px-3',
               transparent
                 ? 'text-white/80 hover:text-white'
                 : 'text-muted-foreground hover:text-foreground',
             )}
           >
-            {locale === 'en' ? 'Ελληνικά' : 'English'}
+            <span className="sm:hidden">{locale === 'en' ? 'ΕΛ' : 'EN'}</span>
+            <span className="hidden sm:inline">
+              {locale === 'en' ? 'Ελληνικά' : 'English'}
+            </span>
           </a>
           <Button
             asChild
             size="sm"
             variant="outline"
             className={cn(
+              'px-2 sm:px-3',
               transparent &&
                 'border-white/40 bg-white/10 text-white backdrop-blur-sm hover:bg-white/20 hover:text-white',
             )}

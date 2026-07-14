@@ -44,3 +44,25 @@ test.describe('about page navigation', () => {
     ).toBeVisible();
   });
 });
+
+test.describe('about page navigation on small screens', () => {
+  test.use({ viewport: { width: 375, height: 667 } });
+
+  test('header fits at 375px with About link and Sign in visible, no horizontal overflow', async ({
+    page,
+  }) => {
+    await page.goto('/en/about');
+
+    await expect(
+      page.getByRole('navigation').getByRole('link', { name: 'About', exact: true }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole('navigation').getByRole('link', { name: 'Sign in' }),
+    ).toBeVisible();
+
+    const overflow = await page.evaluate(
+      () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+    );
+    expect(overflow).toBeLessThanOrEqual(0);
+  });
+});
