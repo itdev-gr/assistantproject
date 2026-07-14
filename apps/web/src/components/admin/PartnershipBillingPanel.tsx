@@ -32,8 +32,12 @@ export function PartnershipBillingPanel({ partnershipId, tier, billingStatus, bi
         setMessage(res.error === 'missing_billing_email' ? 'Set a billing email on the business first.' : `Error: ${res.error}`);
         return;
       }
-      await navigator.clipboard.writeText(res.url);
-      setMessage('Payment link copied — send it to the business.');
+      try {
+        await navigator.clipboard.writeText(res.url);
+        setMessage('Payment link copied — send it to the business.');
+      } catch {
+        setMessage(`Copy failed — link: ${res.url}`);
+      }
     });
   }
 
