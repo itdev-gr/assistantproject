@@ -1,6 +1,6 @@
 # Stripe Payments — Design
 
-**Date:** 2026-07-14 · **Status:** awaiting user review
+**Date:** 2026-07-14 · **Status:** approved — scope "all of the above", built in phase order
 
 ## Why
 
@@ -8,11 +8,11 @@ The platform already *tracks* money (partnership subscription tiers, referral co
 
 ## Scope decision (phased)
 
-The user asked for "a payment system using Stripe" (decision on what to charge first was made by recommendation — user was away; can be revised):
+User decision: **build all three**, in phase order.
 
-- **Phase 1 (this spec, build now): Business placement tiers.** Businesses pay a monthly subscription for their placement tier (Standard / Featured / Exclusive) in the directory and AI recommendations.
-- **Phase 2 (designed, build later): Commission collection.** Monthly Stripe Invoices for accrued `commission_events`.
-- **Phase 3 (sketched, build later): Hotel SaaS subscriptions.** Self-serve billing page in the owner dashboard.
+- **Phase 1: Business placement tiers.** Businesses pay a monthly subscription for their placement tier (Standard / Featured / Exclusive) in the directory and AI recommendations.
+- **Phase 2: Commission collection.** Monthly Stripe Invoices for accrued `commission_events`.
+- **Phase 3: Hotel SaaS subscriptions.** Self-serve billing page in the owner dashboard.
 
 Key structural fact driving the design: **businesses have no app logins** (only `hotel_users` and `super_admins` exist). So business payments cannot be self-serve inside the app. Instead, the **admin generates a Stripe-hosted checkout link** from the admin dashboard and sends it to the business; everything after that (payment, tier activation, renewals, failures) is automatic via webhooks.
 
@@ -58,13 +58,13 @@ Key structural fact driving the design: **businesses have no app logins** (only 
 - Unit tests (vitest, colocated like existing web tests) for `applyStripeEvent` covering: completed checkout sets tier/status; payment failure sets `past_due` without demoting; deletion demotes to `free`; duplicate event ids are no-ops.
 - Manual: Stripe test mode + `stripe listen --forward-to localhost:3000/api/webhooks/stripe`, pay with `4242 4242 4242 4242`, confirm tier flips and homepage Featured updates after revalidate.
 
-## Phase 2 — Commission collection (later)
+## Phase 2 — Commission collection
 
-Monthly job (Vercel Cron hitting an admin API route): for each business with `accrued` `commission_events`, create a Stripe Invoice (line item per event or aggregated), mark events `invoiced`; `invoice.paid` webhook marks them `paid`. Reuses the same Stripe customer, webhook route and events table.
+Monthly job (Vercel Cron hitting `/api/cron/invoice-commissions`, protected by `CRON_SECRET`): for each business with `accrued` `commission_events`, create one aggregated Stripe Invoice (one line item per commission event, description includes booking reference), mark those events `invoiced` with the Stripe invoice id stored on the row (`stripe_invoice_id` column added in the same migration); the `invoice.paid` webhook marks them `paid`. Reuses the Phase 1 Stripe customer, webhook route and events table. Admin can also trigger invoicing manually from the partnerships page.
 
-## Phase 3 — Hotel SaaS subscriptions (later)
+## Phase 3 — Hotel SaaS subscriptions
 
-Hotels already have logins and `hotels.subscription_tier`. Add a Billing page in the owner dashboard using Stripe Checkout + the customer portal for self-serve upgrades; same webhook route syncs `hotels.subscription_tier`.
+Hotels already have logins. Flat monthly "Assistant" plan (placeholder **€49/month** — user to confirm; amount lives only in Stripe). New env `STRIPE_PRICE_HOTEL`. Migration adds `stripe_customer_id`, `stripe_subscription_id`, `billing_status` to `hotels`. New **Billing page in the owner dashboard** (`/owner/billing`): shows plan + status, "Subscribe" button → Stripe Checkout (self-serve, hotel's login email prefilled), "Manage billing" button → Stripe customer portal (update card, cancel). The same webhook route syncs `hotels.billing_status`. No feature-gating on non-payment in this iteration — access consequences are a separate product decision.
 
 ## Explicitly out of scope
 - Guest-facing payments (guests never pay through the platform).
