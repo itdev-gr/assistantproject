@@ -23,3 +23,24 @@ test.describe('about page', () => {
     ).toBeVisible();
   });
 });
+
+test.describe('about page navigation', () => {
+  test('header menu link navigates to the about page', async ({ page }) => {
+    await page.goto('/en');
+    await page
+      .getByRole('navigation')
+      .getByRole('link', { name: 'About', exact: true })
+      .click();
+    await expect(page).toHaveURL(/\/en\/about$/);
+    await expect(
+      page.getByRole('heading', { level: 1, name: /Built on the island/ }),
+    ).toBeVisible();
+  });
+
+  test('footer contains the about link', async ({ page }) => {
+    await page.goto('/en');
+    await expect(
+      page.getByRole('contentinfo').getByRole('link', { name: 'About us' }),
+    ).toBeVisible();
+  });
+});

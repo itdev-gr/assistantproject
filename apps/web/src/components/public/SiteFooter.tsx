@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { Waves } from 'lucide-react';
+import { Link } from '@/i18n/routing';
 import type { DirectoryCategory } from '@/lib/public-directory';
 import { useDirectorySearch, scrollToDirectory } from '@/lib/directory-search-store';
 
@@ -47,6 +48,14 @@ export function SiteFooter({ locale, categories = [] }: Props) {
               {t('Explore', 'Εξερεύνηση')}
             </p>
             <ul className="mt-3 space-y-2 text-sm">
+              <li>
+                <Link
+                  href="/about"
+                  className="text-sky-200/80 transition-colors duration-200 hover:text-white"
+                >
+                  {t('About us', 'Σχετικά με εμάς')}
+                </Link>
+              </li>
               {categories.slice(0, 5).map((c) => (
                 <li key={c.slug}>
                   <button

@@ -55,6 +55,17 @@ export function SiteHeader({ locale, overlay = false }: Props) {
           >
             {locale === 'en' ? 'Browse' : 'Περιήγηση'}
           </Link>
+          <Link
+            href="/about"
+            className={cn(
+              'rounded-md px-3 py-2 transition-colors duration-200',
+              transparent
+                ? 'text-white/80 hover:text-white'
+                : 'text-muted-foreground hover:text-foreground',
+            )}
+          >
+            {locale === 'en' ? 'About' : 'Σχετικά'}
+          </Link>
           <a
             href={`/${otherLocale}`}
             className={cn(
