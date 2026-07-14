@@ -50,6 +50,7 @@ export async function GET(req: Request) {
         description: item.description,
       });
     }
+    await stripe.invoices.finalizeInvoice(invoice.id);
     await stripe.invoices.sendInvoice(invoice.id);
     await admin
       .from('commission_events')
