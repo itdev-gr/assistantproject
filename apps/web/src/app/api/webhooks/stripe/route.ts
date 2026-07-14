@@ -26,7 +26,15 @@ export async function POST(req: Request) {
     type: event.type,
     payload: JSON.parse(raw),
   });
-  if (insertError) return NextResponse.json({ received: true, duplicate: true });
+  if (insertError) {
+    // Distinguish duplicate-key from transient failures
+    if ((insertError as any).code === '23505') {
+      return NextResponse.json({ received: true, duplicate: true });
+    }
+    // Non-duplicate error: log and return 500 so Stripe retries
+    console.error('stripe webhook event persist failed', event.id, insertError.message);
+    return NextResponse.json({ error: 'persist_failed' }, { status: 500 });
+  }
 
   try {
     for (const action of applyStripeEvent(event as unknown as StripeEventLike)) {
