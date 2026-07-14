@@ -1,9 +1,15 @@
 import type { Metadata } from 'next';
 import { setRequestLocale } from 'next-intl/server';
 import { SiteHeader } from '@/components/public/SiteHeader';
-import { AboutContent } from '@/components/public/AboutContent';
 import { SiteFooter } from '@/components/public/SiteFooter';
 import { PageMotion } from '@/components/public/motion';
+import { AboutHero } from '@/components/public/about/AboutHero';
+import { AboutStory } from '@/components/public/about/AboutStory';
+import { ValuesGrid } from '@/components/public/about/ValuesGrid';
+import { PhotoMosaic } from '@/components/public/about/PhotoMosaic';
+import { HowItWorks } from '@/components/public/about/HowItWorks';
+import { AboutFaq } from '@/components/public/about/AboutFaq';
+import { AboutCta } from '@/components/public/about/AboutCta';
 
 interface Props {
   params: Promise<{ locale: string }>;
@@ -31,8 +37,16 @@ export default async function AboutPage({ params }: Props) {
   return (
     <PageMotion>
       <div className="flex min-h-dvh flex-col bg-background">
-        <SiteHeader locale={locale} />
-        <AboutContent locale={locale} />
+        <SiteHeader locale={locale} overlay />
+        <main className="flex-1">
+          <AboutHero locale={locale} />
+          <AboutStory locale={locale} />
+          <ValuesGrid locale={locale} />
+          <PhotoMosaic locale={locale} />
+          <HowItWorks locale={locale} />
+          <AboutFaq locale={locale} />
+          <AboutCta locale={locale} />
+        </main>
         <SiteFooter locale={locale} />
       </div>
     </PageMotion>

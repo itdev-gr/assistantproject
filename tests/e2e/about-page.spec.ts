@@ -84,3 +84,27 @@ test.describe('about page navigation on small screens (Greek locale)', () => {
     expect(overflow).toBeLessThanOrEqual(0);
   });
 });
+
+test.describe('about page redesign', () => {
+  test('hero image and new sections render', async ({ page }) => {
+    await page.goto('/en/about');
+    await expect(page.locator('img[src*="about-hero"]')).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Our story' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'What we stand by' })).toBeVisible();
+    await expect(
+      page.getByRole('heading', { name: 'Questions, answered' }),
+    ).toBeVisible();
+  });
+
+  test('FAQ answers are in the DOM before interaction and toggle open', async ({ page }) => {
+    await page.goto('/en/about');
+    const firstAnswer = page.getByText(
+      'Yes — browsing the guide and the recommendations are completely free',
+    );
+    // Present in the DOM for crawlers even while collapsed.
+    await expect(firstAnswer).toBeAttached();
+    const firstQuestion = page.getByText('Is the guide free for visitors?');
+    await firstQuestion.click();
+    await expect(firstAnswer).toBeVisible();
+  });
+});

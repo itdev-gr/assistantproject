@@ -2,3 +2,8 @@ hero-rhodes.jpg
 Source: Unsplash — https://unsplash.com/photos/mAOTatwrE_o (user @antonio_m89)
 Location: St. Paul' Bay, Lindos, Rhodes, Greece
 License: Unsplash License (free for commercial use, no attribution required)
+about-hero.jpg — Photo by Dimitris Kiriakakis on Unsplash — https://unsplash.com/photos/ETj9Kql-A6A
+about-harbor.jpg — Photo by Tatiana Tochilova on Unsplash — https://unsplash.com/photos/7pMnZHGowiU
+about-taverna.jpg — Photo by Ricardo Jimenez on Unsplash — https://unsplash.com/photos/Kzft6vrwRoM
+about-beach.jpg — Photo by Dimitris Kiriakakis on Unsplash — https://unsplash.com/photos/ttUKl-qQWC4
+about-village.jpg — Photo by Johnny Africa on Unsplash — https://unsplash.com/photos/qvdGgOwgw1Q
