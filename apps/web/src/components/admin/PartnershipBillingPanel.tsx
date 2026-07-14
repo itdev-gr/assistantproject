@@ -29,7 +29,13 @@ export function PartnershipBillingPanel({ partnershipId, tier, billingStatus, bi
       setMessage(null);
       const res = await createCheckoutLink({ partnershipId, tier: selectedTier });
       if (!res.ok) {
-        setMessage(res.error === 'missing_billing_email' ? 'Set a billing email on the business first.' : `Error: ${res.error}`);
+        setMessage(
+          res.error === 'missing_billing_email'
+            ? 'Set a billing email on the business first.'
+            : res.error === 'already_active'
+              ? 'Already has an active subscription — cancel it first.'
+              : `Error: ${res.error}`,
+        );
         return;
       }
       try {

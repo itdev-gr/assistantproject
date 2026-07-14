@@ -46,6 +46,18 @@ describe('applyStripeEvent', () => {
     ]);
   });
 
+  it('marks past_due on failed subscription invoice using the current API subscription shape', () => {
+    const actions = applyStripeEvent(
+      ev('invoice.payment_failed', {
+        parent: { subscription_details: { subscription: 'sub_123' } },
+      }),
+    );
+    expect(actions).toEqual([
+      { target: 'partnership', match: { stripe_subscription_id: 'sub_123' }, set: { billing_status: 'past_due' } },
+      { target: 'hotel', match: { stripe_subscription_id: 'sub_123' }, set: { billing_status: 'past_due' } },
+    ]);
+  });
+
   it('demotes to free on subscription deletion', () => {
     const actions = applyStripeEvent(
       ev('customer.subscription.deleted', { id: 'sub_123', metadata: { kind: 'partnership_tier' } }),
@@ -78,6 +90,20 @@ describe('applyStripeEvent', () => {
     ]);
   });
 
+  it('recovers to active when a subscription invoice is paid using the current API subscription shape', () => {
+    const actions = applyStripeEvent(
+      ev('invoice.paid', {
+        id: 'in_1',
+        billing_reason: 'subscription_cycle',
+        parent: { subscription_details: { subscription: 'sub_123' } },
+      }),
+    );
+    expect(actions).toEqual([
+      { target: 'partnership', match: { stripe_subscription_id: 'sub_123' }, set: { billing_status: 'active' } },
+      { target: 'hotel', match: { stripe_subscription_id: 'sub_123' }, set: { billing_status: 'active' } },
+    ]);
+  });
+
   it('marks commission events paid when a manual invoice is paid', () => {
     const actions = applyStripeEvent(
       ev('invoice.paid', { id: 'in_9', subscription: null, billing_reason: 'manual' }),
@@ -89,5 +115,30 @@ describe('applyStripeEvent', () => {
 
   it('returns no actions for unknown events', () => {
     expect(applyStripeEvent(ev('customer.created', {}))).toEqual([]);
+  });
+
+  it('marks a partnership past_due on subscription.updated', () => {
+    const actions = applyStripeEvent(
+      ev('customer.subscription.updated', { id: 'sub_123', status: 'past_due', metadata: { kind: 'partnership_tier' } }),
+    );
+    expect(actions).toEqual([
+      { target: 'partnership', match: { stripe_subscription_id: 'sub_123' }, set: { billing_status: 'past_due' } },
+    ]);
+  });
+
+  it('marks a hotel plan active on subscription.updated', () => {
+    const actions = applyStripeEvent(
+      ev('customer.subscription.updated', { id: 'sub_h1', status: 'active', metadata: { kind: 'hotel_plan' } }),
+    );
+    expect(actions).toEqual([
+      { target: 'hotel', match: { stripe_subscription_id: 'sub_h1' }, set: { billing_status: 'active' } },
+    ]);
+  });
+
+  it('returns no actions for an unmapped status on subscription.updated', () => {
+    const actions = applyStripeEvent(
+      ev('customer.subscription.updated', { id: 'sub_123', status: 'incomplete_expired', metadata: {} }),
+    );
+    expect(actions).toEqual([]);
   });
 });

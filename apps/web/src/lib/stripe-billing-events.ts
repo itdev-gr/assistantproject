@@ -31,6 +31,21 @@ export type BillingAction =
 
 const PAID_TIERS: ReadonlySet<string> = new Set(['standard', 'featured', 'exclusive']);
 
+/**
+ * Invoice objects on API versions before 2026-06-24.dahlia carry the
+ * subscription id at the top level (`invoice.subscription`). Current Stripe
+ * API versions moved it to `invoice.parent.subscription_details.subscription`
+ * (string id, or an expanded Subscription object). Support both shapes.
+ */
+function invoiceSubscriptionId(obj: Record<string, unknown>): string | null {
+  if (typeof obj.subscription === 'string') return obj.subscription; // legacy shape
+  const parent = obj.parent as { subscription_details?: { subscription?: unknown } } | null | undefined;
+  const sub = parent?.subscription_details?.subscription;
+  if (typeof sub === 'string') return sub;
+  if (sub && typeof sub === 'object' && typeof (sub as { id?: unknown }).id === 'string') return (sub as { id: string }).id;
+  return null;
+}
+
 export function applyStripeEvent(event: StripeEventLike): BillingAction[] {
   const obj = event.data.object;
   const meta = (obj.metadata ?? {}) as Record<string, string>;
@@ -65,7 +80,7 @@ export function applyStripeEvent(event: StripeEventLike): BillingAction[] {
     }
 
     case 'invoice.payment_failed': {
-      const subscriptionId = typeof obj.subscription === 'string' ? obj.subscription : null;
+      const subscriptionId = invoiceSubscriptionId(obj);
       if (!subscriptionId) return [];
       return [
         { target: 'partnership', match: { stripe_subscription_id: subscriptionId }, set: { billing_status: 'past_due' } },
@@ -74,7 +89,7 @@ export function applyStripeEvent(event: StripeEventLike): BillingAction[] {
     }
 
     case 'invoice.paid': {
-      const subscriptionId = typeof obj.subscription === 'string' ? obj.subscription : null;
+      const subscriptionId = invoiceSubscriptionId(obj);
       if (subscriptionId) {
         return [
           { target: 'partnership', match: { stripe_subscription_id: subscriptionId }, set: { billing_status: 'active' } },
@@ -107,6 +122,25 @@ export function applyStripeEvent(event: StripeEventLike): BillingAction[] {
           match: { stripe_subscription_id: subscriptionId },
           set: { subscription_tier: 'free', billing_status: 'canceled', stripe_subscription_id: null },
         },
+      ];
+    }
+
+    case 'customer.subscription.updated': {
+      const subscriptionId = typeof obj.id === 'string' ? obj.id : null;
+      if (!subscriptionId) return [];
+      const status = typeof obj.status === 'string' ? obj.status : null;
+      const billingStatus: BillingStatus | null =
+        status === 'active' || status === 'trialing' ? 'active'
+        : status === 'past_due' || status === 'unpaid' ? 'past_due'
+        : null;
+      if (!billingStatus) return [];
+      if (meta.kind === 'hotel_plan') {
+        return [
+          { target: 'hotel', match: { stripe_subscription_id: subscriptionId }, set: { billing_status: billingStatus } },
+        ];
+      }
+      return [
+        { target: 'partnership', match: { stripe_subscription_id: subscriptionId }, set: { billing_status: billingStatus } },
       ];
     }
 

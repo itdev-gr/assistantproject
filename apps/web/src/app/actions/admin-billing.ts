@@ -21,10 +21,11 @@ export async function createCheckoutLink(raw: unknown) {
   const admin = createSupabaseServiceClient();
   const { data: p, error } = await admin
     .from('partnerships')
-    .select('id, business:businesses ( id, name, billing_email, stripe_customer_id )')
+    .select('id, billing_status, business:businesses ( id, name, billing_email, stripe_customer_id )')
     .eq('id', partnershipId)
     .single();
   if (error || !p?.business) return { ok: false as const, error: 'partnership_not_found' };
+  if (p.billing_status === 'active') return { ok: false as const, error: 'already_active' };
   const business = p.business as {
     id: string; name: string; billing_email: string | null; stripe_customer_id: string | null;
   };

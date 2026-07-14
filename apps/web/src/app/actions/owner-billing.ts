@@ -33,6 +33,7 @@ async function ensureHotelCustomer(
 
 export async function createHotelCheckout() {
   const ctx = await requireOwner();
+  if (ctx.role !== 'owner') return { ok: false as const, error: 'forbidden' };
   const price = process.env.STRIPE_PRICE_HOTEL;
   if (!price) return { ok: false as const, error: 'not_configured' };
 
@@ -62,6 +63,7 @@ export async function createHotelCheckout() {
 
 export async function createPortalSession() {
   const ctx = await requireOwner();
+  if (ctx.role !== 'owner') return { ok: false as const, error: 'forbidden' };
 
   const customer = await ensureHotelCustomer(ctx.hotelId, ctx.email);
   if (!customer.ok) return { ok: false as const, error: customer.error };
