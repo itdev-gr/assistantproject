@@ -16,7 +16,7 @@ export default defineConfig({
   projects: [
     {
       name: 'chromium',
-      use: { ...devices['Desktop Chrome'], locale: 'el' },
+      use: { ...devices['Desktop Chrome'] },
     },
   ],
   webServer: process.env.CI

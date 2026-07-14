@@ -1,6 +1,8 @@
 import { test, expect } from '@playwright/test';
 
 test.describe('about page', () => {
+  test.use({ locale: 'el' });
+
   test('renders the story in English', async ({ page }) => {
     await page.goto('/en/about');
     await expect(
