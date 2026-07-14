@@ -41,7 +41,7 @@ The single `AboutContent.tsx` client component is replaced by focused section co
 
 ## Images
 
-4 new Unsplash photos (free license) downloaded at ~1800px wide, target ≤350KB each, into `apps/web/public/images/`: `about-hero.jpg`, `about-taverna.jpg`, `about-beach.jpg`, `about-village.jpg`. `ATTRIBUTION.txt` gains one line per photo (photographer + URL), same format as the existing entry. If a chosen photo URL is unavailable at implementation time, the implementer substitutes an equivalent free Unsplash photo of the same subject and records the substitution in `ATTRIBUTION.txt`.
+5 new Unsplash photos (free license) into `apps/web/public/images/`: `about-hero.jpg` (~1800px, hero), `about-harbor.jpg` (story column), and `about-taverna.jpg`, `about-beach.jpg`, `about-village.jpg` (mosaic) at ~1200px — target ≤450KB for the hero, ≤350KB for the rest. `ATTRIBUTION.txt` gains one line per photo (photographer + URL), same format as the existing entry. If a chosen photo URL is unavailable at implementation time, the implementer substitutes an equivalent free Unsplash photo of the same subject and records the substitution in `ATTRIBUTION.txt`.
 
 ## SEO layer (all in `about/page.tsx`, plus one root-layout line)
 
