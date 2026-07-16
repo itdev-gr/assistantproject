@@ -68,3 +68,9 @@ describe('matchIntent — English', () => {
     expect(matchIntent('what is the meaning of life?', 'en').slug).toBe('out_of_scope');
   });
 });
+
+it('classifies food-type questions as recommend_restaurant', () => {
+  expect(matchIntent('pasta or pizza tonight?', 'en').slug).toBe('recommend_restaurant');
+  expect(matchIntent('any good seafood nearby?', 'en').slug).toBe('recommend_restaurant');
+  expect(matchIntent('Πού θα βρούμε καλά θαλασσινά;', 'el').slug).toBe('recommend_restaurant');
+});

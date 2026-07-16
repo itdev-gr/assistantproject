@@ -82,8 +82,8 @@ export const DEFAULT_INTENTS: IntentDefinition[] = [
   },
   {
     slug: 'recommend_restaurant',
-    keywordsEl: ['εστιατοριο', 'ταβερνα', 'φαγητο', 'γευμα', 'δειπνο', 'φαμε', 'φαω', 'τρωμε', 'ψαρι', 'πειναω'],
-    keywordsEn: ['restaurant', 'tavern', 'food', 'eat', 'dinner', 'lunch', 'where to eat'],
+    keywordsEl: ['εστιατοριο', 'ταβερνα', 'φαγητο', 'γευμα', 'δειπνο', 'φαμε', 'φαω', 'τρωμε', 'ψαρι', 'πειναω', 'μακαρονια', 'πιτσα', 'θαλασσινα', 'ψητο', 'σουβλακι', 'μεζε'],
+    keywordsEn: ['restaurant', 'tavern', 'food', 'eat', 'dinner', 'lunch', 'where to eat', 'pasta', 'pizza', 'fish', 'seafood', 'grill', 'souvlaki', 'meze', 'hungry'],
     priority: 6,
   },
   {
