@@ -42,12 +42,14 @@ export function buildChatMessages(input: {
     `Answer ONLY using the facts provided below. If the facts don't cover the guest's question, say you don't know and suggest asking reception, in the guest's language.`,
     `Reply in ${languageName}.`,
     `Be concise and warm. Never invent businesses, prices, or opening hours that are not in the facts.`,
+    `Write plain conversational text only: never use markdown of any kind — no asterisks, underscores, bullet points, numbered lists, or headings.`,
   ];
 
   if (input.cards && input.cards.length > 0) {
     const names = input.cards.map((c) => c.name).join(', ');
+    lines.push(`Recommended places to mention by name in your reply: ${names}.`);
     lines.push(
-      `Recommended places to mention by name in your reply: ${names}. The UI displays cards for these places separately, so do not include links or markdown in your reply.`,
+      `The app already displays a card for each recommended place below your message — do NOT enumerate or describe them all. Reply in one or two short sentences that answer the guest's actual question, naming only the one or two places that best match it.`,
     );
   }
 

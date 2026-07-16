@@ -131,4 +131,49 @@ describe('buildChatMessages', () => {
     });
     expect(messages[0]!.content).not.toContain('Recommended places');
   });
+
+  it('always instructs plain text with no markdown, regardless of cards', () => {
+    const withoutCards = buildChatMessages({
+      locale: 'en',
+      hotelName: 'Aegean Blue',
+      chunks: [],
+      history: [],
+      userMessage: 'What time is checkout?',
+    });
+    const withCards = buildChatMessages({
+      locale: 'en',
+      hotelName: 'Aegean Blue',
+      chunks: [],
+      history: [],
+      userMessage: 'Where can I get a massage?',
+      cards: [{ name: 'Blue Lagoon Spa', category: 'spa', description: null }],
+    });
+    expect(withoutCards[0]!.content).toContain('never use markdown');
+    expect(withCards[0]!.content).toContain('never use markdown');
+  });
+
+  it('instructs the assistant not to enumerate cards only when cards are provided', () => {
+    const withoutCards = buildChatMessages({
+      locale: 'en',
+      hotelName: 'Aegean Blue',
+      chunks: [],
+      history: [],
+      userMessage: 'What time is checkout?',
+    });
+    expect(withoutCards[0]!.content).not.toContain('do NOT enumerate');
+
+    const withCards = buildChatMessages({
+      locale: 'en',
+      hotelName: 'Aegean Blue',
+      chunks: [],
+      history: [],
+      userMessage: 'Where can I get a massage?',
+      cards: [
+        { name: 'Blue Lagoon Spa', category: 'spa', description: 'Relaxing sea-view spa' },
+        { name: 'Sunset Wellness', category: 'spa', description: null },
+      ],
+    });
+    expect(withCards[0]!.content).toContain('do NOT enumerate');
+    expect(withCards[0]!.content).toContain('naming only the one or two places');
+  });
 });
