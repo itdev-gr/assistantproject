@@ -1,5 +1,6 @@
 import { setRequestLocale } from 'next-intl/server';
 import { notFound } from 'next/navigation';
+import type { BusinessUpsert } from '@aga/api-contracts';
 import { getServerClient } from '@/lib/supabase-server';
 import { requireSuperAdmin } from '@/lib/auth-context';
 import { BusinessForm } from '@/components/admin/BusinessForm';
@@ -53,7 +54,7 @@ export default async function EditBusinessPage({ params }: Props) {
           billingEmail: data.billing_email,
           priceBand: data.price_band ?? 2,
           tags: data.tags ?? [],
-          openingHours: (data.opening_hours_json as Record<string, unknown>) ?? null,
+          openingHours: (data.opening_hours_json as BusinessUpsert['openingHours']) ?? {},
           images: ((data.images as string[]) ?? []) as string[],
           verified: data.verified,
           active: data.active,

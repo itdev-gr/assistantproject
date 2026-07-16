@@ -26,6 +26,21 @@ const tagsField = z.preprocess(
   z.array(z.string()).default([]),
 );
 
+/**
+ * `opening_hours_json` contract (also relied on by `isOpenNow` and live
+ * data): keys are the 7 day abbreviations below; a day's value is `[]`
+ * (closed that day) or a single `[open, close]` "HH:MM" interval; a day
+ * key that's absent means "unknown". One interval per day is sufficient.
+ */
+const openingHoursDayKeys = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'] as const;
+const openingHoursTime = z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/);
+const openingHoursDaySchema = z.union([
+  z.tuple([]),
+  z.tuple([z.tuple([openingHoursTime, openingHoursTime])]),
+]);
+export const openingHoursSchema = z.record(z.enum(openingHoursDayKeys), openingHoursDaySchema);
+export type OpeningHoursValue = z.infer<typeof openingHoursSchema>;
+
 export const businessUpsertSchema = z.object({
   id: uuidSchema.optional(),
   name: z.string().min(2).max(120),
@@ -40,7 +55,7 @@ export const businessUpsertSchema = z.object({
   billingEmail: optionalEmail,
   priceBand: z.number().int().min(1).max(4),
   tags: tagsField,
-  openingHours: z.record(z.string(), z.unknown()).nullable(),
+  openingHours: openingHoursSchema.optional(),
   images: z.array(z.string().url()).default([]),
   verified: z.boolean().default(false),
   active: z.boolean().default(true),

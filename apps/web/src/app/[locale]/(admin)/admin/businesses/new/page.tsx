@@ -42,7 +42,7 @@ export default async function NewBusinessPage({ params }: Props) {
           billingEmail: null,
           priceBand: 2,
           tags: [],
-          openingHours: null,
+          openingHours: {},
           images: [],
           verified: false,
           active: true,

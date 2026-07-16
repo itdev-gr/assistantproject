@@ -31,7 +31,7 @@ export async function upsertBusiness(raw: unknown) {
     billing_email: b.billingEmail,
     price_band: b.priceBand,
     tags: b.tags,
-    opening_hours_json: (b.openingHours ?? {}) as Json,
+    ...(b.openingHours !== undefined ? { opening_hours_json: b.openingHours as Json } : {}),
     images: b.images as unknown as Json,
     verified: b.verified,
     active: b.active,
