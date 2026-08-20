@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import { getServerClient } from '@/lib/supabase-server';
 import { requireOwner } from '@/lib/auth-context';
 import { FaqForm } from '@/components/owner/FaqForm';
+import { PageHeader } from '@/components/dashboard/PageHeader';
 
 interface Props {
   params: Promise<{ locale: string; id: string }>;
@@ -25,10 +26,13 @@ export default async function EditFaqPage({ params }: Props) {
 
   return (
     <div className="max-w-2xl">
-      <h1 className="mb-6 text-2xl font-semibold">
-        {locale === 'en' ? 'Edit FAQ' : 'Επεξεργασία ερώτησης'}
-      </h1>
-      <FaqForm
+      <PageHeader
+        title={locale === 'en' ? 'Edit FAQ' : 'Επεξεργασία ερώτησης'}
+        backHref="/owner/faqs"
+        backLabel={locale === 'en' ? 'FAQs' : 'FAQs'}
+      />
+      <div className="rounded-lg border bg-card p-6">
+        <FaqForm
         locale={locale}
         initial={{
           id: data.id,
@@ -39,7 +43,8 @@ export default async function EditFaqPage({ params }: Props) {
           intentSlug: data.intent_slug,
           published: data.state === 'published',
         }}
-      />
+        />
+      </div>
     </div>
   );
 }

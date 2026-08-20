@@ -1,8 +1,8 @@
 import { setRequestLocale } from 'next-intl/server';
 import { getServerClient } from '@/lib/supabase-server';
 import { requireOwner } from '@/lib/auth-context';
-import { Card, CardContent } from '@aga/ui';
 import { RoomsEditor } from '@/components/owner/RoomsEditor';
+import { PageHeader } from '@/components/dashboard/PageHeader';
 
 interface Props {
   params: Promise<{ locale: string }>;
@@ -25,9 +25,16 @@ export default async function RoomsPage({ params }: Props) {
 
   return (
     <div>
-      <h1 className="mb-6 text-2xl font-semibold">{locale === 'en' ? 'Rooms' : 'Δωμάτια'}</h1>
-      <Card>
-        <CardContent className="p-6">
+      <PageHeader
+        title={locale === 'en' ? 'Rooms' : 'Δωμάτια'}
+        subtitle={
+          locale === 'en'
+            ? 'Rooms and their guest chat QR deep-links.'
+            : 'Δωμάτια και τα QR deep-links για το chat επισκεπτών.'
+        }
+      />
+      <div className="overflow-x-auto">
+        <div className="min-w-[640px] rounded-lg border bg-card p-6">
           <RoomsEditor
             locale={locale}
             hotelSlug={hotel?.slug ?? ''}
@@ -39,8 +46,8 @@ export default async function RoomsPage({ params }: Props) {
               notes: r.notes,
             }))}
           />
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   );
 }

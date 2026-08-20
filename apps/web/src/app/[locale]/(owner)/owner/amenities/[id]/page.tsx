@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import { getServerClient } from '@/lib/supabase-server';
 import { requireOwner } from '@/lib/auth-context';
 import { AmenityForm } from '@/components/owner/AmenityForm';
+import { PageHeader } from '@/components/dashboard/PageHeader';
 
 interface Props {
   params: Promise<{ locale: string; id: string }>;
@@ -23,10 +24,13 @@ export default async function EditAmenityPage({ params }: Props) {
 
   return (
     <div className="max-w-2xl">
-      <h1 className="mb-6 text-2xl font-semibold">
-        {locale === 'en' ? 'Edit amenity' : 'Επεξεργασία παροχής'}
-      </h1>
-      <AmenityForm
+      <PageHeader
+        title={locale === 'en' ? 'Edit amenity' : 'Επεξεργασία παροχής'}
+        backHref="/owner/amenities"
+        backLabel={locale === 'en' ? 'Amenities' : 'Παροχές'}
+      />
+      <div className="rounded-lg border bg-card p-6">
+        <AmenityForm
         locale={locale}
         initial={{
           id: data.id,
@@ -36,7 +40,8 @@ export default async function EditAmenityPage({ params }: Props) {
           hours: (data.hours_json as Record<string, unknown>) ?? null,
           published: data.state === 'published',
         }}
-      />
+        />
+      </div>
     </div>
   );
 }

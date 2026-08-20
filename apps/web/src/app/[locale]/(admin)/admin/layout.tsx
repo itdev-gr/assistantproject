@@ -1,5 +1,6 @@
 import { setRequestLocale } from 'next-intl/server';
 import { AdminSidebar } from '@/components/admin/AdminSidebar';
+import { getAuthContext } from '@/lib/auth-context';
 
 interface Props {
   children: React.ReactNode;
@@ -9,11 +10,13 @@ interface Props {
 export default async function AdminLayout({ children, params }: Props) {
   const { locale } = await params;
   setRequestLocale(locale);
-  // TODO(week-3): require super-admin via Supabase. 403 otherwise.
+  // Access is enforced by the middleware and per-page requireSuperAdmin();
+  // the context here is display-only (sidebar footer email).
+  const ctx = await getAuthContext();
   return (
-    <div className="flex min-h-dvh">
-      <AdminSidebar />
-      <main className="flex-1 p-6">{children}</main>
+    <div className="dash flex min-h-dvh flex-col bg-background text-foreground lg:flex-row">
+      <AdminSidebar email={ctx?.email} />
+      <main className="min-w-0 flex-1 px-5 py-8 md:px-10">{children}</main>
     </div>
   );
 }

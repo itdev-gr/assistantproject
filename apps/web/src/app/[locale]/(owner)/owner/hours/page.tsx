@@ -1,8 +1,8 @@
 import { setRequestLocale } from 'next-intl/server';
 import { getServerClient } from '@/lib/supabase-server';
 import { requireOwner } from '@/lib/auth-context';
-import { Card, CardContent } from '@aga/ui';
 import { HoursTable } from '@/components/owner/HoursTable';
+import { PageHeader } from '@/components/dashboard/PageHeader';
 
 interface Props {
   params: Promise<{ locale: string }>;
@@ -28,11 +28,16 @@ export default async function HoursPage({ params }: Props) {
 
   return (
     <div>
-      <h1 className="mb-6 text-2xl font-semibold">
-        {locale === 'en' ? 'Opening hours' : 'Ώρες λειτουργίας'}
-      </h1>
-      <Card>
-        <CardContent className="p-6">
+      <PageHeader
+        title={locale === 'en' ? 'Opening hours' : 'Ώρες λειτουργίας'}
+        subtitle={
+          locale === 'en'
+            ? 'When the property and its facilities are open.'
+            : 'Πότε λειτουργεί το κατάλυμα και οι εγκαταστάσεις του.'
+        }
+      />
+      <div className="overflow-x-auto">
+        <div className="min-w-[640px] rounded-lg border bg-card p-6">
           <HoursTable
             locale={locale}
             weekdays={weekdays}
@@ -47,8 +52,8 @@ export default async function HoursPage({ params }: Props) {
               seasonalEnd: r.seasonal_end,
             }))}
           />
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   );
 }

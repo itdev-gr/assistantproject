@@ -1,5 +1,13 @@
 {
   "nav": {
+    "brand": "RoomRVI",
+    "tagline": "Super Admin",
+    "groupTenants": "Καταλύματα",
+    "groupCatalog": "Κατάλογος",
+    "groupQuality": "Ποιότητα",
+    "groupSystem": "Σύστημα",
+    "site": "Προβολή site",
+    "signOut": "Αποσύνδεση",
     "tenants": "Καταλύματα",
     "businesses": "Επιχειρήσεις",
     "categories": "Κατηγορίες",

@@ -1,5 +1,12 @@
 {
   "nav": {
+    "brand": "RoomRVI",
+    "tagline": "Hotel dashboard",
+    "groupOverview": "Overview",
+    "groupKnowledge": "Knowledge",
+    "groupRevenue": "Revenue",
+    "groupSettings": "Settings",
+    "site": "View site",
     "dashboard": "Dashboard",
     "property": "Property",
     "faqs": "FAQs",

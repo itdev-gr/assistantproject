@@ -11,7 +11,14 @@ export default {
         primary: {
           DEFAULT: 'hsl(var(--primary))',
           foreground: 'hsl(var(--primary-foreground))',
+          hover: 'hsl(var(--dash-primary-hover))',
         },
+        gold: {
+          DEFAULT: 'rgb(var(--dash-gold) / <alpha-value>)',
+          hover: 'rgb(var(--dash-gold-hover) / <alpha-value>)',
+        },
+        olive: 'rgb(var(--dash-olive) / <alpha-value>)',
+        'deep-ink': 'rgb(var(--dash-deep-ink) / <alpha-value>)',
         secondary: {
           DEFAULT: 'hsl(var(--secondary))',
           foreground: 'hsl(var(--secondary-foreground))',
@@ -32,6 +39,10 @@ export default {
           DEFAULT: 'hsl(var(--card))',
           foreground: 'hsl(var(--card-foreground))',
         },
+      },
+      boxShadow: {
+        card: '0 1px 2px rgba(0, 41, 107, 0.05)',
+        'card-hover': '0 20px 40px -12px rgba(0, 41, 107, 0.18)',
       },
       borderRadius: {
         lg: 'var(--radius)',

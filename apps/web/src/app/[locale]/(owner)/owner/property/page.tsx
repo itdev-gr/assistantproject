@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import { getServerClient } from '@/lib/supabase-server';
 import { requireOwner } from '@/lib/auth-context';
 import { PropertyForm } from '@/components/owner/PropertyForm';
+import { PageHeader } from '@/components/dashboard/PageHeader';
 
 interface Props {
   params: Promise<{ locale: string }>;
@@ -26,10 +27,11 @@ export default async function PropertyPage({ params }: Props) {
 
   return (
     <div className="max-w-2xl">
-      <h1 className="mb-6 text-2xl font-semibold">
-        {locale === 'en' ? 'Property profile' : 'Στοιχεία καταλύματος'}
-      </h1>
-      <PropertyForm
+      <PageHeader
+        title={locale === 'en' ? 'Property profile' : 'Στοιχεία καταλύματος'}
+      />
+      <div className="rounded-lg border bg-card p-6">
+        <PropertyForm
         locale={locale}
         initial={{
           name: hotel.name,
@@ -43,7 +45,8 @@ export default async function PropertyPage({ params }: Props) {
             primaryColor: brand.primaryColor ?? null,
           },
         }}
-      />
+        />
+      </div>
     </div>
   );
 }

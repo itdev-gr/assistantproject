@@ -1,8 +1,12 @@
 import { setRequestLocale } from 'next-intl/server';
 import { getServerClient } from '@/lib/supabase-server';
 import { requireOwner } from '@/lib/auth-context';
-import { Card, CardContent, CardHeader, CardTitle, Badge } from '@aga/ui';
 import { ConfirmBookingButton } from '@/components/owner/ConfirmBookingButton';
+import { PageHeader } from '@/components/dashboard/PageHeader';
+import { StatCard } from '@/components/dashboard/StatCard';
+import { Pill } from '@/components/dashboard/Pill';
+import { TableFrame, tableHead, tableRow } from '@/components/dashboard/TableFrame';
+import { EmptyState } from '@/components/dashboard/EmptyState';
 
 interface Props {
   params: Promise<{ locale: string }>;
@@ -70,98 +74,88 @@ export default async function OwnerReferralsPage({ params }: Props) {
   const t = (en: string, el: string) => (locale === 'en' ? en : el);
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-semibold">{t('Referrals', 'Παραπομπές')}</h1>
+    <div>
+      <PageHeader
+        title={t('Referrals', 'Παραπομπές')}
+        subtitle={t(
+          'How often the assistant recommends your partners — and what guests do next.',
+          'Πόσο συχνά ο βοηθός προτείνει τους συνεργάτες σας — και τι κάνουν οι επισκέπτες μετά.',
+        )}
+      />
 
-      <div className="grid gap-4 md:grid-cols-3">
-        <Stat title={t('Cards shown (30d)', 'Εμφανίσεις (30 ημ.)')} value={total30} />
-        <Stat title={t('Clicks (30d)', 'Κλικ (30 ημ.)')} value={clicks30} />
-        <Stat title={t('Click-through rate', 'Ποσοστό κλικ')} value={`${ctr30}%`} />
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <StatCard label={t('Cards shown (30d)', 'Εμφανίσεις (30 ημ.)')} value={total30.toLocaleString()} />
+        <StatCard label={t('Clicks (30d)', 'Κλικ (30 ημ.)')} value={clicks30.toLocaleString()} />
+        <StatCard label={t('Click-through rate', 'Ποσοστό κλικ')} value={`${ctr30}%`} />
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>{t('Top partners (90 days)', 'Κορυφαίοι συνεργάτες (90 ημ.)')}</CardTitle>
-        </CardHeader>
-        <CardContent className="p-0">
-          {topPartners.length === 0 ? (
-            <p className="p-6 text-sm text-muted-foreground">
-              {t('Nothing yet — guests will start clicking soon.', 'Καμία ενέργεια ακόμη.')}
-            </p>
-          ) : (
-            <ul className="divide-y">
-              {topPartners.map((p, i) => (
-                <li key={p.name + i} className="flex items-center gap-4 p-4">
-                  <span className="w-6 text-sm text-muted-foreground">{i + 1}</span>
-                  <span className="flex-1 truncate text-sm font-medium">{p.name}</span>
-                  <span className="text-xs text-muted-foreground">
-                    {p.clicked} / {p.shown}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          )}
-        </CardContent>
-      </Card>
+      <h2 className="mb-4 mt-10 text-xl font-semibold text-primary">
+        {t('Top partners (90 days)', 'Κορυφαίοι συνεργάτες (90 ημ.)')}
+      </h2>
+      <TableFrame minWidth="min-w-[420px]">
+        {topPartners.length === 0 ? (
+          <EmptyState
+            message={t('Nothing yet — guests will start clicking soon.', 'Καμία ενέργεια ακόμη.')}
+          />
+        ) : (
+          topPartners.map((p, i) => (
+            <div key={p.name + i} className={`flex items-center gap-4 px-4 py-3 text-[14px] ${tableRow}`}>
+              <span className="w-6 text-muted-foreground">{i + 1}</span>
+              <span className="flex-1 truncate font-medium">{p.name}</span>
+              <span className="text-xs tabular-nums text-muted-foreground">
+                {p.clicked} / {p.shown}
+              </span>
+            </div>
+          ))
+        )}
+      </TableFrame>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>{t('Recent referrals', 'Πρόσφατες παραπομπές')}</CardTitle>
-        </CardHeader>
-        <CardContent className="p-0">
-          {rows.length === 0 ? (
-            <p className="p-6 text-sm text-muted-foreground">
-              {t('No referrals yet.', 'Καμία παραπομπή ακόμη.')}
-            </p>
-          ) : (
-            <ul className="divide-y">
-              {rows.slice(0, 50).map((r) => {
-                const hasBooking = r.bookings && r.bookings.length > 0;
-                return (
-                  <li key={r.id} className="flex items-center gap-3 p-3 text-sm">
-                    <span className="flex-1 truncate font-medium">
-                      {r.partnership.business.name}
-                    </span>
-                    <span className="text-xs text-muted-foreground">
-                      {new Date(r.shown_at).toLocaleString(locale === 'en' ? 'en-GB' : 'el-GR', {
-                        day: '2-digit',
-                        month: 'short',
-                        hour: '2-digit',
-                        minute: '2-digit',
-                      })}
-                    </span>
-                    {hasBooking ? (
-                      <Badge variant="default">{t('booked', 'κράτηση')}</Badge>
-                    ) : (
-                      <Badge variant={r.clicked_at ? 'default' : 'secondary'}>
-                        {r.clicked_at ? t('clicked', 'κλικ') : t('shown', 'προβολή')}
-                      </Badge>
-                    )}
-                    {!hasBooking && r.clicked_at && (
-                      <ConfirmBookingButton referralId={r.id} locale={locale} />
-                    )}
-                  </li>
-                );
-              })}
-            </ul>
-          )}
-        </CardContent>
-      </Card>
+      <h2 className="mb-4 mt-10 text-xl font-semibold text-primary">
+        {t('Recent referrals', 'Πρόσφατες παραπομπές')}
+      </h2>
+      <TableFrame minWidth="min-w-[560px]">
+        <div className={`grid grid-cols-[1fr_10rem_7rem_auto] items-center gap-3 ${tableHead}`}>
+          <span>{t('Partner', 'Συνεργάτης')}</span>
+          <span>{t('Shown', 'Εμφάνιση')}</span>
+          <span>{t('Status', 'Κατάσταση')}</span>
+          <span />
+        </div>
+        {rows.length === 0 ? (
+          <EmptyState message={t('No referrals yet.', 'Καμία παραπομπή ακόμη.')} />
+        ) : (
+          rows.slice(0, 50).map((r) => {
+            const hasBooking = r.bookings && r.bookings.length > 0;
+            return (
+              <div
+                key={r.id}
+                className={`grid grid-cols-[1fr_10rem_7rem_auto] items-center gap-3 px-4 py-3 text-[14px] ${tableRow}`}
+              >
+                <span className="truncate font-medium">{r.partnership.business.name}</span>
+                <span className="text-xs text-muted-foreground">
+                  {new Date(r.shown_at).toLocaleString(locale === 'en' ? 'en-GB' : 'el-GR', {
+                    day: '2-digit',
+                    month: 'short',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                  })}
+                </span>
+                {hasBooking ? (
+                  <Pill tone="ok">{t('booked', 'κράτηση')}</Pill>
+                ) : (
+                  <Pill tone={r.clicked_at ? 'info' : 'muted'}>
+                    {r.clicked_at ? t('clicked', 'κλικ') : t('shown', 'προβολή')}
+                  </Pill>
+                )}
+                <span className="justify-self-end">
+                  {!hasBooking && r.clicked_at && (
+                    <ConfirmBookingButton referralId={r.id} locale={locale} />
+                  )}
+                </span>
+              </div>
+            );
+          })
+        )}
+      </TableFrame>
     </div>
-  );
-}
-
-function Stat({ title, value }: { title: string; value: number | string }) {
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-sm font-medium">{title}</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <p className="text-3xl font-semibold">
-          {typeof value === 'number' ? value.toLocaleString() : value}
-        </p>
-      </CardContent>
-    </Card>
   );
 }

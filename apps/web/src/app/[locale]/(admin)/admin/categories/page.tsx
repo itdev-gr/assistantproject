@@ -1,8 +1,8 @@
 import { setRequestLocale } from 'next-intl/server';
 import { getServerClient } from '@/lib/supabase-server';
 import { requireSuperAdmin } from '@/lib/auth-context';
-import { Card, CardContent } from '@aga/ui';
 import { CategoriesEditor } from '@/components/admin/CategoriesEditor';
+import { PageHeader } from '@/components/dashboard/PageHeader';
 
 interface Props {
   params: Promise<{ locale: string }>;
@@ -20,11 +20,15 @@ export default async function CategoriesPage({ params }: Props) {
 
   return (
     <div>
-      <h1 className="mb-6 text-2xl font-semibold">
-        {locale === 'en' ? 'Categories' : 'Κατηγορίες'}
-      </h1>
-      <Card>
-        <CardContent className="p-6">
+      <PageHeader
+        title={locale === 'en' ? 'Categories' : 'Κατηγορίες'}
+        subtitle={
+          locale === 'en'
+            ? 'The taxonomy used across the directory.'
+            : 'Η ταξινόμηση που χρησιμοποιείται σε όλο τον κατάλογο.'
+        }
+      />
+      <div className="rounded-lg border bg-card p-6">
           <CategoriesEditor
             locale={locale}
             rows={(data ?? []).map((c) => ({
@@ -34,8 +38,7 @@ export default async function CategoriesPage({ params }: Props) {
               parentId: c.parent_id,
             }))}
           />
-        </CardContent>
-      </Card>
+      </div>
     </div>
   );
 }

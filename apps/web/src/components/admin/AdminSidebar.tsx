@@ -1,8 +1,6 @@
 'use client';
 
-import { Link, usePathname } from '@/i18n/routing';
 import { useTranslations } from 'next-intl';
-import { cn } from '@aga/ui';
 import {
   Building2,
   Store,
@@ -13,43 +11,47 @@ import {
   Flag,
   BarChart3,
 } from 'lucide-react';
+import { SidebarNav } from '@/components/dashboard/SidebarNav';
 
-const items = [
-  { href: '/admin', key: 'tenants', Icon: Building2 },
-  { href: '/admin/businesses', key: 'businesses', Icon: Store },
-  { href: '/admin/categories', key: 'categories', Icon: ListTree },
-  { href: '/admin/partnerships', key: 'partnerships', Icon: Handshake },
-  { href: '/admin/moderation', key: 'moderation', Icon: ShieldCheck },
-  { href: '/admin/rules', key: 'rules', Icon: Sliders },
-  { href: '/admin/flags', key: 'flags', Icon: Flag },
-  { href: '/admin/usage', key: 'usage', Icon: BarChart3 },
-] as const;
+interface Props {
+  email?: string | null;
+}
 
-export function AdminSidebar() {
-  const pathname = usePathname();
+export function AdminSidebar({ email }: Props) {
   const t = useTranslations('admin.nav');
   return (
-    <nav className="flex w-60 flex-col border-r bg-background p-4">
-      <div className="mb-6 px-2 text-sm font-semibold">Super Admin</div>
-      <ul className="space-y-1">
-        {items.map(({ href, key, Icon }) => {
-          const active = pathname === href;
-          return (
-            <li key={href}>
-              <Link
-                href={href}
-                className={cn(
-                  'flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors',
-                  active ? 'bg-accent text-accent-foreground' : 'hover:bg-accent/60',
-                )}
-              >
-                <Icon className="h-4 w-4" aria-hidden />
-                {t(key)}
-              </Link>
-            </li>
-          );
-        })}
-      </ul>
-    </nav>
+    <SidebarNav
+      brand={t('brand')}
+      tagline={t('tagline')}
+      email={email}
+      siteLabel={t('site')}
+      signOutLabel={t('signOut')}
+      groups={[
+        {
+          heading: t('groupTenants'),
+          items: [{ href: '/admin', label: t('tenants'), Icon: Building2, exact: true }],
+        },
+        {
+          heading: t('groupCatalog'),
+          items: [
+            { href: '/admin/businesses', label: t('businesses'), Icon: Store },
+            { href: '/admin/categories', label: t('categories'), Icon: ListTree },
+            { href: '/admin/partnerships', label: t('partnerships'), Icon: Handshake },
+          ],
+        },
+        {
+          heading: t('groupQuality'),
+          items: [
+            { href: '/admin/moderation', label: t('moderation'), Icon: ShieldCheck },
+            { href: '/admin/rules', label: t('rules'), Icon: Sliders },
+            { href: '/admin/flags', label: t('flags'), Icon: Flag },
+          ],
+        },
+        {
+          heading: t('groupSystem'),
+          items: [{ href: '/admin/usage', label: t('usage'), Icon: BarChart3 }],
+        },
+      ]}
+    />
   );
 }

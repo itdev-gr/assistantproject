@@ -1,7 +1,10 @@
 import { setRequestLocale } from 'next-intl/server';
 import { getServerClient } from '@/lib/supabase-server';
 import { requireSuperAdmin } from '@/lib/auth-context';
-import { Card, CardContent, CardHeader, CardTitle } from '@aga/ui';
+import { PageHeader } from '@/components/dashboard/PageHeader';
+import { StatCard } from '@/components/dashboard/StatCard';
+import { TableFrame, tableHead, tableRow } from '@/components/dashboard/TableFrame';
+import { EmptyState } from '@/components/dashboard/EmptyState';
 
 interface Props {
   params: Promise<{ locale: string }>;
@@ -27,54 +30,49 @@ export default async function UsagePage({ params }: Props) {
     ]);
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-semibold">{locale === 'en' ? 'Usage' : 'Χρήση'}</h1>
+    <div>
+      <PageHeader
+        title={locale === 'en' ? 'Usage' : 'Χρήση'}
+        subtitle={
+          locale === 'en'
+            ? 'Platform activity over the last 30 days.'
+            : 'Δραστηριότητα της πλατφόρμας τις τελευταίες 30 ημέρες.'
+        }
+      />
 
-      <div className="grid gap-4 md:grid-cols-3">
-        <Stat
-          title={locale === 'en' ? 'Messages (30d)' : 'Μηνύματα (30 ημ.)'}
-          value={msgs30d ?? 0}
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <StatCard
+          label={locale === 'en' ? 'Messages (30d)' : 'Μηνύματα (30 ημ.)'}
+          value={(msgs30d ?? 0).toLocaleString()}
         />
-        <Stat
-          title={locale === 'en' ? 'Sessions (30d)' : 'Σύνοδοι (30 ημ.)'}
-          value={sessions30d ?? 0}
+        <StatCard
+          label={locale === 'en' ? 'Sessions (30d)' : 'Σύνοδοι (30 ημ.)'}
+          value={(sessions30d ?? 0).toLocaleString()}
         />
-        <Stat
-          title={locale === 'en' ? 'Pending staff requests' : 'Αναμένουν προσωπικό'}
-          value={needsStaff ?? 0}
+        <StatCard
+          label={locale === 'en' ? 'Pending staff requests' : 'Αναμένουν προσωπικό'}
+          value={(needsStaff ?? 0).toLocaleString()}
         />
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>{locale === 'en' ? 'Per hotel' : 'Ανά κατάλυμα'}</CardTitle>
-        </CardHeader>
-        <CardContent className="p-0">
-          <ul className="divide-y">
-            {hotels?.map((h) => (
-              <li key={h.id} className="flex items-center gap-3 p-4 text-sm">
-                <span className="flex-1">{h.name}</span>
-                <span className="font-mono text-xs text-muted-foreground">
-                  {locale === 'en' ? 'view audit log →' : 'προβολή αρχείου →'}
-                </span>
-              </li>
-            ))}
-          </ul>
-        </CardContent>
-      </Card>
+      <h2 className="mb-4 mt-10 text-xl font-semibold text-primary">
+        {locale === 'en' ? 'Per hotel' : 'Ανά κατάλυμα'}
+      </h2>
+      <TableFrame minWidth="min-w-[480px]">
+        <div className={tableHead}>{locale === 'en' ? 'Hotel' : 'Κατάλυμα'}</div>
+        {hotels && hotels.length > 0 ? (
+          hotels.map((h) => (
+            <div key={h.id} className={`flex items-center gap-3 px-4 py-3 text-[14px] ${tableRow}`}>
+              <span className="flex-1">{h.name}</span>
+              <span className="font-mono text-xs text-muted-foreground">
+                {locale === 'en' ? 'view audit log →' : 'προβολή αρχείου →'}
+              </span>
+            </div>
+          ))
+        ) : (
+          <EmptyState message={locale === 'en' ? 'No hotels yet.' : 'Δεν υπάρχουν καταλύματα ακόμη.'} />
+        )}
+      </TableFrame>
     </div>
-  );
-}
-
-function Stat({ title, value }: { title: string; value: number }) {
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-sm font-medium">{title}</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <p className="text-3xl font-semibold">{value.toLocaleString()}</p>
-      </CardContent>
-    </Card>
   );
 }

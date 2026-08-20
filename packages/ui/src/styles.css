@@ -25,6 +25,36 @@
     --font-sans: 'Inter', system-ui, sans-serif;
   }
 
+  /* Dashboard theme scope — applied by the (admin)/(owner) layouts only,
+     so public pages keep the default token values. */
+  .dash {
+    --background: 214 47% 97%;
+    --foreground: 220 45% 16%;
+    --card: 0 0% 100%;
+    --primary: 214 88% 35%;
+    --primary-foreground: 0 0% 100%;
+    --ring: 214 88% 35%;
+    --border: 219 31% 89%;
+    --input: 219 31% 89%;
+    --muted-foreground: 216 18% 43%;
+    --accent: 214 88% 95%;
+    --accent-foreground: 214 88% 25%;
+  }
+
+  :root {
+    --dash-gold: 249 154 0;
+    --dash-gold-hover: 223 133 0;
+    --dash-olive: 63 125 88;
+    --dash-deep-ink: 7 42 82;
+    --dash-primary-hover: 214 88% 24%;
+  }
+
+  /* Inside the dashboard scope the page background is tinted, so form fields
+     (built with bg-background) get the card surface instead. */
+  .dash :is(input:not([type='checkbox']):not([type='radio']):not([type='file']), textarea, select) {
+    background-color: hsl(var(--card));
+  }
+
   .dark {
     --background: 222 47% 6%;
     --foreground: 210 40% 98%;

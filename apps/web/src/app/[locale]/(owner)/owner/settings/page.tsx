@@ -1,6 +1,7 @@
 import { setRequestLocale } from 'next-intl/server';
 import { requireOwner } from '@/lib/auth-context';
-import { Card, CardContent, CardHeader, CardTitle, Input, Label } from '@aga/ui';
+import { Input, Label } from '@aga/ui';
+import { PageHeader } from '@/components/dashboard/PageHeader';
 import { ChangePasswordForm } from '@/components/owner/ChangePasswordForm';
 import { SignOutButton } from '@/components/owner/SignOutButton';
 
@@ -15,14 +16,12 @@ export default async function OwnerSettingsPage({ params }: Props) {
   const t = (en: string, el: string) => (locale === 'en' ? en : el);
 
   return (
-    <div className="max-w-2xl space-y-6">
-      <h1 className="text-2xl font-semibold">{t('Settings', 'Ρυθμίσεις')}</h1>
+    <div className="max-w-2xl">
+      <PageHeader title={t('Settings', 'Ρυθμίσεις')} />
 
-      <Card>
-        <CardHeader>
-          <CardTitle>{t('Account', 'Λογαριασμός')}</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
+      <section className="rounded-lg border bg-card p-6">
+        <h2 className="mb-4 text-xl font-semibold text-primary">{t('Account', 'Λογαριασμός')}</h2>
+        <div className="space-y-3">
           <div className="space-y-1.5">
             <Label>Email</Label>
             <Input value={ctx.email} readOnly disabled />
@@ -31,26 +30,20 @@ export default async function OwnerSettingsPage({ params }: Props) {
             <Label>{t('Role', 'Ρόλος')}</Label>
             <Input value={ctx.role} readOnly disabled />
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </section>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>{t('Change password', 'Αλλαγή κωδικού')}</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <ChangePasswordForm locale={locale} />
-        </CardContent>
-      </Card>
+      <section className="mt-6 rounded-lg border bg-card p-6">
+        <h2 className="mb-4 text-xl font-semibold text-primary">
+          {t('Change password', 'Αλλαγή κωδικού')}
+        </h2>
+        <ChangePasswordForm locale={locale} />
+      </section>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>{t('Session', 'Συνεδρία')}</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <SignOutButton locale={locale} />
-        </CardContent>
-      </Card>
+      <section className="mt-6 rounded-lg border bg-card p-6">
+        <h2 className="mb-4 text-xl font-semibold text-primary">{t('Session', 'Συνεδρία')}</h2>
+        <SignOutButton locale={locale} />
+      </section>
     </div>
   );
 }

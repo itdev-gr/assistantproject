@@ -1,5 +1,13 @@
 {
   "nav": {
+    "brand": "RoomRVI",
+    "tagline": "Super Admin",
+    "groupTenants": "Tenants",
+    "groupCatalog": "Catalog",
+    "groupQuality": "Quality",
+    "groupSystem": "System",
+    "site": "View site",
+    "signOut": "Sign out",
     "tenants": "Hotels",
     "businesses": "Businesses",
     "categories": "Categories",

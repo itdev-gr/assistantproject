@@ -5,6 +5,7 @@ import { getServerClient } from '@/lib/supabase-server';
 import { requireSuperAdmin } from '@/lib/auth-context';
 import { BusinessForm } from '@/components/admin/BusinessForm';
 import { WebhookSecretCard } from '@/components/admin/WebhookSecretCard';
+import { PageHeader } from '@/components/dashboard/PageHeader';
 
 interface Props {
   params: Promise<{ locale: string; id: string }>;
@@ -31,9 +32,14 @@ export default async function EditBusinessPage({ params }: Props) {
   const appOrigin = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000';
 
   return (
-    <div className="max-w-2xl space-y-6">
-      <h1 className="text-2xl font-semibold">{data.name}</h1>
-      <BusinessForm
+    <div className="max-w-2xl">
+      <PageHeader
+        title={data.name}
+        backHref="/admin/businesses"
+        backLabel={locale === 'en' ? 'Businesses' : 'Επιχειρήσεις'}
+      />
+      <div className="mb-6 rounded-lg border bg-card p-6">
+        <BusinessForm
         locale={locale}
         categories={(cats ?? []).map((c) => ({
           id: c.id,
@@ -59,7 +65,8 @@ export default async function EditBusinessPage({ params }: Props) {
           verified: data.verified,
           active: data.active,
         }}
-      />
+        />
+      </div>
       <WebhookSecretCard
         businessId={data.id}
         webhookConfigured={!!data.webhook_secret}

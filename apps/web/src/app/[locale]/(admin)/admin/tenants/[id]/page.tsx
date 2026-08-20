@@ -3,8 +3,8 @@ import { notFound } from 'next/navigation';
 import { getServerClient } from '@/lib/supabase-server';
 import { requireSuperAdmin } from '@/lib/auth-context';
 import { TenantEditForm } from '@/components/admin/TenantEditForm';
-import { Card, CardContent, CardHeader, CardTitle } from '@aga/ui';
 import { InviteHotelUserForm } from '@/components/admin/InviteHotelUserForm';
+import { PageHeader } from '@/components/dashboard/PageHeader';
 
 interface Props {
   params: Promise<{ locale: string; id: string }>;
@@ -38,9 +38,14 @@ export default async function EditTenantPage({ params }: Props) {
   };
 
   return (
-    <div className="max-w-3xl space-y-6">
-      <h1 className="text-2xl font-semibold">{hotel.name}</h1>
-      <TenantEditForm
+    <div className="max-w-3xl">
+      <PageHeader
+        title={hotel.name}
+        backHref="/admin"
+        backLabel={locale === 'en' ? 'Hotels' : 'Καταλύματα'}
+      />
+      <div className="rounded-lg border bg-card p-6">
+        <TenantEditForm
         locale={locale}
         initial={{
           id: hotel.id,
@@ -57,13 +62,13 @@ export default async function EditTenantPage({ params }: Props) {
           subscriptionTier: hotel.subscription_tier,
           active: hotel.active,
         }}
-      />
+        />
+      </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>{locale === 'en' ? 'Team members' : 'Μέλη ομάδας'}</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
+      <h2 className="mb-4 mt-10 text-xl font-semibold text-primary">
+        {locale === 'en' ? 'Team members' : 'Μέλη ομάδας'}
+      </h2>
+      <div className="space-y-4 rounded-lg border bg-card p-6">
           <ul className="divide-y">
             {members?.map((m) => (
               <li key={m.id} className="flex items-center justify-between py-2 text-sm">
@@ -78,8 +83,7 @@ export default async function EditTenantPage({ params }: Props) {
             )}
           </ul>
           <InviteHotelUserForm locale={locale} hotelId={hotel.id} />
-        </CardContent>
-      </Card>
+      </div>
     </div>
   );
 }

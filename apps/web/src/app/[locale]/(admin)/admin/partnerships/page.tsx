@@ -1,9 +1,9 @@
 import { setRequestLocale } from 'next-intl/server';
 import { getServerClient } from '@/lib/supabase-server';
 import { requireSuperAdmin } from '@/lib/auth-context';
-import { Card, CardContent } from '@aga/ui';
 import { PartnershipsEditor } from '@/components/admin/PartnershipsEditor';
 import { InvoiceCommissionsButton } from '@/components/admin/InvoiceCommissionsButton';
+import { PageHeader } from '@/components/dashboard/PageHeader';
 
 interface Props {
   params: Promise<{ locale: string }>;
@@ -28,14 +28,16 @@ export default async function PartnershipsPage({ params }: Props) {
 
   return (
     <div>
-      <div className="mb-6 flex flex-wrap items-center justify-between gap-2">
-        <h1 className="text-2xl font-semibold">
-          {locale === 'en' ? 'Partnerships' : 'Συνεργασίες'}
-        </h1>
-        <InvoiceCommissionsButton locale={locale} />
-      </div>
-      <Card>
-        <CardContent className="p-6">
+      <PageHeader
+        title={locale === 'en' ? 'Partnerships' : 'Συνεργασίες'}
+        subtitle={
+          locale === 'en'
+            ? 'Hotel ↔ business agreements, commissions and billing.'
+            : 'Συμφωνίες καταλυμάτων ↔ επιχειρήσεων, προμήθειες και χρεώσεις.'
+        }
+        actions={<InvoiceCommissionsButton locale={locale} />}
+      />
+      <div className="rounded-lg border bg-card p-6">
           <PartnershipsEditor
             locale={locale}
             hotels={hotels ?? []}
@@ -60,8 +62,7 @@ export default async function PartnershipsPage({ params }: Props) {
               contractEnds: r.contract_ends,
             }))}
           />
-        </CardContent>
-      </Card>
+      </div>
     </div>
   );
 }

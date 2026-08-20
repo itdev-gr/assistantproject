@@ -1,5 +1,12 @@
 {
   "nav": {
+    "brand": "RoomRVI",
+    "tagline": "Πίνακας καταλύματος",
+    "groupOverview": "Επισκόπηση",
+    "groupKnowledge": "Περιεχόμενο",
+    "groupRevenue": "Έσοδα",
+    "groupSettings": "Ρυθμίσεις",
+    "site": "Προβολή site",
     "dashboard": "Πίνακας",
     "property": "Κατάλυμα",
     "faqs": "Συχνές ερωτήσεις",

@@ -1,8 +1,8 @@
 import { setRequestLocale } from 'next-intl/server';
 import { getServerClient } from '@/lib/supabase-server';
 import { requireSuperAdmin } from '@/lib/auth-context';
-import { Card, CardContent, CardHeader, CardTitle } from '@aga/ui';
 import { RulesEditor } from '@/components/admin/RulesEditor';
+import { PageHeader } from '@/components/dashboard/PageHeader';
 
 interface Props {
   params: Promise<{ locale: string }>;
@@ -63,27 +63,23 @@ export default async function RulesPage({ params, searchParams }: Props) {
     : FALLBACK;
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-semibold">
-        {locale === 'en' ? 'Recommendation rules' : 'Κανόνες προτάσεων'}
-      </h1>
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-sm">
-            {locale === 'en'
-              ? 'Tweak the ranking. Partner bias is multiplicative on a relevance-driven base — irrelevant featured partners cannot beat a relevant non-partner.'
-              : 'Ρυθμίστε το ranking. Το partner bias είναι πολλαπλασιαστικό σε σχέση με τη βασική συνάφεια — μη συναφείς συνεργάτες δεν μπορούν να ξεπεράσουν μια σχετική επιλογή χωρίς συνεργασία.'}
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
+    <div>
+      <PageHeader
+        title={locale === 'en' ? 'Recommendation rules' : 'Κανόνες προτάσεων'}
+        subtitle={
+          locale === 'en'
+            ? 'Tweak the ranking. Partner bias is multiplicative on a relevance-driven base — irrelevant featured partners cannot beat a relevant non-partner.'
+            : 'Ρυθμίστε το ranking. Το partner bias είναι πολλαπλασιαστικό σε σχέση με τη βασική συνάφεια — μη συναφείς συνεργάτες δεν μπορούν να ξεπεράσουν μια σχετική επιλογή χωρίς συνεργασία.'
+        }
+      />
+      <div className="rounded-lg border bg-card p-6">
           <RulesEditor
             locale={locale}
             hotels={hotels ?? []}
             initial={initial}
             currentHotelId={hotelId}
           />
-        </CardContent>
-      </Card>
+      </div>
     </div>
   );
 }

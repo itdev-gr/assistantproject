@@ -1,11 +1,22 @@
 import { setRequestLocale } from 'next-intl/server';
 import { getServerClient } from '@/lib/supabase-server';
 import { requireOwner } from '@/lib/auth-context';
-import { Card, CardContent, CardHeader, CardTitle, Badge } from '@aga/ui';
+import { PageHeader } from '@/components/dashboard/PageHeader';
+import { StatCard } from '@/components/dashboard/StatCard';
+import { Pill, type PillTone } from '@/components/dashboard/Pill';
+import { TableFrame, tableHead, tableRow } from '@/components/dashboard/TableFrame';
+import { EmptyState } from '@/components/dashboard/EmptyState';
 
 interface Props {
   params: Promise<{ locale: string }>;
 }
+
+const STATUS_TONE: Record<string, PillTone> = {
+  confirmed: 'ok',
+  pending: 'muted',
+  cancelled: 'danger',
+  no_show: 'warn',
+};
 
 export default async function OwnerBookingsPage({ params }: Props) {
   const { locale } = await params;
@@ -62,67 +73,61 @@ export default async function OwnerBookingsPage({ params }: Props) {
     }).format(n);
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-semibold">{t('Bookings', 'Κρατήσεις')}</h1>
+    <div>
+      <PageHeader
+        title={t('Bookings', 'Κρατήσεις')}
+        subtitle={t(
+          'Confirmed guest bookings and the commission they earn you.',
+          'Επιβεβαιωμένες κρατήσεις επισκεπτών και η προμήθεια που σας αποφέρουν.',
+        )}
+      />
 
-      <div className="grid gap-4 md:grid-cols-3">
-        <Stat title={t('Confirmed', 'Επιβεβαιωμένες')} value={confirmedCount} />
-        <Stat title={t('Gross revenue', 'Μικτά έσοδα')} value={fmt(totalGross)} />
-        <Stat
-          title={t('Estimated commission', 'Εκτιμώμενη προμήθεια')}
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <StatCard label={t('Confirmed', 'Επιβεβαιωμένες')} value={confirmedCount.toLocaleString()} />
+        <StatCard label={t('Gross revenue', 'Μικτά έσοδα')} value={fmt(totalGross)} />
+        <StatCard
+          label={t('Estimated commission', 'Εκτιμώμενη προμήθεια')}
           value={fmt(totalCommission)}
         />
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>{t('All bookings', 'Όλες οι κρατήσεις')}</CardTitle>
-        </CardHeader>
-        <CardContent className="p-0">
-          {rows.length === 0 ? (
-            <p className="p-6 text-sm text-muted-foreground">
-              {t(
-                'No bookings yet. Use the Referrals page to mark guest visits as booked.',
-                'Καμία κράτηση ακόμη. Χρησιμοποιήστε τη σελίδα Παραπομπών.',
-              )}
-            </p>
-          ) : (
-            <ul className="divide-y">
-              {rows.map((b) => (
-                <li key={b.id} className="grid grid-cols-[1fr_auto_auto_auto] items-center gap-3 p-3 text-sm">
-                  <span className="truncate font-medium">{b.referral.partnership.business.name}</span>
-                  <span className="font-mono text-xs">
-                    {b.gross_amount != null ? fmt(b.gross_amount) : '—'}
-                  </span>
-                  <span className="text-xs text-emerald-600">
-                    {b.commission[0]?.commission_amount
-                      ? fmt(b.commission[0].commission_amount)
-                      : '—'}
-                  </span>
-                  <Badge variant={b.status === 'confirmed' ? 'default' : 'secondary'}>
-                    {b.status}
-                  </Badge>
-                </li>
-              ))}
-            </ul>
-          )}
-        </CardContent>
-      </Card>
+      <h2 className="mb-4 mt-10 text-xl font-semibold text-primary">
+        {t('All bookings', 'Όλες οι κρατήσεις')}
+      </h2>
+      <TableFrame minWidth="min-w-[560px]">
+        <div className={`grid grid-cols-[1fr_7rem_7rem_8rem] items-center gap-3 ${tableHead}`}>
+          <span>{t('Partner', 'Συνεργάτης')}</span>
+          <span>{t('Amount', 'Ποσό')}</span>
+          <span>{t('Commission', 'Προμήθεια')}</span>
+          <span>{t('Status', 'Κατάσταση')}</span>
+        </div>
+        {rows.length === 0 ? (
+          <EmptyState
+            message={t(
+              'No bookings yet. Use the Referrals page to mark guest visits as booked.',
+              'Καμία κράτηση ακόμη. Χρησιμοποιήστε τη σελίδα Παραπομπών.',
+            )}
+          />
+        ) : (
+          rows.map((b) => (
+            <div
+              key={b.id}
+              className={`grid grid-cols-[1fr_7rem_7rem_8rem] items-center gap-3 px-4 py-3 text-[14px] ${tableRow}`}
+            >
+              <span className="truncate font-medium">{b.referral.partnership.business.name}</span>
+              <span className="font-mono text-xs tabular-nums">
+                {b.gross_amount != null ? fmt(b.gross_amount) : '—'}
+              </span>
+              <span className="font-mono text-xs tabular-nums text-olive">
+                {b.commission[0]?.commission_amount
+                  ? fmt(b.commission[0].commission_amount)
+                  : '—'}
+              </span>
+              <Pill tone={STATUS_TONE[b.status] ?? 'muted'}>{b.status}</Pill>
+            </div>
+          ))
+        )}
+      </TableFrame>
     </div>
-  );
-}
-
-function Stat({ title, value }: { title: string; value: number | string }) {
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-sm font-medium">{title}</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <p className="text-3xl font-semibold">
-          {typeof value === 'number' ? value.toLocaleString() : value}
-        </p>
-      </CardContent>
-    </Card>
   );
 }

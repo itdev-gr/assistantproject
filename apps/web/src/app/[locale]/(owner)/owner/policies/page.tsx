@@ -1,8 +1,8 @@
 import { setRequestLocale } from 'next-intl/server';
 import { getServerClient } from '@/lib/supabase-server';
 import { requireOwner } from '@/lib/auth-context';
-import { Card, CardContent } from '@aga/ui';
 import { PoliciesEditor } from '@/components/owner/PoliciesEditor';
+import { PageHeader } from '@/components/dashboard/PageHeader';
 
 interface Props {
   params: Promise<{ locale: string }>;
@@ -22,9 +22,15 @@ export default async function PoliciesPage({ params }: Props) {
 
   return (
     <div>
-      <h1 className="mb-6 text-2xl font-semibold">{locale === 'en' ? 'Policies' : 'Πολιτικές'}</h1>
-      <Card>
-        <CardContent className="p-6">
+      <PageHeader
+        title={locale === 'en' ? 'Policies' : 'Πολιτικές'}
+        subtitle={
+          locale === 'en'
+            ? 'Check-in, cancellation and house rules the assistant can quote.'
+            : 'Πολιτικές άφιξης, ακύρωσης και κανόνες που μπορεί να αναφέρει ο βοηθός.'
+        }
+      />
+      <div className="rounded-lg border bg-card p-6">
           <PoliciesEditor
             locale={locale}
             rows={(data ?? []).map((r) => ({
@@ -34,8 +40,7 @@ export default async function PoliciesPage({ params }: Props) {
               locale: r.locale as 'el' | 'en',
             }))}
           />
-        </CardContent>
-      </Card>
+      </div>
     </div>
   );
 }

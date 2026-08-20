@@ -2,6 +2,7 @@ import { setRequestLocale } from 'next-intl/server';
 import { getServerClient } from '@/lib/supabase-server';
 import { requireSuperAdmin } from '@/lib/auth-context';
 import { BusinessForm } from '@/components/admin/BusinessForm';
+import { PageHeader } from '@/components/dashboard/PageHeader';
 
 interface Props {
   params: Promise<{ locale: string }>;
@@ -19,10 +20,13 @@ export default async function NewBusinessPage({ params }: Props) {
 
   return (
     <div className="max-w-2xl">
-      <h1 className="mb-6 text-2xl font-semibold">
-        {locale === 'en' ? 'New business' : 'Νέα επιχείρηση'}
-      </h1>
-      <BusinessForm
+      <PageHeader
+        title={locale === 'en' ? 'New business' : 'Νέα επιχείρηση'}
+        backHref="/admin/businesses"
+        backLabel={locale === 'en' ? 'Businesses' : 'Επιχειρήσεις'}
+      />
+      <div className="rounded-lg border bg-card p-6">
+        <BusinessForm
         locale={locale}
         categories={(cats ?? []).map((c) => ({
           id: c.id,
@@ -47,7 +51,8 @@ export default async function NewBusinessPage({ params }: Props) {
           verified: false,
           active: true,
         }}
-      />
+        />
+      </div>
     </div>
   );
 }
