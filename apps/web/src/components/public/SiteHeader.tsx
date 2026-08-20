@@ -39,7 +39,7 @@ export function SiteHeader({ locale, overlay = false }: Props) {
             transparent ? 'text-white' : 'text-foreground',
           )}
         >
-          <img src="/images/logo.png" alt="RoomRVI" className="h-11 w-auto shrink-0" />
+          <img src="/images/logo.png" alt="RoomRVI" className="h-14 w-auto shrink-0" />
         </Link>
         <nav className="ml-auto flex items-center gap-1 text-sm">
           <Link

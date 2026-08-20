@@ -34,7 +34,7 @@ export function SiteFooter({ locale, categories = [] }: Props) {
               <img
                 src="/images/logo.png"
                 alt=""
-                className="h-14 w-auto"
+                className="h-20 w-auto"
                 loading="lazy"
               />
               <span className="sr-only">RoomRVI</span>
