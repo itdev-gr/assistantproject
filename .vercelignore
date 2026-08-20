@@ -12,8 +12,9 @@ tests
 playwright-report
 test-results
 
-# Local artifacts
-*.png
+# Local artifacts — root-level screenshots only; app assets under
+# apps/web/public must still be uploaded.
+/*.png
 *.log
 *.local
 .env.local
