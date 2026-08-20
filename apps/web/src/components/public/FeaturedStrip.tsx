@@ -1,7 +1,8 @@
 'use client';
 
+import { useRef } from 'react';
 import { motion } from 'framer-motion';
-import { Sparkles } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Sparkles } from 'lucide-react';
 import { Link } from '@/i18n/routing';
 import type { DirectoryBusiness } from '@/lib/public-directory';
 import { Badge } from '@aga/ui';
@@ -14,8 +15,13 @@ interface Props {
 }
 
 export function FeaturedStrip({ locale, businesses }: Props) {
+  const scrollerRef = useRef<HTMLDivElement>(null);
   if (businesses.length === 0) return null;
   const t = (en: string, el: string) => (locale === 'en' ? en : el);
+
+  function scrollByCards(direction: -1 | 1) {
+    scrollerRef.current?.scrollBy({ left: direction * 340, behavior: 'smooth' });
+  }
 
   return (
     <section className="border-b bg-gradient-to-b from-sky-50/80 to-background">
@@ -36,10 +42,30 @@ export function FeaturedStrip({ locale, businesses }: Props) {
               {t('Featured this week', 'Προτεινόμενα αυτή την εβδομάδα')}
             </h2>
           </div>
-          <p className="text-sm text-muted-foreground">{businesses.length}</p>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => scrollByCards(-1)}
+              aria-label={t('Scroll left', 'Κύλιση αριστερά')}
+              className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-full border bg-background text-muted-foreground transition-colors duration-200 hover:bg-accent/40 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              <ChevronLeft className="h-5 w-5" aria-hidden />
+            </button>
+            <button
+              type="button"
+              onClick={() => scrollByCards(1)}
+              aria-label={t('Scroll right', 'Κύλιση δεξιά')}
+              className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-full border bg-background text-foreground transition-colors duration-200 hover:bg-accent/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              <ChevronRight className="h-5 w-5" aria-hidden />
+            </button>
+          </div>
         </motion.div>
 
-        <div className="-mx-4 flex snap-x snap-mandatory gap-5 overflow-x-auto px-4 pb-3">
+        <div
+          ref={scrollerRef}
+          className="-mx-4 flex snap-x snap-mandatory gap-5 overflow-x-auto px-4 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        >
           {businesses.map((b) => (
             <motion.div
               key={b.id}

@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import { motion, useMotionValueEvent, useScroll } from 'framer-motion';
-import { Waves } from 'lucide-react';
 import { Link } from '@/i18n/routing';
 import { Button, cn } from '@aga/ui';
 
@@ -40,8 +39,7 @@ export function SiteHeader({ locale, overlay = false }: Props) {
             transparent ? 'text-white' : 'text-foreground',
           )}
         >
-          <Waves className="h-5 w-5 shrink-0" aria-hidden />
-          {locale === 'en' ? 'Local Guide' : 'Τοπικός Οδηγός'}
+          <img src="/images/logo.png" alt="RoomRVI" className="h-11 w-auto shrink-0" />
         </Link>
         <nav className="ml-auto flex items-center gap-1 text-sm">
           <Link

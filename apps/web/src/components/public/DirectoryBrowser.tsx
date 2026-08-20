@@ -39,7 +39,7 @@ export function DirectoryBrowser({ locale, businesses, categories }: Props) {
         variants={stagger}
         initial="hidden"
         whileInView="visible"
-        viewport={{ once: true, margin: '-80px' }}
+        viewport={{ once: true, margin: '-40px' }}
       >
         <motion.div variants={fadeUp} className="mb-6">
           <p className="mb-1 text-xs font-medium uppercase tracking-[0.2em] text-primary">
@@ -49,9 +49,12 @@ export function DirectoryBrowser({ locale, businesses, categories }: Props) {
             {t('Explore every place', 'Εξερευνήστε όλα τα μέρη')}
           </h2>
         </motion.div>
+      </motion.div>
 
-        {/* Search bar */}
-        <motion.div variants={fadeUp} className="relative max-w-xl">
+      {/* Sticky search + filters — outside any animated (transformed) parent
+          so position: sticky keeps working while the results scroll. */}
+      <div className="sticky top-20 z-20 rounded-2xl border bg-background/90 p-3 shadow-sm backdrop-blur">
+        <div className="relative">
           <Search
             className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground"
             aria-hidden
@@ -61,7 +64,7 @@ export function DirectoryBrowser({ locale, businesses, categories }: Props) {
             onChange={(e) => setQuery(e.target.value)}
             placeholder={t('Search by name, tag, area…', 'Αναζήτηση με όνομα, ετικέτα, περιοχή…')}
             aria-label={t('Search businesses', 'Αναζήτηση επιχειρήσεων')}
-            className="h-12 w-full rounded-full border border-input bg-background pl-11 pr-24 text-base shadow-sm transition-shadow duration-200 focus:outline-none focus:ring-2 focus:ring-ring"
+            className="h-11 w-full rounded-full border border-input bg-background pl-11 pr-24 text-base transition-shadow duration-200 focus:outline-none focus:ring-2 focus:ring-ring"
           />
           {query && (
             <button
@@ -76,10 +79,8 @@ export function DirectoryBrowser({ locale, businesses, categories }: Props) {
           <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm tabular-nums text-muted-foreground">
             {filtered.length} {t(filtered.length === 1 ? 'place' : 'places', 'μέρη')}
           </span>
-        </motion.div>
-
-        {/* Category chips */}
-        <motion.div variants={fadeUp} className="-mx-1 mt-5 flex flex-wrap gap-1.5">
+        </div>
+        <div className="mt-2.5 flex flex-wrap gap-1.5">
           <CategoryChip
             label={t('All', 'Όλα')}
             count={businesses.length}
@@ -95,8 +96,8 @@ export function DirectoryBrowser({ locale, businesses, categories }: Props) {
               onClick={() => setCategory(c.slug)}
             />
           ))}
-        </motion.div>
-      </motion.div>
+        </div>
+      </div>
 
       {filtered.length === 0 ? (
         <div className="mt-16 flex flex-col items-center text-center">

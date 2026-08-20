@@ -3,8 +3,9 @@
 import { useRef } from 'react';
 import Image from 'next/image';
 import { motion, useScroll, useTransform } from 'framer-motion';
-import { ChevronDown, Search } from 'lucide-react';
+import { BadgeCheck, ChevronDown, MapPin, MessageCircle, Search } from 'lucide-react';
 import { cn } from '@aga/ui';
+import { categoryIcon } from './category-icons';
 import type { DirectoryCategory } from '@/lib/public-directory';
 import {
   useDirectorySearch,
@@ -53,7 +54,7 @@ export function HomeHero({ locale, totalCount, categories }: Props) {
   return (
     <section
       ref={sectionRef}
-      className="relative flex min-h-[82svh] flex-col overflow-hidden md:min-h-[88svh]"
+      className="relative flex min-h-[540px] flex-col overflow-hidden md:min-h-[640px]"
     >
       {/* Parallax sea photograph */}
       <motion.div className="absolute inset-0" style={{ y: imageY }} aria-hidden>
@@ -83,7 +84,7 @@ export function HomeHero({ locale, totalCount, categories }: Props) {
           variants={fadeUp}
           className="mb-4 text-xs font-medium uppercase tracking-[0.28em] text-sky-100/90"
         >
-          {t('Rhodes · Greece', 'Ρόδος · Ελλάδα')}
+          {t('Naxos · Greece', 'Νάξος · Ελλάδα')}
         </motion.p>
 
         <h1 className="max-w-4xl font-serif text-4xl font-semibold leading-tight text-white sm:text-6xl md:text-7xl">
@@ -141,29 +142,47 @@ export function HomeHero({ locale, totalCount, categories }: Props) {
             <span className="text-xs uppercase tracking-wide text-sky-100/80">
               {t('Popular:', 'Δημοφιλή:')}
             </span>
-            {topCategories.map((c) => (
-              <button
-                key={c.slug}
-                type="button"
-                onClick={() => pickCategory(c.slug)}
-                className={cn(
-                  'cursor-pointer rounded-full border border-white/30 bg-white/10 px-4 py-2 text-sm text-white backdrop-blur-sm',
-                  'transition-colors duration-200 hover:border-white/60 hover:bg-white/20',
-                  'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white',
-                )}
-              >
-                {c.name}
-              </button>
-            ))}
+            {topCategories.map((c) => {
+              const Icon = categoryIcon(c.slug);
+              return (
+                <button
+                  key={c.slug}
+                  type="button"
+                  onClick={() => pickCategory(c.slug)}
+                  className={cn(
+                    'inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-white/30 bg-white/10 px-4 py-2 text-sm text-white backdrop-blur-sm',
+                    'transition-colors duration-200 hover:border-white/60 hover:bg-white/20',
+                    'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white',
+                  )}
+                >
+                  <Icon className="h-3.5 w-3.5" aria-hidden />
+                  {c.name}
+                </button>
+              );
+            })}
           </motion.div>
         )}
 
-        <motion.p variants={fadeUp} className="mt-8 text-sm text-sky-100/80">
-          {t(
-            `${totalCount} verified businesses, hand-picked.`,
-            `${totalCount} εγκεκριμένες επιχειρήσεις, επιλεγμένες με προσοχή.`,
-          )}
-        </motion.p>
+        <motion.div
+          variants={fadeUp}
+          className="mt-9 flex flex-wrap items-center justify-center gap-x-8 gap-y-3"
+        >
+          <span className="inline-flex items-center gap-2 text-sm text-sky-100/90">
+            <BadgeCheck className="h-4 w-4 text-sky-300" aria-hidden />
+            <span>
+              <strong className="font-semibold text-white">{totalCount}</strong>{' '}
+              {t('verified businesses', 'επαληθευμένες επιχειρήσεις')}
+            </span>
+          </span>
+          <span className="inline-flex items-center gap-2 text-sm text-sky-100/90">
+            <MapPin className="h-4 w-4 text-sky-300" aria-hidden />
+            {t('Hand-picked by locals', 'Επιλεγμένες από ντόπιους')}
+          </span>
+          <span className="inline-flex items-center gap-2 text-sm text-sky-100/90">
+            <MessageCircle className="h-4 w-4 text-sky-300" aria-hidden />
+            {t('Free tips from the assistant', 'Δωρεάν προτάσεις από τον βοηθό')}
+          </span>
+        </motion.div>
       </motion.div>
 
       {/* Scroll cue */}

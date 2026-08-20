@@ -6,6 +6,7 @@ import { MessageCircle, Send, X } from 'lucide-react';
 import { useConversation, type ConversationMessage } from '@aga/chat';
 import type { RecommendationCard } from '@aga/api-contracts';
 import { Badge, Button, cn } from '@aga/ui';
+import { useAssistant } from '@/lib/assistant-store';
 
 interface Props {
   locale: string;
@@ -17,10 +18,18 @@ export function FloatingAssistant({ locale, hotelSlug, title }: Props) {
   const t = (en: string, el: string) => (locale === 'en' ? en : el);
   const resolvedTitle = title ?? t('Local Guide assistant', 'Βοηθός Τοπικού Οδηγού');
 
-  const [open, setOpen] = useState(false);
+  const { open, setOpen, draft, clearDraft } = useAssistant();
   const [input, setInput] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // Consume a question queued from elsewhere on the page (e.g. the promo section).
+  useEffect(() => {
+    if (draft) {
+      setInput(draft);
+      clearDraft();
+    }
+  }, [draft, clearDraft]);
 
   // Computed once — subsequent re-renders reuse the same welcome message.
   const [welcomeMessage] = useState<ConversationMessage>(() => ({
@@ -61,14 +70,23 @@ export function FloatingAssistant({ locale, hotelSlug, title }: Props) {
     <MotionConfig reducedMotion="user">
       <motion.button
         type="button"
-        onClick={() => setOpen((o) => !o)}
+        onClick={() => setOpen(!open)}
         aria-label={open ? t('Close assistant', 'Κλείσιμο βοηθού') : t('Open assistant', 'Άνοιγμα βοηθού')}
         aria-expanded={open}
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
-        className="fixed bottom-4 left-4 z-40 flex h-14 w-14 cursor-pointer items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+        whileHover={{ scale: 1.04 }}
+        whileTap={{ scale: 0.96 }}
+        className="fixed bottom-4 right-4 z-40 flex h-14 cursor-pointer items-center justify-center gap-2 rounded-full bg-primary px-4 text-primary-foreground shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:px-5"
       >
-        {open ? <X className="h-6 w-6" aria-hidden /> : <MessageCircle className="h-6 w-6" aria-hidden />}
+        {open ? (
+          <X className="h-6 w-6" aria-hidden />
+        ) : (
+          <MessageCircle className="h-6 w-6" aria-hidden />
+        )}
+        {!open && (
+          <span className="hidden text-sm font-semibold sm:inline">
+            {t('Ask the assistant', 'Ρωτήστε τον βοηθό')}
+          </span>
+        )}
       </motion.button>
 
       <AnimatePresence>
@@ -82,7 +100,7 @@ export function FloatingAssistant({ locale, hotelSlug, title }: Props) {
             transition={{ type: 'spring', stiffness: 320, damping: 28 }}
             className={cn(
               'fixed z-40 flex flex-col overflow-hidden rounded-2xl border bg-background shadow-2xl',
-              'bottom-24 left-4 h-[560px] w-[370px] max-h-[75dvh]',
+              'bottom-24 right-4 h-[560px] w-[370px] max-h-[75dvh]',
               'max-sm:inset-x-2 max-sm:bottom-20 max-sm:h-[70dvh] max-sm:w-auto',
             )}
           >

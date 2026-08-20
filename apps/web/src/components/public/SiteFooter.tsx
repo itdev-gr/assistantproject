@@ -1,7 +1,6 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { Waves } from 'lucide-react';
 import { Link } from '@/i18n/routing';
 import type { DirectoryCategory } from '@/lib/public-directory';
 import { useDirectorySearch, scrollToDirectory } from '@/lib/directory-search-store';
@@ -31,9 +30,14 @@ export function SiteFooter({ locale, categories = [] }: Props) {
       <div className="mx-auto max-w-6xl px-4 py-12">
         <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-3">
           <div>
-            <p className="flex items-center gap-2 text-base font-semibold text-white">
-              <Waves className="h-5 w-5" aria-hidden />
-              {t('Local Guide', 'Τοπικός Οδηγός')}
+            <p className="flex items-center gap-2.5 text-base font-semibold text-white">
+              <img
+                src="/images/logo.png"
+                alt=""
+                className="h-14 w-auto"
+                loading="lazy"
+              />
+              <span className="sr-only">RoomRVI</span>
             </p>
             <p className="mt-3 max-w-xs text-sm leading-relaxed text-sky-200/80">
               {t(
