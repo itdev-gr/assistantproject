@@ -32,17 +32,17 @@ export function SiteFooter({ locale, categories = [] }: Props) {
           <div>
             <p className="flex items-center gap-2.5 text-base font-semibold text-white">
               <img
-                src="/images/roomriv-light.svg"
+                src="/brand/roomriv-stacked-white.svg"
                 alt=""
-                className="h-16 w-auto"
+                className="h-24 w-auto"
                 loading="lazy"
               />
               <span className="sr-only">Roomriv</span>
             </p>
             <p className="mt-3 max-w-xs text-sm leading-relaxed text-sky-200/80">
               {t(
-                'Hand-picked restaurants, beaches, activities and trusted local services across the island.',
-                'Επιλεγμένα εστιατόρια, παραλίες, δραστηριότητες και αξιόπιστες τοπικές υπηρεσίες σε όλο το νησί.',
+                'Hand-picked restaurants, beaches, activities and trusted local services across Greece.',
+                'Επιλεγμένα εστιατόρια, παραλίες, δραστηριότητες και αξιόπιστες τοπικές υπηρεσίες σε όλη την Ελλάδα.',
               )}
             </p>
           </div>
@@ -125,14 +125,14 @@ export function SiteFooter({ locale, categories = [] }: Props) {
             )}
           </p>
           <p>
-            {t('Hero photo:', 'Φωτογραφία:')}{' '}
+            Powered by{' '}
             <a
-              href="https://unsplash.com/photos/mAOTatwrE_o"
+              href="https://www.itdev.gr"
               target="_blank"
               rel="noopener noreferrer"
-              className="underline-offset-2 transition-colors duration-200 hover:text-white hover:underline"
+              className="font-medium text-sky-200/90 underline-offset-2 transition-colors duration-200 hover:text-white hover:underline"
             >
-              Unsplash
+              ITDEV
             </a>
           </p>
         </div>
