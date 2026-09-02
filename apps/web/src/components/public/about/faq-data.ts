@@ -50,8 +50,8 @@ export const FAQ_ITEMS: FaqItem[] = [
     qEn: 'Which areas do you cover?',
     qEl: 'Ποιες περιοχές καλύπτετε;',
     aEn:
-      'We cover Rhodes island-wide — from the old town and the east-coast beaches to the villages and coves of the south — and we keep adding places as locals put them forward.',
+      'We cover the whole of Greece — from the islands of the Aegean and the Ionian to the mainland, the cities and the mountain villages — and we keep adding places as locals put them forward.',
     aEl:
-      'Καλύπτουμε όλη τη Ρόδο — από την παλιά πόλη και τις παραλίες της ανατολικής ακτής μέχρι τα χωριά και τους κολπίσκους του νότου — και προσθέτουμε συνεχώς νέα μέρη με προτάσεις ντόπιων.',
+      'Καλύπτουμε όλη την Ελλάδα — από τα νησιά του Αιγαίου και του Ιονίου μέχρι την ηπειρωτική χώρα, τις πόλεις και τα ορεινά χωριά — και προσθέτουμε συνεχώς νέα μέρη με προτάσεις ντόπιων.',
   },
 ];

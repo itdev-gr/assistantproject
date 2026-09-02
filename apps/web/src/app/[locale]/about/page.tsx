@@ -67,7 +67,7 @@ export default async function AboutPage({ params }: Props) {
       '@type': 'Organization',
       name: 'Local Guide',
       url: SITE_URL,
-      areaServed: 'Rhodes, Greece',
+      areaServed: 'Greece',
     },
   };
   const faqJsonLd = {
