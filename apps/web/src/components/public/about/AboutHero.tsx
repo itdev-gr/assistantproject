@@ -53,12 +53,12 @@ export function AboutHero({ locale }: Props) {
           variants={fadeUp}
           className="max-w-3xl font-serif text-4xl font-semibold leading-tight text-white sm:text-5xl md:text-6xl"
         >
-          {t('Built on the island, for the island.', 'Φτιαγμένο στο νησί, για το νησί.')}
+          {t('The island, the way locals know it.', 'Το νησί, όπως το ξέρουν οι ντόπιοι.')}
         </motion.h1>
         <motion.p variants={fadeUp} className="mt-5 max-w-2xl text-base text-sky-50/90 sm:text-lg">
           {t(
-            'The story behind the guide that connects visitors with the people who know Rhodes best.',
-            'Η ιστορία πίσω από τον οδηγό που συνδέει τους επισκέπτες με τους ανθρώπους που ξέρουν καλύτερα τη Ρόδο.',
+            'We are not another list copied from the internet. We live here, we try things, we ask around, and we hand-pick the tavernas, beaches and people worth knowing — so you can experience the island the way we do.',
+            'Δεν είμαστε άλλη μια λίστα αντιγραμμένη από το διαδίκτυο. Ζούμε εδώ, δοκιμάζουμε, ρωτάμε και επιλέγουμε με το χέρι τις ταβέρνες, τις παραλίες και τους ανθρώπους που αξίζει να γνωρίσετε — για να ζήσετε το νησί όπως το ζούμε εμείς.',
           )}
         </motion.p>
       </motion.div>
