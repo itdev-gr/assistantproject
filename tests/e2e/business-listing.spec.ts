@@ -18,20 +18,20 @@ const formAlert = (page: import('@playwright/test').Page) => page.locator('p[rol
 test.describe('list your business', () => {
   test.use({ locale: 'el' });
 
-  test('home CTA and footer both lead to the listing form', async ({ page }) => {
+  test('home CTA and footer both lead to partner signup', async ({ page }) => {
     await page.goto('/en');
     await page.getByRole('link', { name: 'List your business', exact: true }).first().click();
-    await expect(page).toHaveURL(/\/en\/list-your-business$/);
-    await expect(
-      page.getByRole('heading', { level: 1, name: /Put your business in front of travellers/ }),
-    ).toBeVisible();
+    await expect(page).toHaveURL(/\/en\/signup\?role=partner$/);
+    await expect(page.getByRole('heading', { name: 'Create account' })).toBeVisible();
+    await expect(page.getByRole('button', { name: /Partner/ })).toHaveAttribute('aria-pressed', 'true');
+    await expect(page.getByLabel(/Business name/)).toBeVisible();
 
-    await page.goto('/en/about');
+    await page.goto('/en');
     await page
-      .getByRole('main')
+      .getByRole('contentinfo')
       .getByRole('link', { name: 'List your business', exact: true })
       .click();
-    await expect(page).toHaveURL(/\/en\/list-your-business$/);
+    await expect(page).toHaveURL(/\/en\/signup\?role=partner$/);
   });
 
   test('form renders in Greek at the unprefixed URL with live categories', async ({ page }) => {
@@ -95,31 +95,12 @@ test.describe('auth dead ends', () => {
     await expect(formAlert(page)).toContainText('δεν είναι ακόμη συνδεδεμένος');
   });
 
-  test('signup page points businesses to the listing form', async ({ page }) => {
+  test('signup page offers visitor and partner accounts', async ({ page }) => {
     await page.goto('/en/signup');
-    await expect(page.getByRole('heading', { name: 'Create a hotel account' })).toBeVisible();
-    await page.getByRole('link', { name: /send a listing request/ }).click();
-    await expect(page).toHaveURL(/\/en\/list-your-business$/);
-  });
-
-  test('signed-in user without a hotel lands on /no-access instead of looping', async ({ page }) => {
-    const email = process.env.AGA_E2E_NOROLE_EMAIL;
-    const password = process.env.AGA_E2E_NOROLE_PASSWORD;
-    test.skip(!email || !password, 'Set AGA_E2E_NOROLE_EMAIL / AGA_E2E_NOROLE_PASSWORD');
-
-    await page.goto('/en/login?next=/owner');
-    await page.getByLabel('Email').fill(email!);
-    await page.getByLabel(/Password/).fill(password!);
-    await page.getByRole('button', { name: 'Sign in' }).click();
-
-    await expect(page).toHaveURL(/\/no-access$/);
-    await expect(
-      page.getByRole('heading', { name: /not linked to a property yet/ }),
-    ).toBeVisible();
-    await expect(page.getByRole('link', { name: 'List your business' })).toBeVisible();
-
-    // The header now reflects the session instead of offering "Sign in" again.
-    await page.goto('/en');
-    await expect(page.getByRole('link', { name: 'My account' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Create account' })).toBeVisible();
+    await expect(page.getByRole('button', { name: /Visitor/ })).toHaveAttribute('aria-pressed', 'true');
+    await page.getByRole('button', { name: /Partner/ }).click();
+    await expect(page.getByLabel(/Business name/)).toBeVisible();
+    await expect(page.getByLabel(/Category/)).toBeVisible();
   });
 });
