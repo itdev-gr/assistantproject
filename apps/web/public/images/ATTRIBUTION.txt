@@ -7,3 +7,7 @@ about-harbor.jpg — Photo by Tatiana Tochilova on Unsplash — https://unsplash
 about-taverna.jpg — Photo by Ricardo Jimenez on Unsplash — https://unsplash.com/photos/Kzft6vrwRoM
 about-beach.jpg — Photo by Dimitris Kiriakakis on Unsplash — https://unsplash.com/photos/ttUKl-qQWC4
 about-village.jpg — Photo by Johnny Africa on Unsplash — https://unsplash.com/photos/qvdGgOwgw1Q
+hero-milos.jpg — Photo by Derek Sutton on Unsplash — https://unsplash.com/photos/nCI6sepspvQ (Milos, Greece)
+hero-corfu.jpg — Photo by Corfu Diary on Unsplash — https://unsplash.com/photos/le476_hP-6s (Paleokastritsa, Corfu, Greece)
+hero-athens.jpg — Photo by Kameron Kincade on Unsplash — https://unsplash.com/photos/XALkWXTXk6Y (Anafiotika, Athens, Greece)
+hero-patmos.jpg — Photo by Anastasia Dimitri on Unsplash — https://unsplash.com/photos/Dj-N2KVHH8k (Patmos, Greece)

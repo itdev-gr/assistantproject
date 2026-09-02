@@ -1,8 +1,8 @@
 'use client';
 
-import { useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
-import { motion, useScroll, useTransform } from 'framer-motion';
+import { AnimatePresence, motion, useReducedMotion, useScroll, useTransform } from 'framer-motion';
 import { BadgeCheck, ChevronDown, MapPin, MessageCircle, Search } from 'lucide-react';
 import { cn } from '@aga/ui';
 import { categoryIcon } from './category-icons';
@@ -19,10 +19,34 @@ interface Props {
   categories: DirectoryCategory[];
 }
 
+/** Hero backdrop slides — all 2400×1600, see public/images/ATTRIBUTION.txt */
+const HERO_SLIDES = [
+  { src: '/images/hero-rhodes.jpg', en: 'Lindos, Rhodes', el: 'Λίνδος, Ρόδος' },
+  { src: '/images/hero-milos.jpg', en: 'Milos', el: 'Μήλος' },
+  { src: '/images/hero-corfu.jpg', en: 'Paleokastritsa, Corfu', el: 'Παλαιοκαστρίτσα, Κέρκυρα' },
+  { src: '/images/hero-athens.jpg', en: 'Anafiotika, Athens', el: 'Αναφιώτικα, Αθήνα' },
+  { src: '/images/hero-patmos.jpg', en: 'Patmos', el: 'Πάτμος' },
+] as const;
+
+const SLIDE_INTERVAL_MS = 6000;
+
 export function HomeHero({ locale, totalCount, categories }: Props) {
   const t = (en: string, el: string) => (locale === 'en' ? en : el);
   const sectionRef = useRef<HTMLElement>(null);
   const { query, setQuery, setCategory } = useDirectorySearch();
+  const reduceMotion = useReducedMotion();
+  const [slide, setSlide] = useState(0);
+  const [paused, setPaused] = useState(false);
+  const current = HERO_SLIDES[slide] ?? HERO_SLIDES[0];
+
+  useEffect(() => {
+    if (paused || reduceMotion) return;
+    const id = setInterval(
+      () => setSlide((i) => (i + 1) % HERO_SLIDES.length),
+      SLIDE_INTERVAL_MS,
+    );
+    return () => clearInterval(id);
+  }, [paused, reduceMotion]);
 
   const { scrollYProgress } = useScroll({
     target: sectionRef,
@@ -31,7 +55,7 @@ export function HomeHero({ locale, totalCount, categories }: Props) {
   const imageY = useTransform(scrollYProgress, [0, 1], ['0%', '18%']);
   const contentOpacity = useTransform(scrollYProgress, [0, 0.7], [1, 0]);
 
-  const headline = t('Your local guide to the Aegean', 'Ο τοπικός σας οδηγός στο Αιγαίο');
+  const headline = t('Your local guide for your holidays', 'Ο τοπικός σας οδηγός για τις διακοπές σας');
   const topCategories = categories.slice(0, 4);
 
   function submit(e: React.FormEvent) {
@@ -56,16 +80,33 @@ export function HomeHero({ locale, totalCount, categories }: Props) {
       ref={sectionRef}
       className="relative flex min-h-[540px] flex-col overflow-hidden md:min-h-[640px]"
     >
-      {/* Parallax sea photograph */}
+      {/* Parallax photo carousel */}
       <motion.div className="absolute inset-0" style={{ y: imageY }} aria-hidden>
-        <Image
-          src="/images/hero-rhodes.jpg"
-          alt=""
-          fill
-          priority
-          sizes="100vw"
-          className="scale-105 object-cover object-center"
-        />
+        <AnimatePresence initial={false}>
+          <motion.div
+            key={current.src}
+            className="absolute inset-0"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: reduceMotion ? 0 : 1.2, ease: 'easeInOut' }}
+          >
+            <Image
+              src={current.src}
+              alt=""
+              fill
+              priority={slide === 0}
+              sizes="100vw"
+              className="scale-105 object-cover object-center"
+            />
+          </motion.div>
+        </AnimatePresence>
+        {/* Preload the remaining slides off-screen so the first crossfade is instant */}
+        <div className="hidden">
+          {HERO_SLIDES.slice(1).map((s) => (
+            <Image key={s.src} src={s.src} alt="" width={24} height={16} sizes="1px" />
+          ))}
+        </div>
       </motion.div>
       {/* Contrast overlay */}
       <div
@@ -84,7 +125,7 @@ export function HomeHero({ locale, totalCount, categories }: Props) {
           variants={fadeUp}
           className="mb-4 text-xs font-medium uppercase tracking-[0.28em] text-sky-100/90"
         >
-          {t('Naxos · Greece', 'Νάξος · Ελλάδα')}
+          {t('Greece', 'Ελλάδα')}
         </motion.p>
 
         <h1 className="max-w-4xl font-serif text-4xl font-semibold leading-tight text-white sm:text-6xl md:text-7xl">
@@ -184,6 +225,30 @@ export function HomeHero({ locale, totalCount, categories }: Props) {
           </span>
         </motion.div>
       </motion.div>
+
+      {/* Slide indicators */}
+      <div
+        className="absolute bottom-16 left-1/2 z-10 flex -translate-x-1/2 items-center gap-2"
+        role="tablist"
+        aria-label={t('Hero photos', 'Φωτογραφίες hero')}
+        onMouseEnter={() => setPaused(true)}
+        onMouseLeave={() => setPaused(false)}
+      >
+        {HERO_SLIDES.map((s, i) => (
+          <button
+            key={s.src}
+            type="button"
+            role="tab"
+            aria-selected={i === slide}
+            aria-label={t(s.en, s.el)}
+            onClick={() => setSlide(i)}
+            className={cn(
+              'h-1.5 cursor-pointer rounded-full transition-all duration-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white',
+              i === slide ? 'w-7 bg-white' : 'w-2.5 bg-white/50 hover:bg-white/80',
+            )}
+          />
+        ))}
+      </div>
 
       {/* Scroll cue */}
       <motion.button
