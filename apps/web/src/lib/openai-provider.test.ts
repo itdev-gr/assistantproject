@@ -124,6 +124,49 @@ describe('OpenAiProvider', () => {
     expect(messages[0]!.content).toContain('Taverna Acropolis');
   });
 
+  it('searches every category for free-form questions and attaches the matching place', async () => {
+    const card = {
+      businessId: '22222222-2222-2222-2222-222222222222',
+      name: 'Pharmacy Nikolaou',
+      category: 'shops',
+      description: 'Pharmacy by the harbour',
+      distanceKm: 0.3,
+      openNow: true,
+      priceBand: null,
+      imageUrl: null,
+      promoted: false,
+      referralUrl: 'https://example.com/pharmacy',
+    };
+    const admin = makeAdmin({ data: [], error: null });
+    const search = vi.fn().mockResolvedValue({
+      candidates: [
+        {
+          businessId: card.businessId,
+          keywordMatch: 0.5,
+          distanceKm: 0.3,
+          openNow: true,
+          categoryFit: true,
+          preferenceMatch: 0,
+          partnership: null,
+        },
+      ],
+      cardFor: vi.fn().mockResolvedValue(card),
+    });
+    const data = makeData({ searchRecommendationCandidates: search });
+    const provider = new OpenAiProvider({ admin, data, fallback: makeFallback(FALLBACK_RESULT), hotelName: HOTEL_NAME });
+
+    const result = await provider.respond({
+      ...baseInput,
+      message: 'is there a pharmacy nearby?',
+    });
+
+    expect(result.intent).toBe('out_of_scope');
+    expect(search).toHaveBeenCalledWith(expect.objectContaining({ intent: 'out_of_scope', text: 'is there a pharmacy nearby?' }));
+    expect(result.recommendations).toEqual([card]);
+    const [messages] = mockCompleteChat.mock.calls[0]!;
+    expect(messages[0]!.content).toContain('Pharmacy Nikolaou');
+  });
+
   it('falls back when the OpenAI completion call throws', async () => {
     mockCompleteChat.mockRejectedValue(new Error('rate limited upstream'));
     const admin = makeAdmin({ data: [], error: null });

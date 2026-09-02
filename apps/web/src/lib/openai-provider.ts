@@ -37,8 +37,11 @@ export class OpenAiProvider implements ResponseProvider {
         return this.deps.fallback.respond(input);
       }
 
+      // Attach place cards for explicit recommendation intents and for
+      // free-form questions the keyword matcher couldn't classify — the data
+      // port then searches every category and only returns real matches.
       let cards: RecommendationCard[] | undefined;
-      if (isRecommendationIntent(match.slug)) {
+      if (isRecommendationIntent(match.slug) || match.slug === 'out_of_scope') {
         const search = await this.deps.data.searchRecommendationCandidates({
           hotelId: input.hotelId,
           intent: match.slug,

@@ -51,6 +51,9 @@ export function buildChatMessages(input: {
     lines.push(
       `The app already displays a card for each recommended place below your message — do NOT enumerate or describe them all. Reply in one or two short sentences that answer the guest's actual question, naming only the one or two places that best match it.`,
     );
+    lines.push(
+      `Always name at least one of these places explicitly, using its exact name, and say in a few words why it fits what the guest asked. If none of them really fits the question, answer from the facts and say you have no specific place to suggest.`,
+    );
   }
 
   lines.push('FACTS:');

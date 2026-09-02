@@ -32,9 +32,9 @@ export function SiteFooter({ locale, categories = [] }: Props) {
           <div>
             <p className="flex items-center gap-2.5 text-base font-semibold text-white">
               <img
-                src="/brand/roomriv-stacked-white.svg"
+                src="/brand/roomriv-stacked-plain-white.svg"
                 alt=""
-                className="h-24 w-auto"
+                className="h-20 w-auto"
                 loading="lazy"
               />
               <span className="sr-only">Roomriv</span>

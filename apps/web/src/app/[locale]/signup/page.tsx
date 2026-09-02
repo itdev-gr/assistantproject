@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { setRequestLocale } from 'next-intl/server';
 import { Card, CardContent, CardHeader, CardTitle } from '@aga/ui';
 import { SignupForm } from '@/components/auth/SignupForm';
@@ -14,6 +15,9 @@ export default async function SignupPage({ params, searchParams }: Props) {
 
   return (
     <main className="mx-auto flex min-h-dvh max-w-md flex-col items-center justify-center px-4">
+      <Link href={`/${locale}`} className="mb-8">
+        <img src="/brand/roomriv-stacked-plain.svg" alt="Roomriv" className="h-24 w-auto" />
+      </Link>
       <Card className="w-full">
         <CardHeader>
           <CardTitle>{locale === 'en' ? 'Create account' : 'Δημιουργία λογαριασμού'}</CardTitle>

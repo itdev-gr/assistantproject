@@ -82,11 +82,16 @@ export function buildDataPort(supabase: DB, ctx: RequestCtx): ResponseDataPort {
     },
 
     async searchRecommendationCandidates({ hotelId, intent, locale, text, guestLocalTime }) {
-      const categorySlug = INTENT_TO_CATEGORY[intent];
-      if (!categorySlug) return { candidates: [], cardFor: async () => null };
+      // recommend_* intents map to one category. Anything else (free-form
+      // questions that missed the keyword matcher, i.e. `out_of_scope`) runs
+      // an open search across every category and keeps only businesses whose
+      // name/tags/description actually overlap the guest's words, so the
+      // assistant can still name a concrete place without inventing one.
+      const categorySlug = INTENT_TO_CATEGORY[intent] ?? null;
+      const openSearch = categorySlug === null;
 
       // Pull candidates with optional partnership join for this hotel.
-      const { data } = await supabase
+      let query = supabase
         .from('businesses')
         .select(
           `
@@ -101,11 +106,11 @@ export function buildDataPort(supabase: DB, ctx: RequestCtx): ResponseDataPort {
           `,
         )
         .eq('active', true)
-        .eq('verified', true)
-        .eq('business_categories.slug', categorySlug)
-        .limit(50);
+        .eq('verified', true);
+      if (categorySlug) query = query.eq('business_categories.slug', categorySlug);
+      const { data } = await query.limit(openSearch ? 200 : 50);
 
-      const rows = (data ?? []) as unknown as Array<{
+      const allRows = (data ?? []) as unknown as Array<{
         id: string;
         name: string;
         lat: number;
@@ -138,7 +143,7 @@ export function buildDataPort(supabase: DB, ctx: RequestCtx): ResponseDataPort {
       // is 1.0 when true vs 0.3 when false — there's no third, neutral value
       // in a boolean field), but it is the least-surprising choice: an unknown
       // schedule is treated as "no evidence it's closed" rather than penalized.
-      const computeSignals = (b: (typeof rows)[number]) => {
+      const computeSignals = (b: (typeof allRows)[number]) => {
         const keywordMatch = keywordMatchScore(text, {
           name: b.name,
           tags: b.tags,
@@ -149,9 +154,12 @@ export function buildDataPort(supabase: DB, ctx: RequestCtx): ResponseDataPort {
         return { keywordMatch, distanceKm, isOpen };
       };
 
+      const signals = new Map(allRows.map((b) => [b.id, computeSignals(b)]));
+      const rows = openSearch ? allRows.filter((b) => signals.get(b.id)!.keywordMatch > 0) : allRows;
+
       const candidates = rows.map((b) => {
         const ours = b.partnerships.find((p) => p.hotel_id === hotelId && p.active) ?? null;
-        const { keywordMatch, distanceKm, isOpen } = computeSignals(b);
+        const { keywordMatch, distanceKm, isOpen } = signals.get(b.id)!;
         return {
           businessId: b.id,
           keywordMatch,
@@ -169,7 +177,7 @@ export function buildDataPort(supabase: DB, ctx: RequestCtx): ResponseDataPort {
         };
       });
 
-      const byId = new Map(rows.map((r) => [r.id, r]));
+      const byId = new Map<string, (typeof allRows)[number]>(allRows.map((r) => [r.id, r]));
 
       return {
         candidates,

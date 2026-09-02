@@ -41,8 +41,8 @@ export function SidebarNav({ brand, tagline, groups, email, siteLabel, signOutLa
   const nav = (
     <>
       <div className="mb-6 px-3">
-        <p className="text-xl font-semibold text-primary">{brand}</p>
-        <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+        <img src="/brand/roomriv-horizontal.svg" alt={brand} className="h-8 w-auto" />
+        <p className="mt-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
           {tagline}
         </p>
       </div>
@@ -119,7 +119,7 @@ export function SidebarNav({ brand, tagline, groups, email, siteLabel, signOutLa
 
       {/* Mobile top bar */}
       <div className="flex items-center justify-between border-b bg-card px-4 py-3 lg:hidden">
-        <p className="text-lg font-semibold text-primary">{brand}</p>
+        <img src="/brand/roomriv-horizontal.svg" alt={brand} className="h-7 w-auto" />
         <button
           type="button"
           onClick={() => setOpen(true)}

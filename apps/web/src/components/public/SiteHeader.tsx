@@ -40,9 +40,9 @@ export function SiteHeader({ locale, overlay = false }: Props) {
           )}
         >
           <img
-            src={transparent ? '/images/roomriv-light.svg' : '/images/roomriv-dark.svg'}
+            src={transparent ? '/brand/roomriv-horizontal-white.svg' : '/brand/roomriv-horizontal.svg'}
             alt="Roomriv"
-            className="h-12 w-auto shrink-0"
+            className="h-9 w-auto shrink-0"
           />
         </Link>
         <nav className="ml-auto flex items-center gap-1 text-sm">

@@ -29,6 +29,7 @@
     "@playwright/test": "^1.48.0",
     "@supabase/supabase-js": "^2.105.3",
     "@types/node": "^20.14.0",
+    "opentype.js": "^2.0.0",
     "prettier": "^3.3.0",
     "prettier-plugin-tailwindcss": "^0.6.0",
     "stripe": "^22.3.1",

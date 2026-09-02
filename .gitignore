@@ -46,3 +46,4 @@ supabase/.temp/
 supabase/.env
 .vercel
 .env*
+tools/brand/.cache/

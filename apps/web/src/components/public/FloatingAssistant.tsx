@@ -104,11 +104,14 @@ export function FloatingAssistant({ locale, hotelSlug, title }: Props) {
               'max-sm:inset-x-2 max-sm:bottom-20 max-sm:h-[70dvh] max-sm:w-auto',
             )}
           >
-            <div className="shrink-0 bg-sky-950 p-4 text-white">
-              <p className="font-serif text-base">{resolvedTitle}</p>
-              <p className="text-xs text-sky-200/80">
-                {t('Ask about the hotel and the island', 'Ρωτήστε για το ξενοδοχείο και το νησί')}
-              </p>
+            <div className="flex shrink-0 items-center gap-3 bg-sky-950 p-4 text-white">
+              <img src="/brand/roomriv-symbol-white.svg" alt="" className="h-7 w-auto shrink-0" />
+              <div className="min-w-0">
+                <p className="font-serif text-base">{resolvedTitle}</p>
+                <p className="text-xs text-sky-200/80">
+                  {t('Ask about the hotel and the island', 'Ρωτήστε για το ξενοδοχείο και το νησί')}
+                </p>
+              </div>
             </div>
 
             <div className="flex-1 space-y-3 overflow-y-auto p-3" aria-live="polite">

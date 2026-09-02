@@ -121,6 +121,18 @@ describe('buildChatMessages', () => {
     expect(messages[0]!.content).toContain('Sunset Wellness');
   });
 
+  it('requires the assistant to name at least one recommended place', () => {
+    const messages = buildChatMessages({
+      locale: 'en',
+      hotelName: 'Aegean Blue',
+      chunks: [],
+      history: [],
+      userMessage: 'Where can I get a massage?',
+      cards: [{ name: 'Blue Lagoon Spa', category: 'spa', description: null }],
+    });
+    expect(messages[0]!.content).toContain('Always name at least one of these places');
+  });
+
   it('omits the recommendations section when no cards are provided', () => {
     const messages = buildChatMessages({
       locale: 'en',
