@@ -104,6 +104,50 @@ describe('RuleBasedProvider', () => {
     expect(r.intent).toBe('recommend_restaurant');
     expect(r.recommendations).toHaveLength(1);
     expect(r.recommendations?.[0]?.name).toBe('Taverna Acropolis');
+    // The text itself names the place, not just the cards.
+    expect(r.reply).toContain('Taverna Acropolis (0.4 km, open now)');
+  });
+
+  it('names a matching place for free-form (out_of_scope) questions', async () => {
+    const card = {
+      businessId: '22222222-2222-2222-2222-222222222222',
+      name: 'Pharmacy Nikolaou',
+      category: 'shops',
+      description: null,
+      distanceKm: null,
+      openNow: null,
+      priceBand: null,
+      imageUrl: null,
+      promoted: false,
+      referralUrl: 'https://example.com/pharmacy',
+    };
+    const search = vi.fn().mockResolvedValue({
+      candidates: [
+        {
+          businessId: card.businessId,
+          keywordMatch: 0.5,
+          distanceKm: 0.3,
+          openNow: true,
+          categoryFit: true,
+          preferenceMatch: 0,
+          partnership: null,
+        },
+      ],
+      cardFor: vi.fn().mockResolvedValue(card),
+    });
+    const p = new RuleBasedProvider(makeData({ searchRecommendationCandidates: search }));
+    const r = await p.respond({
+      sessionId: SESSION_ID,
+      hotelId: HOTEL_ID,
+      locale: 'el',
+      message: 'υπάρχει φαρμακείο εδώ κοντά;',
+      history: [],
+      guestLocalTime: new Date(),
+    });
+    expect(r.intent).toBe('out_of_scope');
+    expect(search).toHaveBeenCalledWith(expect.objectContaining({ intent: 'out_of_scope' }));
+    expect(r.reply).toBe('Ένα μέρος που ίσως σας βοηθήσει: Pharmacy Nikolaou.');
+    expect(r.recommendations?.[0]?.name).toBe('Pharmacy Nikolaou');
   });
 
   it('out_of_scope returns fallback', async () => {

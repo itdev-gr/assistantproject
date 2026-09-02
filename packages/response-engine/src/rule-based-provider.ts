@@ -6,7 +6,7 @@ import type {
 import type { Locale, RecommendationCard } from '@aga/api-contracts';
 import { matchIntent, isAskIntent, isRecommendationIntent, type IntentSlug } from './intent-matcher';
 import { rank, type RankingCandidate, type RecommendationRules } from './ranking';
-import { renderTemplate, FALLBACK } from './templates';
+import { renderTemplate, describePlaces, FALLBACK, PLACES_FOUND } from './templates';
 
 /**
  * Adapter port: how the provider talks to the database. The Edge Function
@@ -70,7 +70,17 @@ export class RuleBasedProvider implements ResponseProvider {
     }
 
     if (match.slug === 'out_of_scope') {
-      return { reply: FALLBACK[input.locale], intent: match.slug };
+      // The keyword matcher gave up, but the question may still be about a
+      // concrete place ("is there a pharmacy nearby?"). Ask the data port for
+      // an open, category-agnostic search and name what it finds.
+      const cards = await this.findPlaces(input, match.slug);
+      if (cards.length === 0) return { reply: FALLBACK[input.locale], intent: match.slug };
+      return {
+        reply: `${PLACES_FOUND[input.locale]} ${describePlaces(cards, input.locale)}.`,
+        intent: match.slug,
+        recommendations: cards,
+        contextIds: cards.map((c) => c.businessId),
+      };
     }
 
     if (isAskIntent(match.slug)) {
@@ -90,28 +100,15 @@ export class RuleBasedProvider implements ResponseProvider {
     }
 
     if (isRecommendationIntent(match.slug)) {
-      const [rules, search] = await Promise.all([
-        this.data.getRules(input.hotelId),
-        this.data.searchRecommendationCandidates({
-          hotelId: input.hotelId,
-          intent: match.slug,
-          locale: input.locale,
-          text: input.message,
-          guestLocalTime: input.guestLocalTime,
-        }),
-      ]);
-
-      const ranked = rank(search.candidates, rules);
-      if (ranked.length === 0) {
+      const cards = await this.findPlaces(input, match.slug);
+      if (cards.length === 0) {
         return { reply: FALLBACK[input.locale], intent: match.slug };
       }
 
-      const cards = (
-        await Promise.all(ranked.map((r) => search.cardFor(r.businessId)))
-      ).filter((c): c is RecommendationCard => c != null);
-
+      // Name the best match(es) in the text itself — the cards below are the
+      // full list, but guests should never get an intro with no place in it.
       return {
-        reply: renderTemplate(match.slug, input.locale, { values: {} }),
+        reply: `${renderTemplate(match.slug, input.locale, { values: {} })} ${describePlaces(cards, input.locale)}.`,
         intent: match.slug,
         recommendations: cards,
         contextIds: cards.map((c) => c.businessId),
@@ -119,5 +116,24 @@ export class RuleBasedProvider implements ResponseProvider {
     }
 
     return { reply: FALLBACK[input.locale], intent: 'out_of_scope' };
+  }
+
+  /** Search + rank + resolve cards for an intent (recommend_* or out_of_scope). */
+  private async findPlaces(input: ResponseProviderInput, intent: IntentSlug): Promise<RecommendationCard[]> {
+    const [rules, search] = await Promise.all([
+      this.data.getRules(input.hotelId),
+      this.data.searchRecommendationCandidates({
+        hotelId: input.hotelId,
+        intent,
+        locale: input.locale,
+        text: input.message,
+        guestLocalTime: input.guestLocalTime,
+      }),
+    ]);
+    const ranked = rank(search.candidates, rules);
+    if (ranked.length === 0) return [];
+    return (await Promise.all(ranked.map((r) => search.cardFor(r.businessId)))).filter(
+      (c): c is RecommendationCard => c != null,
+    );
   }
 }

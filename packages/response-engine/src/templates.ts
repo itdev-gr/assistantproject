@@ -81,6 +81,32 @@ export function renderTemplate(intent: IntentSlug, locale: Locale, ctx: Template
   });
 }
 
+/** Intro used when a free-form question still matched a concrete place. */
+export const PLACES_FOUND = {
+  el: 'Ένα μέρος που ίσως σας βοηθήσει:',
+  en: 'A place that might help:',
+} as const;
+
+/**
+ * Turn the top cards into a short, human sentence fragment, e.g.
+ * "Taverna Acropolis (0.4 km, open now) and Cafe Plateia (1.2 km)".
+ */
+export function describePlaces(
+  places: Array<{ name: string; distanceKm: number | null; openNow: boolean | null }>,
+  locale: Locale,
+  max = 2,
+): string {
+  const parts = places.slice(0, max).map((p) => {
+    const details: string[] = [];
+    if (p.distanceKm != null) details.push(`${p.distanceKm} km`);
+    if (p.openNow === true) details.push(locale === 'el' ? 'ανοιχτό τώρα' : 'open now');
+    return details.length ? `${p.name} (${details.join(', ')})` : p.name;
+  });
+  if (parts.length <= 1) return parts.join('');
+  const joiner = locale === 'el' ? ' και ' : ' and ';
+  return parts.slice(0, -1).join(', ') + joiner + parts[parts.length - 1];
+}
+
 export const FALLBACK = {
   el: 'Δεν έχω αυτή την πληροφορία. Η ρεσεψιόν μπορεί να βοηθήσει — θέλετε να τους ειδοποιήσω;',
   en: "I don't have that information. Reception can help — would you like me to notify them?",
