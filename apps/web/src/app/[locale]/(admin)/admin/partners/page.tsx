@@ -30,7 +30,7 @@ export default async function PartnerApplicationsPage({ params, searchParams }: 
     supabase
       .from('partner_applications')
       .select(
-        'id, email, business_name, phone, address, description, locale, status, business_id, rejection_reason, created_at, reviewed_at, category:business_categories(name_i18n), profile:profiles!partner_applications_user_id_fkey(display_name)',
+        'id, user_id, email, business_name, phone, address, description, locale, status, business_id, rejection_reason, created_at, reviewed_at, category:business_categories(name_i18n)',
       )
       .eq('status', status)
       .order('created_at', { ascending: false })
@@ -43,6 +43,14 @@ export default async function PartnerApplicationsPage({ params, searchParams }: 
     ),
   ]);
   const countFor = (s: Status) => counts[STATUSES.indexOf(s)]?.count ?? 0;
+
+  // partner_applications.user_id points at auth.users, so display names come
+  // from a second lookup instead of an embed.
+  const userIds = [...new Set((rows ?? []).map((r) => r.user_id))];
+  const { data: profiles } = userIds.length
+    ? await supabase.from('profiles').select('id, display_name').in('id', userIds)
+    : { data: [] as { id: string; display_name: string | null }[] };
+  const nameById = new Map((profiles ?? []).map((p) => [p.id, p.display_name]));
 
   const labels: Record<Status, string> = {
     pending: t('Pending', 'Εκκρεμείς'),
@@ -75,37 +83,44 @@ export default async function PartnerApplicationsPage({ params, searchParams }: 
       />
       <TableFrame minWidth="min-w-0">
         {!rows || rows.length === 0 ? (
-          <EmptyState message={t('No applications in this state.', 'Καμία αίτηση σε αυτή την κατάσταση.')} />
+          <EmptyState
+            message={t('No applications in this state.', 'Καμία αίτηση σε αυτή την κατάσταση.')}
+          />
         ) : (
           rows.map((a) => {
-            const catNames = (a.category as unknown as { name_i18n?: Record<string, string> } | null)?.name_i18n;
+            const catNames = (
+              a.category as unknown as { name_i18n?: Record<string, string> } | null
+            )?.name_i18n;
             const catName = catNames?.[locale] ?? catNames?.el ?? catNames?.en;
-            const applicant = (a.profile as unknown as { display_name?: string | null } | null)?.display_name;
+            const applicant = nameById.get(a.user_id);
             return (
               <div key={a.id} className={`space-y-2 px-4 py-4 ${tableRow}`}>
                 <div className="flex flex-wrap items-center gap-2">
                   <p className="text-[14px] font-medium">{a.business_name}</p>
                   {catName && <Pill tone="info">{catName}</Pill>}
                   <Pill tone={tone[a.status as Status]}>{labels[a.status as Status]}</Pill>
-                  <span className="text-xs text-muted-foreground">
+                  <span className="text-muted-foreground text-xs">
                     {new Date(a.created_at).toLocaleDateString(locale === 'en' ? 'en-GB' : 'el-GR')}
                   </span>
                 </div>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-muted-foreground text-xs">
                   {applicant ? `${applicant} · ` : ''}
                   {a.email}
                   {a.phone ? ` · ${a.phone}` : ''}
                 </p>
-                {a.address && <p className="text-xs text-muted-foreground">{a.address}</p>}
+                {a.address && <p className="text-muted-foreground text-xs">{a.address}</p>}
                 {a.description && <p className="text-[14px]">{a.description}</p>}
                 {a.status === 'rejected' && a.rejection_reason && (
-                  <p className="text-xs text-destructive">
+                  <p className="text-destructive text-xs">
                     {t('Reason', 'Αιτιολογία')}: {a.rejection_reason}
                   </p>
                 )}
                 {a.status === 'approved' && a.business_id && (
                   <p className="text-xs">
-                    <Link href={`/admin/businesses/${a.business_id}`} className="text-primary hover:underline">
+                    <Link
+                      href={`/admin/businesses/${a.business_id}`}
+                      className="text-primary hover:underline"
+                    >
                       {t('Open linked business', 'Άνοιγμα συνδεδεμένης επιχείρησης')}
                     </Link>
                   </p>
