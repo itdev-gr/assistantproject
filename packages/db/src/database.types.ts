@@ -1203,6 +1203,215 @@ export type Database = {
         }
         Relationships: []
       }
+      business_owners: {
+        Row: {
+          auth_user_id: string
+          business_id: string
+          created_at: string
+        }
+        Insert: {
+          auth_user_id: string
+          business_id: string
+          created_at?: string
+        }
+        Update: {
+          auth_user_id?: string
+          business_id?: string
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "business_owners_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      partner_applications: {
+        Row: {
+          address: string
+          business_id: string | null
+          business_name: string
+          category_id: string | null
+          created_at: string
+          description: string | null
+          email: string
+          id: string
+          locale: string
+          phone: string
+          rejection_reason: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: Database["public"]["Enums"]["partner_status"]
+          user_id: string
+        }
+        Insert: {
+          address?: string
+          business_id?: string | null
+          business_name: string
+          category_id?: string | null
+          created_at?: string
+          description?: string | null
+          email?: string
+          id?: string
+          locale?: string
+          phone?: string
+          rejection_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: Database["public"]["Enums"]["partner_status"]
+          user_id: string
+        }
+        Update: {
+          address?: string
+          business_id?: string | null
+          business_name?: string
+          category_id?: string | null
+          created_at?: string
+          description?: string | null
+          email?: string
+          id?: string
+          locale?: string
+          phone?: string
+          rejection_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: Database["public"]["Enums"]["partner_status"]
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "partner_applications_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "partner_applications_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "business_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          display_name: string | null
+          id: string
+          locale: string
+          partner_status: Database["public"]["Enums"]["partner_status"] | null
+          role: Database["public"]["Enums"]["account_role"]
+          updated_at: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          display_name?: string | null
+          id: string
+          locale?: string
+          partner_status?: Database["public"]["Enums"]["partner_status"] | null
+          role?: Database["public"]["Enums"]["account_role"]
+          updated_at?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          locale?: string
+          partner_status?: Database["public"]["Enums"]["partner_status"] | null
+          role?: Database["public"]["Enums"]["account_role"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      user_favorites: {
+        Row: {
+          business_id: string
+          created_at: string
+          user_id: string
+        }
+        Insert: {
+          business_id: string
+          created_at?: string
+          user_id: string
+        }
+        Update: {
+          business_id?: string
+          created_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_favorites_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_recent_views: {
+        Row: {
+          business_id: string
+          user_id: string
+          viewed_at: string
+        }
+        Insert: {
+          business_id: string
+          user_id: string
+          viewed_at?: string
+        }
+        Update: {
+          business_id?: string
+          user_id?: string
+          viewed_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_recent_views_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_visits: {
+        Row: {
+          business_id: string
+          source: Database["public"]["Enums"]["visit_source"]
+          user_id: string
+          visited_at: string
+        }
+        Insert: {
+          business_id: string
+          source?: Database["public"]["Enums"]["visit_source"]
+          user_id: string
+          visited_at?: string
+        }
+        Update: {
+          business_id?: string
+          source?: Database["public"]["Enums"]["visit_source"]
+          user_id?: string
+          visited_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_visits_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       public_hotels: {
@@ -1239,7 +1448,10 @@ export type Database = {
       earth: { Args: never; Returns: number }
       is_hotel_member: { Args: { h: string }; Returns: boolean }
       is_hotel_owner: { Args: { h: string }; Returns: boolean }
+      is_approved_partner: { Args: never; Returns: boolean }
+      is_business_owner: { Args: { b: string }; Returns: boolean }
       is_super_admin: { Args: never; Returns: boolean }
+      record_recent_view: { Args: { p_business_id: string }; Returns: undefined }
       match_knowledge_chunks: {
         Args: {
           p_hotel: string
@@ -1269,7 +1481,10 @@ export type Database = {
       booking_status: "pending" | "confirmed" | "cancelled" | "no_show"
       commission_state: "accrued" | "invoiced" | "paid"
       confirmation_source: "partner_webhook" | "manual" | "self_reported"
+      account_role: "user" | "partner"
       hotel_role: "owner" | "manager" | "staff"
+      partner_status: "pending" | "approved" | "rejected"
+      visit_source: "manual" | "referral"
       hours_entity_type:
         | "reception"
         | "breakfast"
@@ -1423,7 +1638,10 @@ export const Constants = {
       booking_status: ["pending", "confirmed", "cancelled", "no_show"],
       commission_state: ["accrued", "invoiced", "paid"],
       confirmation_source: ["partner_webhook", "manual", "self_reported"],
+      account_role: ["user", "partner"],
       hotel_role: ["owner", "manager", "staff"],
+      partner_status: ["pending", "approved", "rejected"],
+      visit_source: ["manual", "referral"],
       hours_entity_type: [
         "reception",
         "breakfast",

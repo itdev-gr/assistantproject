@@ -4,6 +4,9 @@ import { Link } from '@/i18n/routing';
 import { getBusiness } from '@/lib/public-directory';
 import { SiteHeader } from '@/components/public/SiteHeader';
 import { SiteFooter } from '@/components/public/SiteFooter';
+import { FavoriteButton } from '@/components/public/FavoriteButton';
+import { VisitedButton } from '@/components/public/VisitedButton';
+import { RecordView } from '@/components/public/RecordView';
 import { Badge, Button, Card, CardContent, CardHeader, CardTitle } from '@aga/ui';
 import { ArrowLeft, ExternalLink, MapPin, Phone, MessageCircle } from 'lucide-react';
 
@@ -33,13 +36,14 @@ export default async function BusinessDetailPage({ params }: Props) {
   )}`;
 
   return (
-    <div className="flex min-h-dvh flex-col bg-background">
+    <div className="bg-background flex min-h-dvh flex-col">
       <SiteHeader locale={locale} />
+      <RecordView businessId={business.id} />
 
       <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-6">
         <Link
           href="/"
-          className="mb-4 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+          className="text-muted-foreground hover:text-foreground mb-4 inline-flex items-center gap-1 text-sm"
         >
           <ArrowLeft className="h-4 w-4" aria-hidden />
           {t('All places', 'Όλα τα μέρη')}
@@ -47,7 +51,7 @@ export default async function BusinessDetailPage({ params }: Props) {
 
         <div className="grid gap-6 lg:grid-cols-[2fr_1fr]">
           <div className="space-y-6">
-            <div className="relative aspect-[16/9] overflow-hidden rounded-lg bg-gradient-to-br from-accent/40 to-muted">
+            <div className="from-accent/40 to-muted relative aspect-[16/9] overflow-hidden rounded-lg bg-gradient-to-br">
               {business.images[0] ? (
                 <img
                   src={business.images[0]}
@@ -68,19 +72,22 @@ export default async function BusinessDetailPage({ params }: Props) {
             </div>
 
             <div>
-              <p className="text-xs uppercase tracking-wide text-muted-foreground">
+              <p className="text-muted-foreground text-xs uppercase tracking-wide">
                 {business.categoryName}
               </p>
-              <h1 className="mt-1 text-3xl font-semibold sm:text-4xl">{business.name}</h1>
+              <div className="mt-1 flex flex-wrap items-start justify-between gap-3">
+                <h1 className="text-3xl font-semibold sm:text-4xl">{business.name}</h1>
+                <FavoriteButton businessId={business.id} locale={locale} variant="detail" />
+              </div>
               {business.priceBand != null && (
-                <p className="mt-1 text-sm text-muted-foreground">
+                <p className="text-muted-foreground mt-1 text-sm">
                   {'€'.repeat(business.priceBand)} · {t('Price level', 'Επίπεδο τιμής')}
                 </p>
               )}
             </div>
 
             {business.description && (
-              <p className="text-base text-foreground/90 whitespace-pre-line">
+              <p className="text-foreground/90 whitespace-pre-line text-base">
                 {business.description}
               </p>
             )}
@@ -90,7 +97,7 @@ export default async function BusinessDetailPage({ params }: Props) {
                 {business.tags.map((tag) => (
                   <li
                     key={tag}
-                    className="rounded-full bg-muted px-3 py-1 text-xs uppercase tracking-wide text-muted-foreground"
+                    className="bg-muted text-muted-foreground rounded-full px-3 py-1 text-xs uppercase tracking-wide"
                   >
                     {tag}
                   </li>
@@ -106,20 +113,18 @@ export default async function BusinessDetailPage({ params }: Props) {
               </CardHeader>
               <CardContent className="space-y-3 text-sm">
                 <div className="flex gap-2">
-                  <MapPin className="mt-0.5 h-4 w-4 flex-shrink-0 text-muted-foreground" aria-hidden />
-                  <a
-                    className="hover:underline"
-                    href={mapUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                  >
+                  <MapPin
+                    className="text-muted-foreground mt-0.5 h-4 w-4 flex-shrink-0"
+                    aria-hidden
+                  />
+                  <a className="hover:underline" href={mapUrl} target="_blank" rel="noreferrer">
                     {business.address}
                   </a>
                 </div>
                 {business.phone && (
                   <div className="flex gap-2">
                     <Phone
-                      className="mt-0.5 h-4 w-4 flex-shrink-0 text-muted-foreground"
+                      className="text-muted-foreground mt-0.5 h-4 w-4 flex-shrink-0"
                       aria-hidden
                     />
                     <a className="hover:underline" href={`tel:${business.phone}`}>
@@ -130,7 +135,7 @@ export default async function BusinessDetailPage({ params }: Props) {
                 {business.whatsapp && (
                   <div className="flex gap-2">
                     <MessageCircle
-                      className="mt-0.5 h-4 w-4 flex-shrink-0 text-muted-foreground"
+                      className="text-muted-foreground mt-0.5 h-4 w-4 flex-shrink-0"
                       aria-hidden
                     />
                     <a
@@ -147,6 +152,7 @@ export default async function BusinessDetailPage({ params }: Props) {
             </Card>
 
             <div className="flex flex-col gap-2">
+              <VisitedButton businessId={business.id} locale={locale} />
               {business.website && (
                 <Button asChild>
                   <a href={business.website} target="_blank" rel="noreferrer">

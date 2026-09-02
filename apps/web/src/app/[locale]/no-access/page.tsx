@@ -4,6 +4,7 @@ import { setRequestLocale } from 'next-intl/server';
 import { Button, Card, CardContent, CardHeader, CardTitle } from '@aga/ui';
 import { getServerClient } from '@/lib/supabase-server';
 import { getAuthContext } from '@/lib/auth-context';
+import { homeForRole } from '@/lib/roles';
 import { signOut } from '@/app/actions/auth';
 
 interface Props {
@@ -29,7 +30,7 @@ export default async function NoAccessPage({ params }: Props) {
 
   // Users who *do* have a role never need this page.
   const ctx = await getAuthContext();
-  if (ctx) redirect(ctx.role === 'super_admin' ? `${prefix}/admin` : `${prefix}/owner`);
+  if (ctx) redirect(`${prefix}${homeForRole(ctx.role)}`);
 
   return (
     <main className="mx-auto flex min-h-dvh max-w-lg flex-col items-center justify-center px-4">
@@ -39,10 +40,13 @@ export default async function NoAccessPage({ params }: Props) {
       <Card className="w-full">
         <CardHeader>
           <CardTitle>
-            {t('Your account is not linked to a property yet', 'Ο λογαριασμός σας δεν είναι ακόμη συνδεδεμένος με κατάλυμα')}
+            {t(
+              'Your account is not linked to a property yet',
+              'Ο λογαριασμός σας δεν είναι ακόμη συνδεδεμένος με κατάλυμα',
+            )}
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-5 text-sm text-muted-foreground">
+        <CardContent className="text-muted-foreground space-y-5 text-sm">
           <p>
             {t('You are signed in as', 'Είστε συνδεδεμένοι ως')}{' '}
             <strong className="text-foreground">{user.email}</strong>.{' '}
@@ -52,9 +56,12 @@ export default async function NoAccessPage({ params }: Props) {
             )}
           </p>
 
-          <div className="space-y-3 rounded-lg border bg-muted/40 p-4">
-            <p className="font-medium text-foreground">
-              {t('Own a restaurant, beach bar, activity or local service?', 'Έχετε εστιατόριο, beach bar, δραστηριότητα ή τοπική υπηρεσία;')}
+          <div className="bg-muted/40 space-y-3 rounded-lg border p-4">
+            <p className="text-foreground font-medium">
+              {t(
+                'Own a restaurant, beach bar, activity or local service?',
+                'Έχετε εστιατόριο, beach bar, δραστηριότητα ή τοπική υπηρεσία;',
+              )}
             </p>
             <p>
               {t(
@@ -70,7 +77,7 @@ export default async function NoAccessPage({ params }: Props) {
           </div>
 
           <div className="space-y-3 rounded-lg border p-4">
-            <p className="font-medium text-foreground">
+            <p className="text-foreground font-medium">
               {t('Run a hotel or guesthouse?', 'Διαχειρίζεστε ξενοδοχείο ή κατάλυμα;')}
             </p>
             <p>

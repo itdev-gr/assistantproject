@@ -1,0 +1,14 @@
+{
+  "nav": {
+    "brand": "Roomriv",
+    "tagline": "Partner dashboard",
+    "groupOverview": "Overview",
+    "groupBusiness": "Listing",
+    "groupAccount": "Account",
+    "site": "View site",
+    "signOut": "Sign out",
+    "dashboard": "Dashboard",
+    "business": "My business",
+    "account": "My account"
+  }
+}

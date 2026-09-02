@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { verifyReferral } from '@aga/db/referral-token';
 import { createSupabaseServiceClient } from '@aga/db/service';
+import { createServerClient } from '@supabase/ssr';
 
 interface Ctx {
   params: Promise<{ referralId: string }>;
@@ -29,7 +30,7 @@ export async function GET(req: NextRequest, ctx: Ctx) {
     .select(
       `id, clicked_at, expires_at, partnership:partnerships (
         id,
-        business:businesses ( website, phone, name ),
+        business:businesses ( id, website, phone, name ),
         hotel:hotels ( slug )
       )`,
     )
@@ -50,9 +51,32 @@ export async function GET(req: NextRequest, ctx: Ctx) {
 
   const partnership = ref.partnership as unknown as {
     id: string;
-    business: { website: string | null; phone: string | null; name: string };
+    business: { id: string; website: string | null; phone: string | null; name: string };
     hotel: { slug: string };
   };
+
+  // Signed-in visitors get the place added to "where I've been". Best effort:
+  // never block the redirect.
+  try {
+    const authClient = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      { cookies: { getAll: () => req.cookies.getAll(), setAll: () => undefined } },
+    );
+    const {
+      data: { user },
+    } = await authClient.auth.getUser();
+    if (user && partnership.business.id) {
+      await supabase
+        .from('user_visits')
+        .upsert(
+          { user_id: user.id, business_id: partnership.business.id, source: 'referral' },
+          { onConflict: 'user_id,business_id', ignoreDuplicates: true },
+        );
+    }
+  } catch {
+    /* anonymous or cookie parsing failed — nothing to record */
+  }
 
   const target = partnership.business.website?.trim();
   const hotelSlug = partnership.hotel.slug;

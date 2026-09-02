@@ -8,6 +8,11 @@ const intl = createIntlMiddleware(routing);
 const PROTECTED = [
   { prefix: '/owner', roles: ['owner', 'manager', 'staff', 'super_admin'] },
   { prefix: '/admin', roles: ['super_admin'] },
+  { prefix: '/partner', roles: ['partner', 'super_admin'] },
+  {
+    prefix: '/account',
+    roles: ['user', 'partner', 'owner', 'manager', 'staff', 'super_admin'],
+  },
 ] as const;
 
 /** '/en' for English URLs, '' for the unprefixed default locale. */

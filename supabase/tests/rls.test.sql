@@ -2,7 +2,7 @@
 -- Verifies that cross-tenant access is rejected on every scoped table.
 
 begin;
-select plan(8);
+select plan(15);
 
 -- Set up two hotels with separate auth users
 insert into auth.users (id, email) values
@@ -82,6 +82,107 @@ select is(
   (select count(*)::int from public.public_hotels where slug = 'hotel-a'),
   1,
   'anon can read public_hotels view'
+);
+
+-- ============================================================================
+-- Self-serve accounts (0014): profiles, user library, business ownership.
+-- ============================================================================
+reset role;
+
+-- Two visitors; the auth.users trigger seeds their profiles.
+insert into auth.users (id, email, raw_user_meta_data) values
+  ('00000000-0000-0000-0000-000000000c01', 'visitor-c@example.com', '{"role":"user","display_name":"C"}'::jsonb),
+  ('00000000-0000-0000-0000-000000000d01', 'partner-d@example.com', '{"role":"partner","business_name":"D Taverna","business_phone":"123456"}'::jsonb)
+on conflict do nothing;
+
+insert into business_categories (id, slug, name_i18n) values
+  ('00000000-0000-0000-0000-00000000cc01', 'test-cat', '{"en":"Test"}'::jsonb)
+on conflict do nothing;
+
+insert into businesses (id, name, category_id, lat, lng, address, verified, active) values
+  ('00000000-0000-0000-0000-00000000bb01', 'Owned Place', '00000000-0000-0000-0000-00000000cc01', 37.0, 25.0, 'Somewhere', true, true),
+  ('00000000-0000-0000-0000-00000000bb02', 'Other Place', '00000000-0000-0000-0000-00000000cc01', 37.0, 25.0, 'Elsewhere', true, true)
+on conflict do nothing;
+
+-- Partner D owns business bb01.
+insert into business_owners (auth_user_id, business_id) values
+  ('00000000-0000-0000-0000-000000000d01', '00000000-0000-0000-0000-00000000bb01')
+on conflict do nothing;
+
+select is(
+  (select role::text from profiles where id = '00000000-0000-0000-0000-000000000c01'),
+  'user',
+  'signup trigger creates a user profile'
+);
+
+select is(
+  (select count(*)::int from partner_applications where user_id = '00000000-0000-0000-0000-000000000d01' and status = 'pending'),
+  1,
+  'signup trigger creates a pending partner application'
+);
+
+-- As visitor C
+set local role authenticated;
+set local "request.jwt.claim.sub" = '00000000-0000-0000-0000-000000000c01';
+
+insert into user_favorites (user_id, business_id) values
+  ('00000000-0000-0000-0000-000000000c01', '00000000-0000-0000-0000-00000000bb01');
+
+select is(
+  (select count(*)::int from user_favorites),
+  1,
+  'visitor C sees own favourite'
+);
+
+select throws_ok(
+  $$update profiles set role = 'partner' where id = '00000000-0000-0000-0000-000000000c01'$$,
+  '42501',
+  null,
+  'visitor cannot change own role (column grant)'
+);
+
+select lives_ok(
+  $$update profiles set display_name = 'Visitor C' where id = '00000000-0000-0000-0000-000000000c01'$$,
+  'visitor can update own display name'
+);
+
+-- As partner D
+set local "request.jwt.claim.sub" = '00000000-0000-0000-0000-000000000d01';
+
+select is(
+  (select count(*)::int from user_favorites),
+  0,
+  'partner D cannot see visitor C favourites'
+);
+
+select lives_ok(
+  $$update businesses set name = 'Owned Place (edited)' where id = '00000000-0000-0000-0000-00000000bb01'$$,
+  'owner can update own business name'
+);
+
+select throws_ok(
+  $$update businesses set verified = false where id = '00000000-0000-0000-0000-00000000bb01'$$,
+  '42501',
+  null,
+  'owner cannot flip verified (column grant)'
+);
+
+select is(
+  (with u as (
+     update businesses set name = 'hijack' where id = '00000000-0000-0000-0000-00000000bb02' returning 1
+   ) select count(*)::int from u),
+  0,
+  'owner cannot update a business they do not own'
+);
+
+-- Anonymous
+set local role anon;
+set local "request.jwt.claim.sub" = null;
+
+select is(
+  (select count(*)::int from partner_applications),
+  0,
+  'anon cannot read partner applications'
 );
 
 select * from finish();

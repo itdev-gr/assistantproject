@@ -28,7 +28,7 @@ export function LoginForm({ next, locale }: Props) {
       const result = await signInWithPassword({ email, password });
       setPending(false);
       if (result.ok) {
-        router.push(next ?? '/owner');
+        router.push(next ?? result.home);
         router.refresh();
       } else {
         setError(result.error);
@@ -50,7 +50,7 @@ export function LoginForm({ next, locale }: Props) {
 
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-2 gap-1 rounded-md bg-muted p-1 text-sm">
+      <div className="bg-muted grid grid-cols-2 gap-1 rounded-md p-1 text-sm">
         <button
           type="button"
           onClick={() => setMode('password')}
@@ -111,10 +111,10 @@ export function LoginForm({ next, locale }: Props) {
               ? t('Sign in', 'Είσοδος')
               : t('Send magic link', 'Αποστολή συνδέσμου')}
         </Button>
-        {error && <p className="text-xs text-destructive">{error}</p>}
+        {error && <p className="text-destructive text-xs">{error}</p>}
       </form>
 
-      <p className="text-center text-sm text-muted-foreground">
+      <p className="text-muted-foreground text-center text-sm">
         {t("Don't have an account?", 'Δεν έχετε λογαριασμό;')}{' '}
         <Link href="/signup" className="text-primary underline-offset-4 hover:underline">
           {t('Sign up', 'Εγγραφή')}

@@ -4,23 +4,25 @@ import { Badge, Card, CardContent, cn } from '@aga/ui';
 import { MapPin, Navigation } from 'lucide-react';
 import { formatDistanceKm } from '@aga/i18n';
 import { CategoryGlyph } from './category-icons';
+import { FavoriteButton } from './FavoriteButton';
 
 interface Props {
   locale: string;
   business: DirectoryBusiness;
 }
 
+/**
+ * Directory card. The title carries a "stretched" link that covers the whole
+ * card, so the favourite button can sit on top without nesting interactive
+ * elements inside an anchor.
+ */
 export function BusinessCard({ locale, business }: Props) {
   const isFeatured =
-    business.hasPartner &&
-    (business.topTier === 'featured' || business.topTier === 'exclusive');
+    business.hasPartner && (business.topTier === 'featured' || business.topTier === 'exclusive');
   return (
-    <Link
-      href={`/p/${business.id}`}
-      className="group block focus:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-lg"
-    >
-      <Card className="h-full overflow-hidden transition-[box-shadow,transform] duration-200 hover:-translate-y-1 hover:shadow-lg">
-        <div className="relative aspect-[16/10] w-full overflow-hidden bg-gradient-to-br from-accent/40 to-muted">
+    <div className="focus-within:ring-ring group relative h-full rounded-lg focus-within:ring-2">
+      <Card className="h-full overflow-hidden transition-[box-shadow,transform] duration-200 group-hover:-translate-y-1 group-hover:shadow-lg">
+        <div className="from-accent/40 to-muted relative aspect-[16/10] w-full overflow-hidden bg-gradient-to-br">
           {business.images[0] ? (
             <img
               src={business.images[0]}
@@ -37,28 +39,40 @@ export function BusinessCard({ locale, business }: Props) {
             </Badge>
           )}
           {business.priceBand != null && (
-            <span className="absolute right-2 top-2 rounded-full bg-background/90 px-2 py-0.5 text-xs font-medium shadow-sm">
+            <span className="bg-background/90 absolute right-2 top-2 rounded-full px-2 py-0.5 text-xs font-medium shadow-sm">
               {'€'.repeat(business.priceBand)}
             </span>
           )}
           {business.distanceKm != null && (
-            <span className="absolute bottom-2 left-2 inline-flex items-center gap-1 rounded-full bg-background/90 px-2 py-0.5 text-xs font-medium shadow-sm">
+            <span className="bg-background/90 absolute bottom-2 left-2 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium shadow-sm">
               <Navigation className="h-3 w-3" aria-hidden />
               {formatDistanceKm(business.distanceKm, locale === 'en' ? 'en' : 'el')}
             </span>
           )}
+          <FavoriteButton
+            businessId={business.id}
+            locale={locale}
+            className="absolute bottom-2 right-2 z-10"
+          />
         </div>
         <CardContent className="p-4">
-          <p className="text-xs uppercase tracking-wide text-muted-foreground">
+          <p className="text-muted-foreground text-xs uppercase tracking-wide">
             {business.categoryName}
           </p>
-          <h3 className="mt-0.5 line-clamp-1 text-base font-semibold">{business.name}</h3>
+          <h3 className="mt-0.5 line-clamp-1 text-base font-semibold">
+            <Link
+              href={`/p/${business.id}`}
+              className="after:absolute after:inset-0 after:rounded-lg after:content-[''] focus:outline-none"
+            >
+              {business.name}
+            </Link>
+          </h3>
           {business.description && (
-            <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">
+            <p className="text-muted-foreground mt-1 line-clamp-2 text-sm">
               {business.description}
             </p>
           )}
-          <p className="mt-2 flex items-center gap-1 text-xs text-muted-foreground">
+          <p className="text-muted-foreground mt-2 flex items-center gap-1 text-xs">
             <MapPin className="h-3 w-3" aria-hidden />
             <span className="line-clamp-1">{business.address}</span>
           </p>
@@ -68,7 +82,7 @@ export function BusinessCard({ locale, business }: Props) {
                 <li
                   key={t}
                   className={cn(
-                    'rounded-full bg-muted px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-muted-foreground',
+                    'bg-muted text-muted-foreground rounded-full px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide',
                   )}
                 >
                   {t}
@@ -78,7 +92,6 @@ export function BusinessCard({ locale, business }: Props) {
           )}
         </CardContent>
       </Card>
-    </Link>
+    </div>
   );
 }
-

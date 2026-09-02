@@ -99,7 +99,7 @@ export function SiteFooter({ locale, categories = [] }: Props) {
               </li>
               <li>
                 <Link
-                  href="/list-your-business"
+                  href="/signup?role=partner"
                   className="text-sky-200/80 transition-colors duration-200 hover:text-white"
                 >
                   {t('List your business', 'Καταχωρίστε την επιχείρησή σας')}

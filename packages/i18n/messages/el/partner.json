@@ -1,0 +1,14 @@
+{
+  "nav": {
+    "brand": "Roomriv",
+    "tagline": "Πίνακας συνεργάτη",
+    "groupOverview": "Επισκόπηση",
+    "groupBusiness": "Καταχώριση",
+    "groupAccount": "Λογαριασμός",
+    "site": "Προβολή site",
+    "signOut": "Αποσύνδεση",
+    "dashboard": "Πίνακας",
+    "business": "Η επιχείρησή μου",
+    "account": "Ο λογαριασμός μου"
+  }
+}

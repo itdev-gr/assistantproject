@@ -8,6 +8,7 @@ import { businessUpsertSchema, type BusinessUpsert } from '@aga/api-contracts';
 import { Button, Input, Label, Card, CardContent, Textarea } from '@aga/ui';
 import { upsertBusiness, deleteBusiness } from '@/app/actions/admin-businesses';
 import { ImageUploader } from './ImageUploader';
+import { Field, OpeningHoursEditor } from './business-form-parts';
 
 interface CategoryOpt {
   id: string;
@@ -44,8 +45,7 @@ export function BusinessForm({ locale, categories, initial }: Props) {
             .filter(Boolean)
         : values.tags;
     // Accept blank inputs for optional fields by coercing empty strings to null
-    const blankToNull = (v: string | null | undefined) =>
-      v == null || v === '' ? null : v;
+    const blankToNull = (v: string | null | undefined) => (v == null || v === '' ? null : v);
     const r = await upsertBusiness({
       ...values,
       phone: blankToNull(values.phone),
@@ -82,7 +82,7 @@ export function BusinessForm({ locale, categories, initial }: Props) {
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
       {errorList.length > 0 && (
-        <div className="rounded-md border border-destructive/30 bg-destructive/5 p-3 text-xs text-destructive">
+        <div className="border-destructive/30 bg-destructive/5 text-destructive rounded-md border p-3 text-xs">
           <p className="font-medium">{locale === 'en' ? 'Please fix:' : 'Διορθώστε:'}</p>
           <ul className="mt-1 list-disc pl-5">
             {errorList.map((e) => (
@@ -94,7 +94,11 @@ export function BusinessForm({ locale, categories, initial }: Props) {
       <Card>
         <CardContent className="space-y-4 p-6">
           <div className="grid gap-4 md:grid-cols-2">
-            <Field id="name" label={locale === 'en' ? 'Name' : 'Όνομα'} error={errors.name?.message}>
+            <Field
+              id="name"
+              label={locale === 'en' ? 'Name' : 'Όνομα'}
+              error={errors.name?.message}
+            >
               <Input id="name" {...register('name')} />
             </Field>
             <Field
@@ -105,7 +109,7 @@ export function BusinessForm({ locale, categories, initial }: Props) {
               <select
                 id="categoryId"
                 {...register('categoryId')}
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                className="border-input bg-background flex h-10 w-full rounded-md border px-3 py-2 text-sm"
               >
                 {categories.map((c) => (
                   <option key={c.id} value={c.id}>
@@ -126,10 +130,20 @@ export function BusinessForm({ locale, categories, initial }: Props) {
 
           <div className="grid gap-4 md:grid-cols-2">
             <Field id="lat" label="Latitude" error={errors.lat?.message}>
-              <Input id="lat" type="number" step="0.0001" {...register('lat', { valueAsNumber: true })} />
+              <Input
+                id="lat"
+                type="number"
+                step="0.0001"
+                {...register('lat', { valueAsNumber: true })}
+              />
             </Field>
             <Field id="lng" label="Longitude" error={errors.lng?.message}>
-              <Input id="lng" type="number" step="0.0001" {...register('lng', { valueAsNumber: true })} />
+              <Input
+                id="lng"
+                type="number"
+                step="0.0001"
+                {...register('lng', { valueAsNumber: true })}
+              />
             </Field>
           </div>
 
@@ -243,123 +257,8 @@ export function BusinessForm({ locale, categories, initial }: Props) {
             {locale === 'en' ? 'Delete' : 'Διαγραφή'}
           </Button>
         )}
-        {error && <span className="text-sm text-destructive">{error}</span>}
+        {error && <span className="text-destructive text-sm">{error}</span>}
       </div>
     </form>
-  );
-}
-
-const OPENING_HOURS_DAYS = [
-  { key: 'mon', label: 'Monday' },
-  { key: 'tue', label: 'Tuesday' },
-  { key: 'wed', label: 'Wednesday' },
-  { key: 'thu', label: 'Thursday' },
-  { key: 'fri', label: 'Friday' },
-  { key: 'sat', label: 'Saturday' },
-  { key: 'sun', label: 'Sunday' },
-] as const satisfies readonly { key: DayKey; label: string }[];
-
-type DayKey = 'mon' | 'tue' | 'wed' | 'thu' | 'fri' | 'sat' | 'sun';
-type OpeningHoursValue = NonNullable<BusinessUpsert['openingHours']>;
-type DayRow = { open: string; close: string; closed: boolean };
-type DayRows = Record<DayKey, DayRow>;
-
-function openingHoursToRows(value: OpeningHoursValue | undefined): DayRows {
-  const rows = {} as DayRows;
-  for (const { key } of OPENING_HOURS_DAYS) {
-    const entry = value?.[key];
-    if (Array.isArray(entry) && entry.length === 0) {
-      rows[key] = { open: '', close: '', closed: true };
-    } else if (Array.isArray(entry) && entry.length === 1) {
-      rows[key] = { open: entry[0][0], close: entry[0][1], closed: false };
-    } else {
-      rows[key] = { open: '', close: '', closed: false };
-    }
-  }
-  return rows;
-}
-
-function rowsToOpeningHours(rows: DayRows): OpeningHoursValue {
-  const value: OpeningHoursValue = {};
-  for (const { key } of OPENING_HOURS_DAYS) {
-    const row = rows[key];
-    if (row.closed) {
-      value[key] = [];
-    } else if (row.open && row.close) {
-      value[key] = [[row.open, row.close]];
-    }
-    // Otherwise the day is omitted entirely (unknown hours).
-  }
-  return value;
-}
-
-function OpeningHoursEditor({
-  value,
-  onChange,
-}: {
-  value: OpeningHoursValue | undefined;
-  onChange: (value: OpeningHoursValue) => void;
-}) {
-  const [rows, setRows] = useState<DayRows>(() => openingHoursToRows(value));
-
-  function updateRow(day: DayKey, patch: Partial<DayRow>) {
-    const nextRows = { ...rows, [day]: { ...rows[day], ...patch } };
-    setRows(nextRows);
-    onChange(rowsToOpeningHours(nextRows));
-  }
-
-  return (
-    <div className="space-y-2 rounded-md border border-input p-3">
-      {OPENING_HOURS_DAYS.map(({ key, label }) => {
-        const row = rows[key];
-        return (
-          <div key={key} className="grid grid-cols-[96px_1fr_1fr_auto] items-center gap-3">
-            <span className="text-sm">{label}</span>
-            <Input
-              id={`openingHours-${key}-open`}
-              type="time"
-              value={row.open}
-              disabled={row.closed}
-              onChange={(e) => updateRow(key, { open: e.target.value })}
-            />
-            <Input
-              id={`openingHours-${key}-close`}
-              type="time"
-              value={row.close}
-              disabled={row.closed}
-              onChange={(e) => updateRow(key, { close: e.target.value })}
-            />
-            <label className="flex items-center gap-1.5 whitespace-nowrap text-xs">
-              <input
-                type="checkbox"
-                checked={row.closed}
-                onChange={(e) => updateRow(key, { closed: e.target.checked })}
-              />
-              Closed
-            </label>
-          </div>
-        );
-      })}
-    </div>
-  );
-}
-
-function Field({
-  id,
-  label,
-  error,
-  children,
-}: {
-  id: string;
-  label: string;
-  error?: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <div className="space-y-1.5">
-      <Label htmlFor={id}>{label}</Label>
-      {children}
-      {error && <p className="text-xs text-destructive">{error}</p>}
-    </div>
   );
 }

@@ -23,6 +23,15 @@ export const TABLES = {
   intents: 'intents',
   featureFlags: 'feature_flags',
   auditLog: 'audit_log',
+  stripeWebhookEvents: 'stripe_webhook_events',
+  knowledgeChunks: 'knowledge_chunks',
+  rateLimitEvents: 'rate_limit_events',
+  profiles: 'profiles',
+  partnerApplications: 'partner_applications',
+  businessOwners: 'business_owners',
+  userFavorites: 'user_favorites',
+  userVisits: 'user_visits',
+  userRecentViews: 'user_recent_views',
 } as const;
 
 export type TableName = (typeof TABLES)[keyof typeof TABLES];

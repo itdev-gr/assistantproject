@@ -1,10 +1,10 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { motion, useMotionValueEvent, useScroll } from 'framer-motion';
-import { createSupabaseBrowserClient } from '@aga/db/browser';
 import { Link } from '@/i18n/routing';
-import { Button, cn } from '@aga/ui';
+import { cn } from '@aga/ui';
+import { ViewerMenu } from './ViewerMenu';
 
 interface Props {
   locale: string;
@@ -18,24 +18,6 @@ export function SiteHeader({ locale, overlay = false }: Props) {
   const [scrolled, setScrolled] = useState(false);
   useMotionValueEvent(scrollY, 'change', (y) => setScrolled(y > 40));
 
-  // Public pages are ISR-cached, so the signed-in state is resolved on the
-  // client: anonymous visitors see "Sign in", signed-in users "My account".
-  const [signedIn, setSignedIn] = useState(false);
-  useEffect(() => {
-    let cancelled = false;
-    try {
-      const supabase = createSupabaseBrowserClient();
-      supabase.auth.getUser().then(({ data }) => {
-        if (!cancelled) setSignedIn(Boolean(data.user));
-      });
-    } catch {
-      /* env missing in some previews — keep the anonymous state */
-    }
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
   const transparent = overlay && !scrolled;
 
   return (
@@ -43,11 +25,11 @@ export function SiteHeader({ locale, overlay = false }: Props) {
       initial={false}
       className={cn(
         'top-0 z-30 transition-colors duration-300',
-        overlay ? 'fixed inset-x-0' : 'sticky border-b bg-background/80 backdrop-blur',
+        overlay ? 'fixed inset-x-0' : 'bg-background/80 sticky border-b backdrop-blur',
         overlay &&
           (transparent
             ? 'border-b border-transparent bg-transparent'
-            : 'border-b border-border bg-background/80 backdrop-blur'),
+            : 'border-border bg-background/80 border-b backdrop-blur'),
       )}
     >
       <div className="mx-auto flex h-16 max-w-6xl items-center gap-2 px-4 sm:gap-4">
@@ -59,7 +41,9 @@ export function SiteHeader({ locale, overlay = false }: Props) {
           )}
         >
           <img
-            src={transparent ? '/brand/roomriv-horizontal-white.svg' : '/brand/roomriv-horizontal.svg'}
+            src={
+              transparent ? '/brand/roomriv-horizontal-white.svg' : '/brand/roomriv-horizontal.svg'
+            }
             alt="Roomriv"
             className="h-9 w-auto shrink-0"
           />
@@ -99,22 +83,7 @@ export function SiteHeader({ locale, overlay = false }: Props) {
             <span className="sm:hidden">{locale === 'en' ? 'ΕΛ' : 'EN'}</span>
             <span className="hidden sm:inline">{locale === 'en' ? 'Ελληνικά' : 'English'}</span>
           </a>
-          <Button
-            asChild
-            size="sm"
-            variant="outline"
-            className={cn(
-              'px-2 sm:px-3',
-              transparent &&
-                'border-white/40 bg-white/10 text-white backdrop-blur-sm hover:bg-white/20 hover:text-white',
-            )}
-          >
-            {signedIn ? (
-              <Link href="/owner">{locale === 'en' ? 'My account' : 'Ο λογαριασμός μου'}</Link>
-            ) : (
-              <Link href="/login">{locale === 'en' ? 'Sign in' : 'Είσοδος'}</Link>
-            )}
-          </Button>
+          <ViewerMenu locale={locale} transparent={transparent} />
         </nav>
       </div>
     </motion.header>

@@ -15,7 +15,8 @@
     "moderation": "Έλεγχος περιεχομένου",
     "rules": "Κανόνες προτάσεων",
     "flags": "Feature flags",
-    "usage": "Χρήση"
+    "usage": "Χρήση",
+    "partners": "Αιτήσεις συνεργατών"
   },
   "moderation": {
     "approve": "Έγκριση",
