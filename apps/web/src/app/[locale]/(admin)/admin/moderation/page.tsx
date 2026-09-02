@@ -6,6 +6,11 @@ import { PageHeader } from '@/components/dashboard/PageHeader';
 import { Pill } from '@/components/dashboard/Pill';
 import { TableFrame, tableRow } from '@/components/dashboard/TableFrame';
 import { EmptyState } from '@/components/dashboard/EmptyState';
+import {
+  APPROX_LOCATION_TAG,
+  NEEDS_GEOCODE_TAG,
+  SELF_SERVICE_TAG,
+} from '@/lib/listing-request';
 
 interface Props {
   params: Promise<{ locale: string }>;
@@ -27,7 +32,9 @@ export default async function ModerationPage({ params }: Props) {
       .limit(50),
     supabase
       .from('businesses')
-      .select('id, name, description_i18n, address')
+      .select(
+        'id, name, description_i18n, address, phone, billing_email, website, tags, category:business_categories(name_i18n)',
+      )
       .eq('verified', false)
       .eq('active', true)
       .order('created_at', { ascending: false })
@@ -90,10 +97,45 @@ export default async function ModerationPage({ params }: Props) {
                   (b.description_i18n as Record<string, string> | null)?.[locale] ??
                   (b.description_i18n as Record<string, string> | null)?.en ??
                   '';
+                const tags = b.tags ?? [];
+                const selfService = tags.includes(SELF_SERVICE_TAG);
+                const needsGeocode = tags.includes(NEEDS_GEOCODE_TAG);
+                const approxLocation = tags.includes(APPROX_LOCATION_TAG);
+                const catNames = (b.category as unknown as { name_i18n?: Record<string, string> } | null)
+                  ?.name_i18n;
+                const catName = catNames?.[locale] ?? catNames?.el ?? catNames?.en;
                 return (
                   <div key={b.id} className={`space-y-2 px-4 py-4 ${tableRow}`}>
-                    <p className="text-[14px] font-medium">{b.name}</p>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <p className="text-[14px] font-medium">{b.name}</p>
+                      {catName && <Pill tone="info">{catName}</Pill>}
+                      {selfService && (
+                        <Pill tone="warn">{tt('Self-submitted', 'Αίτηση από επιχείρηση')}</Pill>
+                      )}
+                      {needsGeocode && (
+                        <Pill tone="danger">{tt('Pin needs fixing', 'Χρειάζεται διόρθωση θέσης')}</Pill>
+                      )}
+                      {approxLocation && (
+                        <Pill tone="muted">{tt('Town-level pin', 'Θέση σε επίπεδο πόλης')}</Pill>
+                      )}
+                    </div>
                     <p className="text-xs text-muted-foreground">{b.address}</p>
+                    {(b.phone || b.billing_email || b.website) && (
+                      <p className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
+                        {b.phone && <span>{b.phone}</span>}
+                        {b.billing_email && <span>{b.billing_email}</span>}
+                        {b.website && (
+                          <a
+                            href={b.website}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="underline-offset-2 hover:underline"
+                          >
+                            {b.website}
+                          </a>
+                        )}
+                      </p>
+                    )}
                     {desc && <p className="text-[14px]">{desc}</p>}
                     <ModerationActions kind="business" id={b.id} locale={locale} />
                   </div>

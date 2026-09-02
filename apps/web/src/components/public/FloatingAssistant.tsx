@@ -36,8 +36,8 @@ export function FloatingAssistant({ locale, hotelSlug, title }: Props) {
     id: crypto.randomUUID(),
     role: 'assistant',
     content: t(
-      'Hi! Ask me anything about the hotel or the island — restaurants, beaches, activities…',
-      'Γεια σας! Ρωτήστε με ό,τι θέλετε για το ξενοδοχείο ή το νησί — εστιατόρια, παραλίες, δραστηριότητες…',
+      'Hi! Ask me anything about the hotel or the area — restaurants, beaches, activities…',
+      'Γεια σας! Ρωτήστε με ό,τι θέλετε για το ξενοδοχείο ή την περιοχή — εστιατόρια, παραλίες, δραστηριότητες…',
     ),
     intent: null,
     createdAt: new Date().toISOString(),
@@ -109,7 +109,7 @@ export function FloatingAssistant({ locale, hotelSlug, title }: Props) {
               <div className="min-w-0">
                 <p className="font-serif text-base">{resolvedTitle}</p>
                 <p className="text-xs text-sky-200/80">
-                  {t('Ask about the hotel and the island', 'Ρωτήστε για το ξενοδοχείο και το νησί')}
+                  {t('Ask about the hotel and the area', 'Ρωτήστε για το ξενοδοχείο και την περιοχή')}
                 </p>
               </div>
             </div>

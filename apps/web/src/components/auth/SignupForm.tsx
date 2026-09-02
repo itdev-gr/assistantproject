@@ -24,7 +24,9 @@ export function SignupForm({ next, locale }: Props) {
     const result = await signUpWithPassword({ email, password });
     setPending(false);
     if (result.ok) {
-      router.push(next ?? '/');
+      // /owner is guarded: accounts without a hotel land on /no-access,
+      // which explains the next step instead of silently returning home.
+      router.push(next ?? '/owner');
       router.refresh();
     } else {
       setError(result.error);
@@ -35,6 +37,21 @@ export function SignupForm({ next, locale }: Props) {
 
   return (
     <div className="space-y-4">
+      <div className="rounded-md border bg-muted/40 p-3 text-xs text-muted-foreground">
+        <p className="font-medium text-foreground">
+          {t(
+            'Own a restaurant, beach bar, activity or local service?',
+            'Έχετε εστιατόριο, beach bar, δραστηριότητα ή τοπική υπηρεσία;',
+          )}
+        </p>
+        <p className="mt-1">
+          {t('You do not need an account — ', 'Δεν χρειάζεστε λογαριασμό — ')}
+          <Link href="/list-your-business" className="text-primary underline-offset-4 hover:underline">
+            {t('send a listing request instead', 'στείλτε αίτηση καταχώρισης')}
+          </Link>
+          .
+        </p>
+      </div>
       <form onSubmit={onSubmit} className="space-y-3">
         <div className="space-y-1.5">
           <Label htmlFor="email">Email</Label>

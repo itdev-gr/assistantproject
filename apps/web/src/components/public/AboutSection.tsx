@@ -55,9 +55,9 @@ const FEATURES: Feature[] = [
     titleEn: 'Local expertise',
     titleEl: 'Τοπική γνώση',
     bodyEn:
-      'Built on the island, with the people of the island — hotels, tavernas and skippers who know every cove.',
+      'Built in Greece, with the people of each place — hotels, tavernas and skippers who know every cove.',
     bodyEl:
-      'Φτιαγμένο στο νησί, με τους ανθρώπους του νησιού — ξενοδοχεία, ταβέρνες και καπετάνιους που ξέρουν κάθε κολπίσκο.',
+      'Φτιαγμένο στην Ελλάδα, με τους ανθρώπους κάθε τόπου — ξενοδοχεία, ταβέρνες και καπετάνιους που ξέρουν κάθε κολπίσκο.',
   },
 ];
 
@@ -85,8 +85,8 @@ export function AboutSection({ locale }: Props) {
             className="font-serif text-3xl font-semibold sm:text-4xl"
           >
             {t(
-              'The island, curated by the people who live here.',
-              'Το νησί, επιμελημένο από τους ανθρώπους που ζουν εδώ.',
+              'Greece, curated by the people who live here.',
+              'Η Ελλάδα, επιμελημένη από τους ανθρώπους που ζουν εδώ.',
             )}
           </motion.h2>
           <motion.p variants={fadeUp} className="mt-4 text-base text-muted-foreground sm:text-lg">

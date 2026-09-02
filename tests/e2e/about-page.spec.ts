@@ -6,7 +6,7 @@ test.describe('about page', () => {
   test('renders the story in English', async ({ page }) => {
     await page.goto('/en/about');
     await expect(
-      page.getByRole('heading', { level: 1, name: /Built on the island/ }),
+      page.getByRole('heading', { level: 1, name: /Greece, the way locals know it/ }),
     ).toBeVisible();
     await expect(page.getByRole('heading', { name: 'How it works' })).toBeVisible();
     // Scoped to main: the footer also has a 'List your business' link, and an
@@ -19,7 +19,7 @@ test.describe('about page', () => {
   test('renders the story in Greek at the unprefixed URL', async ({ page }) => {
     await page.goto('/about');
     await expect(
-      page.getByRole('heading', { level: 1, name: /Φτιαγμένο στο νησί/ }),
+      page.getByRole('heading', { level: 1, name: /Η Ελλάδα, όπως την ξέρουν οι ντόπιοι/ }),
     ).toBeVisible();
   });
 });
@@ -33,7 +33,7 @@ test.describe('about page navigation', () => {
       .click();
     await expect(page).toHaveURL(/\/en\/about$/);
     await expect(
-      page.getByRole('heading', { level: 1, name: /Built on the island/ }),
+      page.getByRole('heading', { level: 1, name: /Greece, the way locals know it/ }),
     ).toBeVisible();
   });
 

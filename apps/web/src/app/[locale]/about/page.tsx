@@ -26,8 +26,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const en = locale === 'en';
   const title = en ? TITLE_EN : TITLE_EL;
   const description = en
-    ? 'Who we are and why we built Local Guide: honest, hand-picked recommendations connecting island visitors with trusted local businesses.'
-    : 'Ποιοι είμαστε και γιατί φτιάξαμε τον Τοπικό Οδηγό: ειλικρινείς, επιλεγμένες προτάσεις που συνδέουν τους επισκέπτες του νησιού με αξιόπιστες τοπικές επιχειρήσεις.';
+    ? 'Who we are and why we built Local Guide: honest, hand-picked recommendations connecting visitors across Greece with trusted local businesses.'
+    : 'Ποιοι είμαστε και γιατί φτιάξαμε τον Τοπικό Οδηγό: ειλικρινείς, επιλεγμένες προτάσεις που συνδέουν τους επισκέπτες σε όλη την Ελλάδα με αξιόπιστες τοπικές επιχειρήσεις.';
 
   return {
     title,

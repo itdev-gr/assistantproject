@@ -37,7 +37,9 @@ export function AboutCta({ locale }: Props) {
             variant="outline"
             className="border-white/50 bg-transparent text-white hover:bg-white/10 hover:text-white"
           >
-            <Link href="/login">{t('List your business', 'Καταχωρίστε την επιχείρησή σας')}</Link>
+            <Link href="/list-your-business">
+              {t('List your business', 'Καταχωρίστε την επιχείρησή σας')}
+            </Link>
           </Button>
         </motion.div>
       </Reveal>

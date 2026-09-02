@@ -8,6 +8,23 @@ interface Props {
   searchParams: Promise<{ next?: string; error?: string; sent?: string }>;
 }
 
+const ERROR_TEXT: Record<string, { en: string; el: string }> = {
+  no_hotel: {
+    en: 'Your account is not linked to a property yet.',
+    el: 'Ο λογαριασμός σας δεν είναι ακόμη συνδεδεμένος με κατάλυμα.',
+  },
+  missing_code: {
+    en: 'The sign-in link is invalid or has expired. Request a new one below.',
+    el: 'Ο σύνδεσμος εισόδου δεν είναι έγκυρος ή έχει λήξει. Ζητήστε νέο παρακάτω.',
+  },
+};
+
+function errorMessage(code: string, locale: string): string {
+  const known = ERROR_TEXT[code];
+  if (known) return locale === 'en' ? known.en : known.el;
+  return code;
+}
+
 export default async function LoginPage({ params, searchParams }: Props) {
   const { locale } = await params;
   const sp = await searchParams;
@@ -32,7 +49,11 @@ export default async function LoginPage({ params, searchParams }: Props) {
           ) : (
             <LoginForm next={sp.next} locale={locale} />
           )}
-          {sp.error && <p className="mt-3 text-xs text-destructive">{sp.error}</p>}
+          {sp.error && (
+            <p role="alert" className="mt-3 text-xs text-destructive">
+              {errorMessage(sp.error, locale)}
+            </p>
+          )}
         </CardContent>
       </Card>
     </main>

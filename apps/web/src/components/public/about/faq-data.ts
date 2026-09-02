@@ -18,9 +18,9 @@ export const FAQ_ITEMS: FaqItem[] = [
     qEn: 'How are the places chosen?',
     qEl: 'Πώς επιλέγονται τα μέρη;',
     aEn:
-      'Every listing is hand-picked and checked by people who live on the island. We visit, we ask around, and we only include places we would honestly recommend to friends.',
+      'Every listing is hand-picked and checked by people who live locally. We visit, we ask around, and we only include places we would honestly recommend to friends.',
     aEl:
-      'Κάθε καταχώριση επιλέγεται και ελέγχεται από ανθρώπους που ζουν στο νησί. Επισκεπτόμαστε, ρωτάμε, και συμπεριλαμβάνουμε μόνο μέρη που θα προτείναμε ειλικρινά σε φίλους.',
+      'Κάθε καταχώριση επιλέγεται και ελέγχεται από ανθρώπους που ζουν στην περιοχή. Επισκεπτόμαστε, ρωτάμε, και συμπεριλαμβάνουμε μόνο μέρη που θα προτείναμε ειλικρινά σε φίλους.',
   },
   {
     qEn: 'Do businesses pay to rank higher?',
@@ -34,9 +34,9 @@ export const FAQ_ITEMS: FaqItem[] = [
     qEn: 'How does my business get listed?',
     qEl: 'Πώς μπορεί να καταχωριστεί η επιχείρησή μου;',
     aEn:
-      'Reach out through the “List your business” link below. If your place fits the guide — quality, honesty, and a genuine local footprint — we will visit and take it from there.',
+      'Fill in the short “List your business” form — it takes two minutes and is free. If your place fits the guide — quality, honesty, and a genuine local footprint — we will get in touch and take it from there.',
     aEl:
-      'Επικοινωνήστε μέσω του συνδέσμου «Καταχωρίστε την επιχείρησή σας» παρακάτω. Αν το μέρος σας ταιριάζει στον οδηγό — ποιότητα, ειλικρίνεια και πραγματικό τοπικό αποτύπωμα — θα σας επισκεφθούμε και θα τα πούμε από κοντά.',
+      'Συμπληρώστε τη σύντομη φόρμα «Καταχωρίστε την επιχείρησή σας» — χρειάζονται δύο λεπτά και είναι δωρεάν. Αν το μέρος σας ταιριάζει στον οδηγό — ποιότητα, ειλικρίνεια και πραγματικό τοπικό αποτύπωμα — θα επικοινωνήσουμε μαζί σας και θα τα πούμε από κοντά.',
   },
   {
     qEn: 'What is the AI guest assistant for hotels?',

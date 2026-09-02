@@ -13,7 +13,7 @@ export function OwnerCta({ locale }: Props) {
       <div className="mx-auto flex max-w-6xl flex-col items-start justify-between gap-6 px-4 py-14 md:flex-row md:items-center">
         <div className="max-w-2xl">
           <h2 className="font-serif text-2xl font-semibold sm:text-3xl">
-            {t('Own a business on the island?', 'Έχετε επιχείρηση στο νησί;')}
+            {t('Own a business in Greece?', 'Έχετε επιχείρηση στην Ελλάδα;')}
           </h2>
           <p className="mt-2 text-sm leading-relaxed text-muted-foreground sm:text-base">
             {t(
@@ -24,7 +24,7 @@ export function OwnerCta({ locale }: Props) {
         </div>
         <div className="flex shrink-0 flex-wrap items-center gap-3">
           <Link
-            href="/signup"
+            href="/list-your-business"
             className="inline-flex h-12 cursor-pointer items-center rounded-lg bg-primary px-6 text-sm font-semibold text-primary-foreground transition-colors duration-200 hover:bg-primary/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
           >
             {t('List your business', 'Καταχώρηση επιχείρησης')}

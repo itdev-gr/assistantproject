@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { motion, useMotionValueEvent, useScroll } from 'framer-motion';
+import { createSupabaseBrowserClient } from '@aga/db/browser';
 import { Link } from '@/i18n/routing';
 import { Button, cn } from '@aga/ui';
 
@@ -16,6 +17,24 @@ export function SiteHeader({ locale, overlay = false }: Props) {
   const { scrollY } = useScroll();
   const [scrolled, setScrolled] = useState(false);
   useMotionValueEvent(scrollY, 'change', (y) => setScrolled(y > 40));
+
+  // Public pages are ISR-cached, so the signed-in state is resolved on the
+  // client: anonymous visitors see "Sign in", signed-in users "My account".
+  const [signedIn, setSignedIn] = useState(false);
+  useEffect(() => {
+    let cancelled = false;
+    try {
+      const supabase = createSupabaseBrowserClient();
+      supabase.auth.getUser().then(({ data }) => {
+        if (!cancelled) setSignedIn(Boolean(data.user));
+      });
+    } catch {
+      /* env missing in some previews — keep the anonymous state */
+    }
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const transparent = overlay && !scrolled;
 
@@ -90,7 +109,11 @@ export function SiteHeader({ locale, overlay = false }: Props) {
                 'border-white/40 bg-white/10 text-white backdrop-blur-sm hover:bg-white/20 hover:text-white',
             )}
           >
-            <Link href="/login">{locale === 'en' ? 'Sign in' : 'Είσοδος'}</Link>
+            {signedIn ? (
+              <Link href="/owner">{locale === 'en' ? 'My account' : 'Ο λογαριασμός μου'}</Link>
+            ) : (
+              <Link href="/login">{locale === 'en' ? 'Sign in' : 'Είσοδος'}</Link>
+            )}
           </Button>
         </nav>
       </div>

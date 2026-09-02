@@ -10,6 +10,15 @@ const PROTECTED = [
   { prefix: '/admin', roles: ['super_admin'] },
 ] as const;
 
+/** '/en' for English URLs, '' for the unprefixed default locale. */
+function localePrefix(pathname: string): string {
+  for (const l of routing.locales) {
+    if (l === routing.defaultLocale) continue;
+    if (pathname === `/${l}` || pathname.startsWith(`/${l}/`)) return `/${l}`;
+  }
+  return '';
+}
+
 function stripLocale(pathname: string): string {
   for (const l of routing.locales) {
     if (pathname === `/${l}`) return '/';
@@ -26,6 +35,7 @@ export async function middleware(req: NextRequest) {
   if (!(res instanceof NextResponse)) res = NextResponse.next();
 
   const path = stripLocale(req.nextUrl.pathname);
+  const prefix = localePrefix(req.nextUrl.pathname);
   const guard = PROTECTED.find((g) => path === g.prefix || path.startsWith(`${g.prefix}/`));
   if (!guard) return res;
 
@@ -44,13 +54,18 @@ export async function middleware(req: NextRequest) {
 
   const { data, error } = await supabase.auth.getClaims();
   const claims = (data?.claims ?? null) as { aga_role?: string } | null;
-  if (error || !claims?.aga_role) {
-    const loginUrl = new URL('/login', req.url);
+  if (error || !claims) {
+    const loginUrl = new URL(`${prefix}/login`, req.url);
     loginUrl.searchParams.set('next', path);
     return NextResponse.redirect(loginUrl);
   }
+  if (!claims.aga_role) {
+    // Signed in, but not linked to any hotel: explain instead of bouncing
+    // back to /login (which used to loop silently).
+    return NextResponse.redirect(new URL(`${prefix}/no-access`, req.url));
+  }
   if (!(guard.roles as readonly string[]).includes(claims.aga_role)) {
-    return NextResponse.redirect(new URL('/', req.url));
+    return NextResponse.redirect(new URL(prefix || '/', req.url));
   }
   return res;
 }

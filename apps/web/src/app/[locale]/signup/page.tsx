@@ -20,7 +20,9 @@ export default async function SignupPage({ params, searchParams }: Props) {
       </Link>
       <Card className="w-full">
         <CardHeader>
-          <CardTitle>{locale === 'en' ? 'Create account' : 'Δημιουργία λογαριασμού'}</CardTitle>
+          <CardTitle>
+            {locale === 'en' ? 'Create a hotel account' : 'Λογαριασμός καταλύματος'}
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <SignupForm next={sp.next} locale={locale} />

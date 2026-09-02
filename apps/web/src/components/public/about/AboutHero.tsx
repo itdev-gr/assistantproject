@@ -53,12 +53,12 @@ export function AboutHero({ locale }: Props) {
           variants={fadeUp}
           className="max-w-3xl font-serif text-4xl font-semibold leading-tight text-white sm:text-5xl md:text-6xl"
         >
-          {t('The island, the way locals know it.', 'Το νησί, όπως το ξέρουν οι ντόπιοι.')}
+          {t('Greece, the way locals know it.', 'Η Ελλάδα, όπως την ξέρουν οι ντόπιοι.')}
         </motion.h1>
         <motion.p variants={fadeUp} className="mt-5 max-w-2xl text-base text-sky-50/90 sm:text-lg">
           {t(
-            'We are not another list copied from the internet. We live here, we try things, we ask around, and we hand-pick the tavernas, beaches and people worth knowing — so you can experience the island the way we do.',
-            'Δεν είμαστε άλλη μια λίστα αντιγραμμένη από το διαδίκτυο. Ζούμε εδώ, δοκιμάζουμε, ρωτάμε και επιλέγουμε με το χέρι τις ταβέρνες, τις παραλίες και τους ανθρώπους που αξίζει να γνωρίσετε — για να ζήσετε το νησί όπως το ζούμε εμείς.',
+            'We are not another list copied from the internet. We live here, we try things, we ask around, and we hand-pick the tavernas, beaches and people worth knowing — so you can experience each place the way we do.',
+            'Δεν είμαστε άλλη μια λίστα αντιγραμμένη από το διαδίκτυο. Ζούμε εδώ, δοκιμάζουμε, ρωτάμε και επιλέγουμε με το χέρι τις ταβέρνες, τις παραλίες και τους ανθρώπους που αξίζει να γνωρίσετε — για να ζήσετε κάθε τόπο όπως τον ζούμε εμείς.',
           )}
         </motion.p>
       </motion.div>

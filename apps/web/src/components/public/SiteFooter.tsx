@@ -98,12 +98,12 @@ export function SiteFooter({ locale, categories = [] }: Props) {
                 </a>
               </li>
               <li>
-                <a
-                  href="/login"
+                <Link
+                  href="/list-your-business"
                   className="text-sky-200/80 transition-colors duration-200 hover:text-white"
                 >
                   {t('List your business', 'Καταχωρίστε την επιχείρησή σας')}
-                </a>
+                </Link>
               </li>
               <li>
                 <a

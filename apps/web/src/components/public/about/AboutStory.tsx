@@ -38,8 +38,8 @@ export function AboutStory({ locale }: Props) {
             className="text-muted-foreground mt-4 text-base leading-relaxed sm:text-lg"
           >
             {t(
-              'Tourism should strengthen the place it happens in. Every recommendation here is hand-picked by people who live on the island, every visit supports a real local business, and every hotel that joins gives its guests something genuinely useful — not another ad space.',
-              'Ο τουρισμός πρέπει να δυναμώνει τον τόπο όπου συμβαίνει. Κάθε πρόταση εδώ επιλέγεται από ανθρώπους που ζουν στο νησί, κάθε επίσκεψη στηρίζει μια πραγματική τοπική επιχείρηση και κάθε ξενοδοχείο που συμμετέχει προσφέρει στους επισκέπτες του κάτι πραγματικά χρήσιμο — όχι ακόμη έναν διαφημιστικό χώρο.',
+              'Tourism should strengthen the place it happens in. Every recommendation here is hand-picked by people who live there, every visit supports a real local business, and every hotel that joins gives its guests something genuinely useful — not another ad space.',
+              'Ο τουρισμός πρέπει να δυναμώνει τον τόπο όπου συμβαίνει. Κάθε πρόταση εδώ επιλέγεται από ανθρώπους που ζουν στον τόπο, κάθε επίσκεψη στηρίζει μια πραγματική τοπική επιχείρηση και κάθε ξενοδοχείο που συμμετέχει προσφέρει στους επισκέπτες του κάτι πραγματικά χρήσιμο — όχι ακόμη έναν διαφημιστικό χώρο.',
             )}
           </motion.p>
         </div>
@@ -49,7 +49,7 @@ export function AboutStory({ locale }: Props) {
         >
           <Image
             src="/images/about-harbor.jpg"
-            alt={t('Boats moored in a Rhodes harbour', 'Σκάφη αραγμένα σε λιμάνι της Ρόδου')}
+            alt={t('Boats moored in a Greek island harbour', 'Σκάφη αραγμένα σε λιμάνι ελληνικού νησιού')}
             fill
             sizes="(min-width: 768px) 50vw, 100vw"
             className="object-cover"
