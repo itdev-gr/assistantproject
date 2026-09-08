@@ -1,7 +1,6 @@
-import Link from 'next/link';
 import { setRequestLocale } from 'next-intl/server';
 import { LoginForm } from '@/components/auth/LoginForm';
-import { Card, CardContent, CardHeader, CardTitle } from '@aga/ui';
+import { AuthShell } from '@/components/auth/AuthShell';
 
 interface Props {
   params: Promise<{ locale: string }>;
@@ -29,33 +28,36 @@ export default async function LoginPage({ params, searchParams }: Props) {
   const { locale } = await params;
   const sp = await searchParams;
   setRequestLocale(locale);
+  const t = (en: string, el: string) => (locale === 'en' ? en : el);
 
   return (
-    <main className="mx-auto flex min-h-dvh max-w-md flex-col items-center justify-center px-4">
-      <Link href={`/${locale}`} className="mb-8">
-        <img src="/brand/roomriv-stacked-plain.svg" alt="Roomriv" className="h-24 w-auto" />
-      </Link>
-      <Card className="w-full">
-        <CardHeader>
-          <CardTitle>{locale === 'en' ? 'Sign in' : 'Είσοδος'}</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {sp.sent ? (
-            <p className="text-sm text-muted-foreground">
-              {locale === 'en'
-                ? 'Check your email for a sign-in link.'
-                : 'Ελέγξτε το email σας για τον σύνδεσμο εισόδου.'}
-            </p>
-          ) : (
-            <LoginForm next={sp.next} locale={locale} />
+    <AuthShell
+      locale={locale}
+      variant="login"
+      title={t('Sign in', 'Είσοδος')}
+      subtitle={t(
+        'Use your password or get a one-time link by email.',
+        'Με τον κωδικό σας ή με σύνδεσμο μίας χρήσης στο email σας.',
+      )}
+    >
+      {sp.error && (
+        <p
+          role="alert"
+          className="mb-4 rounded-md border border-destructive/20 bg-destructive/10 px-3 py-2 text-sm text-destructive"
+        >
+          {errorMessage(sp.error, locale)}
+        </p>
+      )}
+      {sp.sent ? (
+        <p className="text-sm text-muted-foreground">
+          {t(
+            'Check your email for a sign-in link.',
+            'Ελέγξτε το email σας για τον σύνδεσμο εισόδου.',
           )}
-          {sp.error && (
-            <p role="alert" className="mt-3 text-xs text-destructive">
-              {errorMessage(sp.error, locale)}
-            </p>
-          )}
-        </CardContent>
-      </Card>
-    </main>
+        </p>
+      ) : (
+        <LoginForm next={sp.next} locale={locale} />
+      )}
+    </AuthShell>
   );
 }

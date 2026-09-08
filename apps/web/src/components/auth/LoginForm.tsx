@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { Eye, EyeOff } from 'lucide-react';
 import { useRouter, Link } from '@/i18n/routing';
 import { Button, Input, Label } from '@aga/ui';
 import { sendMagicLink, signInWithPassword } from '@/app/actions/auth';
@@ -17,6 +18,7 @@ export function LoginForm({ next, locale }: Props) {
   const [mode, setMode] = useState<Mode>('password');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -86,6 +88,7 @@ export function LoginForm({ next, locale }: Props) {
             required
             autoComplete="email"
             autoFocus
+            className="h-11"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
           />
@@ -93,25 +96,47 @@ export function LoginForm({ next, locale }: Props) {
         {mode === 'password' && (
           <div className="space-y-1.5">
             <Label htmlFor="password">{t('Password', 'Κωδικός')}</Label>
-            <Input
-              id="password"
-              type="password"
-              required
-              minLength={6}
-              autoComplete="current-password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
+            <div className="relative">
+              <Input
+                id="password"
+                type={showPassword ? 'text' : 'password'}
+                required
+                minLength={6}
+                autoComplete="current-password"
+                className="h-11 pr-11"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword((v) => !v)}
+                aria-label={
+                  showPassword ? t('Hide password', 'Απόκρυψη κωδικού') : t('Show password', 'Εμφάνιση κωδικού')
+                }
+                aria-pressed={showPassword}
+                className="absolute inset-y-0 right-0 flex w-11 cursor-pointer items-center justify-center text-muted-foreground transition-colors hover:text-foreground focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring"
+              >
+                {showPassword ? (
+                  <EyeOff className="h-4 w-4" aria-hidden />
+                ) : (
+                  <Eye className="h-4 w-4" aria-hidden />
+                )}
+              </button>
+            </div>
           </div>
         )}
-        <Button type="submit" className="w-full" disabled={pending}>
+        <Button type="submit" size="lg" className="w-full" disabled={pending}>
           {pending
             ? t('Signing in…', 'Σύνδεση…')
             : mode === 'password'
               ? t('Sign in', 'Είσοδος')
               : t('Send magic link', 'Αποστολή συνδέσμου')}
         </Button>
-        {error && <p className="text-destructive text-xs">{error}</p>}
+        {error && (
+          <p role="alert" className="text-destructive text-xs">
+            {error}
+          </p>
+        )}
       </form>
 
       <p className="text-muted-foreground text-center text-sm">

@@ -5,7 +5,9 @@ import { useRouter, Link } from '@/i18n/routing';
 import { Button, Input, Label, Textarea, cn } from '@aga/ui';
 import { Store, User, MailCheck } from 'lucide-react';
 import { signUpWithPassword } from '@/app/actions/auth';
-import { dashSelect } from '@/components/dashboard/field-classes';
+
+const selectClass =
+  'flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2';
 
 export interface SignupCategoryOption {
   id: string;
@@ -238,7 +240,7 @@ export function SignupForm({ next, locale, categories, initialRole = 'user' }: P
                 required={role === 'partner'}
                 value={categoryId}
                 onChange={(e) => setCategoryId(e.target.value)}
-                className={dashSelect}
+                className={selectClass}
               >
                 {categories.map((c) => (
                   <option key={c.id} value={c.id}>
@@ -285,14 +287,18 @@ export function SignupForm({ next, locale, categories, initialRole = 'user' }: P
           </fieldset>
         )}
 
-        <Button type="submit" className="w-full" disabled={pending}>
+        <Button type="submit" size="lg" className="w-full" disabled={pending}>
           {pending
             ? t('Creating…', 'Δημιουργία…')
             : role === 'partner'
               ? t('Create account & apply', 'Δημιουργία & αίτηση')
               : t('Create account', 'Δημιουργία λογαριασμού')}
         </Button>
-        {error && <p className="text-destructive text-xs">{error}</p>}
+        {error && (
+          <p role="alert" className="text-destructive text-xs">
+            {error}
+          </p>
+        )}
       </form>
 
       <p className="text-muted-foreground text-center text-sm">
