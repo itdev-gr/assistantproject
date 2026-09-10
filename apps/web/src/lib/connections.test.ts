@@ -61,5 +61,6 @@ describe('misc helpers', () => {
     expect(formatCommission(12, 'en')).toBe('12% commission');
     expect(formatCommission(12.5, 'el')).toBe('12.5% προμήθεια');
     expect(formatCommission(null, 'en')).toBeNull();
+    expect(formatCommission(0, 'en')).toBeNull();
   });
 });

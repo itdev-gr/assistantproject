@@ -117,6 +117,7 @@ export function counterpartyOf(initiatedBy: ConnectionInitiator): ConnectionInit
 export function formatCommission(pct: number | null | undefined, locale: string): string | null {
   if (pct == null) return null;
   const n = Number(pct);
+  if (!(n > 0)) return null;
   const text = Number.isInteger(n) ? String(n) : n.toFixed(1);
   return locale === 'en' ? `${text}% commission` : `${text}% προμήθεια`;
 }
