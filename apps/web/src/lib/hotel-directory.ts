@@ -17,6 +17,7 @@ interface RawRow {
   tags: string[] | null;
   images: unknown;
   category: { slug: string; name_i18n: Record<string, string> } | null;
+  subscription_tier: 'free' | 'standard' | 'featured' | 'exclusive';
   partnerships: Array<{
     hotel_id: string;
     active: boolean;
@@ -60,13 +61,12 @@ export async function listHotelDirectory(
     .select(
       `
         id, name, description_i18n, lat, lng, address, phone, whatsapp, website,
-        price_band, tags, images,
+        price_band, tags, images, subscription_tier,
         category:business_categories ( slug, name_i18n ),
         partnerships ( hotel_id, active, subscription_tier, paid_priority_score )
       `,
     )
-    .eq('active', true)
-    .eq('verified', true)
+    .eq('listed', true)
     .order('name')
     .returns<RawRow[]>();
 
@@ -107,7 +107,7 @@ export async function listHotelDirectory(
       tags: b.tags ?? [],
       images,
       hasPartner: ours !== null,
-      topTier: ours?.subscription_tier ?? null,
+      topTier: b.subscription_tier === 'free' ? null : b.subscription_tier,
       distanceKm,
     };
     if (ours) partners.push(card);

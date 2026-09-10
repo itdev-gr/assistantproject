@@ -24,6 +24,7 @@ describe('signUpSchema', () => {
       const paths = r.error.issues.map((i) => String(i.path[0]));
       expect(paths).toEqual(
         expect.arrayContaining([
+          'plan',
           'businessName',
           'businessCategoryId',
           'businessPhone',
@@ -37,6 +38,7 @@ describe('signUpSchema', () => {
     const r = signUpSchema.safeParse({
       ...base,
       role: 'partner',
+      plan: 'featured',
       businessName: 'Taverna',
       businessCategoryId: '00000000-0000-0000-0000-000000000001',
       businessPhone: '+30 2281 000000',

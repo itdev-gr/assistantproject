@@ -19,12 +19,12 @@ interface Value {
 const VALUES: Value[] = [
   {
     icon: ShieldCheck,
-    titleEn: 'No paid rankings',
-    titleEl: 'Χωρίς πληρωμένες κατατάξεις',
+    titleEn: 'Plans never decide the list',
+    titleEl: 'Τα πλάνα δεν αποφασίζουν τη λίστα',
     bodyEn:
-      'Nobody can buy their way into the guide or above anyone else. What we recommend is what we believe.',
+      'Nobody can buy their way into the guide. Paid plans never decide who is listed or the directory order; they only weight the assistant’s suggestions among places that are already relevant.',
     bodyEl:
-      'Κανείς δεν μπορεί να αγοράσει θέση στον οδηγό ή πάνω από άλλους. Ό,τι προτείνουμε είναι ό,τι πιστεύουμε.',
+      'Κανείς δεν αγοράζει θέση στον οδηγό. Τα πλάνα δεν αποφασίζουν ποιος μπαίνει ούτε τη σειρά του καταλόγου· δίνουν μόνο βάρος στις προτάσεις του βοηθού ανάμεσα σε ήδη σχετικά μέρη.',
   },
   {
     icon: MapPin,

@@ -8,6 +8,10 @@ export type AccountRole = z.infer<typeof accountRoleSchema>;
 export const partnerStatusSchema = z.enum(['pending', 'approved', 'rejected']);
 export type PartnerStatus = z.infer<typeof partnerStatusSchema>;
 
+/** Paid plans a partner can pick at signup (see apps/web/src/lib/plans.ts). */
+export const paidTierSchema = z.enum(['standard', 'featured', 'exclusive']);
+export type PaidTier = z.infer<typeof paidTierSchema>;
+
 const trimmed = (min: number, max: number) => z.string().trim().min(min).max(max);
 
 /**
@@ -27,9 +31,14 @@ export const signUpSchema = z
     businessPhone: z.string().trim().max(40).optional(),
     businessAddress: z.string().trim().max(300).optional(),
     businessDescription: z.string().trim().max(1200).optional(),
+    /** Plan chosen at signup; the subscription itself is created after login. */
+    plan: paidTierSchema.optional(),
   })
   .superRefine((v, ctx) => {
     if (v.role !== 'partner') return;
+    if (!v.plan) {
+      ctx.addIssue({ code: 'custom', path: ['plan'], message: 'required' });
+    }
     if (!v.businessName || v.businessName.length < 2) {
       ctx.addIssue({ code: 'custom', path: ['businessName'], message: 'required' });
     }

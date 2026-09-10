@@ -11,6 +11,7 @@ import {
   Flag,
   BarChart3,
   Link2,
+  Receipt,
 } from 'lucide-react';
 import { SidebarNav } from '@/components/dashboard/SidebarNav';
 
@@ -18,9 +19,11 @@ interface Props {
   email?: string | null;
   /** All pending connection requests platform-wide. */
   pendingConnections?: number;
+  /** Open issues from the latest billing audit. */
+  billingIssues?: number;
 }
 
-export function AdminSidebar({ email, pendingConnections = 0 }: Props) {
+export function AdminSidebar({ email, pendingConnections = 0, billingIssues = 0 }: Props) {
   const t = useTranslations('admin.nav');
   return (
     <SidebarNav
@@ -53,7 +56,10 @@ export function AdminSidebar({ email, pendingConnections = 0 }: Props) {
         },
         {
           heading: t('groupSystem'),
-          items: [{ href: '/admin/usage', label: t('usage'), Icon: BarChart3 }],
+          items: [
+            { href: '/admin/billing', label: t('billing'), Icon: Receipt, badge: billingIssues },
+            { href: '/admin/usage', label: t('usage'), Icon: BarChart3 },
+          ],
         },
       ]}
     />

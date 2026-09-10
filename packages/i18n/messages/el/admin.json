@@ -17,7 +17,8 @@
     "flags": "Feature flags",
     "usage": "Χρήση",
     "partners": "Αιτήσεις συνεργατών",
-    "connections": "Αιτήματα συνεργασίας"
+    "connections": "Αιτήματα συνεργασίας",
+    "billing": "Έλεγχος πληρωμών"
   },
   "moderation": {
     "approve": "Έγκριση",

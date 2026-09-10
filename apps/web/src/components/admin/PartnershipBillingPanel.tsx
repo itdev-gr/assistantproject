@@ -1,14 +1,16 @@
 'use client';
 
-import { useState, useTransition } from 'react';
-import { Button, Badge, cn } from '@aga/ui';
-import { createCheckoutLink, cancelTierSubscription } from '@/app/actions/admin-billing';
+import { Badge, cn } from '@aga/ui';
+import { Link } from '@/i18n/routing';
 
 interface Props {
-  partnershipId: string;
+  businessId: string;
+  /** Partnership-level tier — now only an admin override for this hotel. */
   tier: string;
-  billingStatus: string;
-  billingEmail: string | null;
+  /** Business-level billing status (the billed subscription lives on the business). */
+  businessBillingStatus: string;
+  businessTier: string;
+  businessExempt: boolean;
 }
 
 const STATUS_STYLES: Record<string, string> = {
@@ -19,64 +21,27 @@ const STATUS_STYLES: Record<string, string> = {
   unbilled: 'bg-muted text-muted-foreground',
 };
 
-export function PartnershipBillingPanel({ partnershipId, tier, billingStatus, billingEmail }: Props) {
-  const [pending, start] = useTransition();
-  const [selectedTier, setSelectedTier] = useState<'standard' | 'featured' | 'exclusive'>('featured');
-  const [message, setMessage] = useState<string | null>(null);
-
-  function generateLink() {
-    start(async () => {
-      setMessage(null);
-      const res = await createCheckoutLink({ partnershipId, tier: selectedTier });
-      if (!res.ok) {
-        setMessage(
-          res.error === 'missing_billing_email'
-            ? 'Set a billing email on the business first.'
-            : res.error === 'already_active'
-              ? 'Already has an active subscription — cancel it first.'
-              : `Error: ${res.error}`,
-        );
-        return;
-      }
-      try {
-        await navigator.clipboard.writeText(res.url);
-        setMessage('Payment link copied — send it to the business.');
-      } catch {
-        setMessage(`Copy failed — link: ${res.url}`);
-      }
-    });
-  }
-
-  function cancel() {
-    start(async () => {
-      const res = await cancelTierSubscription({ partnershipId });
-      setMessage(res.ok ? 'Will cancel at period end.' : `Error: ${res.error}`);
-    });
-  }
-
+/**
+ * Read-only billing summary per partnership row. Subscriptions are billed per
+ * business since migration 0017; payment links, comps and cancellation live
+ * on the business page.
+ */
+export function PartnershipBillingPanel({ businessId, tier, businessBillingStatus, businessTier, businessExempt }: Props) {
   return (
     <div className="flex flex-wrap items-center gap-2 text-sm">
-      <Badge className={cn('capitalize', STATUS_STYLES[billingStatus] ?? '')}>{billingStatus}</Badge>
-      <span className="text-muted-foreground">tier: {tier}</span>
-      <select
-        value={selectedTier}
-        onChange={(e) => setSelectedTier(e.target.value as typeof selectedTier)}
-        className="h-8 rounded-md border border-input bg-background px-2"
-        aria-label="Tier for payment link"
-      >
-        <option value="standard">Standard</option>
-        <option value="featured">Featured</option>
-        <option value="exclusive">Exclusive</option>
-      </select>
-      <Button size="sm" variant="outline" onClick={generateLink} disabled={pending || !billingEmail}>
-        Create payment link
-      </Button>
-      {billingStatus === 'active' && (
-        <Button size="sm" variant="ghost" onClick={cancel} disabled={pending}>
-          Cancel subscription
-        </Button>
+      <Badge className={cn('capitalize', STATUS_STYLES[businessBillingStatus] ?? '')}>
+        {businessExempt ? 'exempt' : businessBillingStatus}
+      </Badge>
+      <span className="text-muted-foreground">plan: {businessTier}</span>
+      {tier !== 'free' && tier !== businessTier && (
+        <span className="text-muted-foreground">(override: {tier})</span>
       )}
-      {message && <p className="w-full text-xs text-muted-foreground">{message}</p>}
+      <Link
+        href={`/admin/businesses/${businessId}`}
+        className="text-primary underline-offset-2 hover:underline"
+      >
+        Billing →
+      </Link>
     </div>
   );
 }

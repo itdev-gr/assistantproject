@@ -1,8 +1,10 @@
 import { NextResponse } from 'next/server';
+import { after } from 'next/server';
 import type Stripe from 'stripe';
 import { createSupabaseServiceClient } from '@aga/db/service';
 import { getStripe } from '@/lib/stripe';
-import { applyStripeEvent, type BillingAction, type StripeEventLike } from '@/lib/stripe-billing-events';
+import type { StripeEventLike } from '@/lib/stripe-billing-events';
+import { processStoredEvent, reindexBusinessPartners } from '@/lib/business-billing-sync';
 
 export const runtime = 'nodejs';
 
@@ -27,8 +29,7 @@ export async function POST(req: Request) {
     payload: JSON.parse(raw),
   });
   if (insertError) {
-    // Distinguish duplicate-key from transient failures
-    if ((insertError as any).code === '23505') {
+    if ((insertError as { code?: string }).code === '23505') {
       return NextResponse.json({ received: true, duplicate: true });
     }
     // Non-duplicate error: log and return 500 so Stripe retries
@@ -36,29 +37,14 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'persist_failed' }, { status: 500 });
   }
 
-  try {
-    for (const action of applyStripeEvent(event as unknown as StripeEventLike)) {
-      await runAction(admin, action);
-    }
-    await admin
-      .from('stripe_webhook_events')
-      .update({ processed_at: new Date().toISOString() })
-      .eq('id', event.id);
-  } catch (err) {
-    // Ack anyway; the event row stays without processed_at for manual replay.
-    console.error(`stripe webhook ${event.id} (${event.type}) processing failed`, err);
+  const result = await processStoredEvent(admin, event as unknown as StripeEventLike);
+  if (result.ok && result.businessIds.length > 0) {
+    // Keep the assistant's index in step with listing changes (see lib).
+    after(async () => {
+      for (const id of result.businessIds) await reindexBusinessPartners(admin, id);
+    });
   }
-  return NextResponse.json({ received: true });
-}
-
-async function runAction(admin: ReturnType<typeof createSupabaseServiceClient>, action: BillingAction) {
-  const table =
-    action.target === 'partnership' ? 'partnerships'
-    : action.target === 'hotel' ? 'hotels'
-    : 'commission_events';
-  const entry = Object.entries(action.match)[0];
-  if (!entry) throw new Error(`${table} update missing match column`);
-  const [column, value] = entry;
-  const { error } = await admin.from(table).update(action.set).eq(column, value as string);
-  if (error) throw new Error(`${table} update failed: ${error.message}`);
+  // Always ack: a failed event stays with processed_at = null (+ error) for
+  // the reconciler / admin replay. Stripe retries would not change the outcome.
+  return NextResponse.json({ received: true, processed: result.ok });
 }

@@ -3,9 +3,7 @@ import { test, expect } from '@playwright/test';
 /**
  * Self-service business listing + auth dead-end regression tests.
  *
- * Read-only by default. Set AGA_E2E_WRITE=1 to actually submit a listing
- * request (inserts an unverified row into the live `businesses` table that an
- * admin must reject/delete in /admin/moderation afterwards).
+ * Read-only: nothing here writes to the live database.
  *
  * The "signed-in user without a role" case needs credentials for an account
  * that is NOT linked to any hotel: AGA_E2E_NOROLE_EMAIL / AGA_E2E_NOROLE_PASSWORD.
@@ -34,50 +32,20 @@ test.describe('list your business', () => {
     await expect(page).toHaveURL(/\/en\/signup\?role=partner$/);
   });
 
-  test('form renders in Greek at the unprefixed URL with live categories', async ({ page }) => {
+  test('the old /list-your-business URL redirects to partner signup', async ({ page }) => {
     await page.goto('/list-your-business');
-    await expect(
-      page.getByRole('heading', { level: 1, name: /Βάλτε την επιχείρησή σας/ }),
-    ).toBeVisible();
-    const select = page.getByLabel(/Κατηγορία/);
-    await expect(select).toBeVisible();
-    // The placeholder option plus at least one real category from the DB.
-    expect(await select.locator('option').count()).toBeGreaterThan(1);
-    await expect(page.getByRole('button', { name: 'Αποστολή αίτησης' })).toBeVisible();
+    await expect(page).toHaveURL(/\/signup\?role=partner$/);
+    await page.goto('/en/list-your-business');
+    await expect(page).toHaveURL(/\/en\/signup\?role=partner$/);
   });
 
-  test('server-side validation highlights bad fields without submitting', async ({ page }) => {
-    await page.goto('/en/list-your-business');
-    await page.getByLabel(/Business name/).fill('X');
-    await page.getByLabel(/Town \/ area/).fill('Naxos');
-    await page.getByLabel(/Street address/).fill('Main street 1');
-    await page.getByLabel(/Phone/).fill('123');
-    await page.getByLabel('Email *').fill('not-an-email');
-    await page.getByLabel(/Tell us about your place/).fill('too short');
-    await page.getByRole('button', { name: 'Send request' }).click();
-
-    await expect(formAlert(page)).toHaveText(/check the highlighted fields/i);
-    await expect(page.getByLabel(/Business name/)).toHaveClass(/border-destructive/);
-    await expect(page.getByLabel('Email *')).toHaveClass(/border-destructive/);
-    await expect(page.getByLabel(/Category/)).toHaveClass(/border-destructive/);
-  });
-
-  test('a complete request is accepted', async ({ page }) => {
-    test.skip(process.env.AGA_E2E_WRITE !== '1', 'Set AGA_E2E_WRITE=1 to write to the live DB');
-    const stamp = Date.now();
-    await page.goto('/en/list-your-business');
-    await page.getByLabel(/Business name/).fill(`E2E Taverna ${stamp}`);
-    await page.getByLabel(/Category/).selectOption({ index: 1 });
-    await page.getByLabel(/Town \/ area/).fill('Chania, Crete');
-    await page.getByLabel(/Street address/).fill('Akti Koundourioti 1');
-    await page.getByLabel(/Phone/).fill('+30 28210 00000');
-    await page.getByLabel('Email *').fill(`e2e-${stamp}@example.com`);
-    await page.getByLabel(/Website/).fill('example.com');
-    await page
-      .getByLabel(/Tell us about your place/)
-      .fill('Automated end-to-end test submission — safe to reject in moderation.');
-    await page.getByRole('button', { name: 'Send request' }).click();
-    await expect(page.getByRole('status')).toContainText('we received your request');
+  test('partner signup asks for a plan and preselects it from ?plan=', async ({ page }) => {
+    await page.goto('/en/signup?plan=featured');
+    await expect(page.getByRole('button', { name: /Partner/ })).toHaveAttribute('aria-pressed', 'true');
+    const radios = page.getByRole('radio');
+    await expect(radios).toHaveCount(3);
+    await expect(page.getByRole('radio', { name: /Featured/ })).toHaveAttribute('aria-checked', 'true');
+    await expect(page.getByRole('radio', { name: /Standard/ })).toContainText('29');
   });
 });
 

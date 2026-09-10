@@ -2,10 +2,11 @@ import { setRequestLocale } from 'next-intl/server';
 import { createSupabaseServiceClient } from '@aga/db/service';
 import { SignupForm, type SignupCategoryOption } from '@/components/auth/SignupForm';
 import { AuthShell } from '@/components/auth/AuthShell';
+import { isPaidTier } from '@/lib/plans';
 
 interface Props {
   params: Promise<{ locale: string }>;
-  searchParams: Promise<{ next?: string; role?: string }>;
+  searchParams: Promise<{ next?: string; role?: string; plan?: string }>;
 }
 
 async function loadCategories(locale: string): Promise<SignupCategoryOption[]> {
@@ -26,7 +27,9 @@ export default async function SignupPage({ params, searchParams }: Props) {
   setRequestLocale(locale);
   const t = (en: string, el: string) => (locale === 'en' ? en : el);
   const categories = await loadCategories(locale);
-  const initialRole = sp.role === 'partner' ? 'partner' : 'user';
+  const initialPlan = isPaidTier(sp.plan) ? sp.plan : undefined;
+  // A plan deep link (pricing page) implies a partner signup.
+  const initialRole = sp.role === 'partner' || initialPlan ? 'partner' : 'user';
 
   return (
     <AuthShell
@@ -44,6 +47,7 @@ export default async function SignupPage({ params, searchParams }: Props) {
         locale={locale}
         categories={categories}
         initialRole={initialRole}
+        initialPlan={initialPlan}
       />
     </AuthShell>
   );

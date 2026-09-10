@@ -1,7 +1,7 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { LayoutDashboard, Store, UserCircle, Handshake } from 'lucide-react';
+import { LayoutDashboard, Store, UserCircle, Handshake, CreditCard } from 'lucide-react';
 import { SidebarNav } from '@/components/dashboard/SidebarNav';
 
 interface Props {
@@ -29,6 +29,7 @@ export function PartnerSidebar({ email, pendingConnections = 0 }: Props) {
           items: [
             { href: '/partner/business', label: t('business'), Icon: Store },
             { href: '/partner/connections', label: t('connections'), Icon: Handshake, badge: pendingConnections },
+            { href: '/partner/billing', label: t('billing'), Icon: CreditCard },
           ],
         },
         {

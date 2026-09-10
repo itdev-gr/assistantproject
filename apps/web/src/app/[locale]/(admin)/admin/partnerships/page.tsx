@@ -1,5 +1,5 @@
 import { setRequestLocale } from 'next-intl/server';
-import { getServerClient } from '@/lib/supabase-server';
+import { createSupabaseServiceClient } from '@aga/db/service';
 import { requireSuperAdmin } from '@/lib/auth-context';
 import { PartnershipsEditor } from '@/components/admin/PartnershipsEditor';
 import { InvoiceCommissionsButton } from '@/components/admin/InvoiceCommissionsButton';
@@ -13,7 +13,9 @@ export default async function PartnershipsPage({ params }: Props) {
   const { locale } = await params;
   setRequestLocale(locale);
   await requireSuperAdmin();
-  const supabase = await getServerClient();
+  // Behind requireSuperAdmin(): the service role sees billing/secret columns
+  // that client roles are no longer granted (migration 0017).
+  const supabase = createSupabaseServiceClient();
 
   const [{ data: hotels }, { data: businesses }, { data: rows }] = await Promise.all([
     supabase.from('hotels').select('id, name, slug').order('name'),
@@ -21,7 +23,7 @@ export default async function PartnershipsPage({ params }: Props) {
     supabase
       .from('partnerships')
       .select(
-        'id, hotel_id, business_id, commission_pct, paid_priority_score, subscription_tier, active, contract_starts, contract_ends, billing_status, stripe_subscription_id, hotel:hotels(name), business:businesses(name, billing_email)',
+        'id, hotel_id, business_id, commission_pct, paid_priority_score, subscription_tier, active, contract_starts, contract_ends, billing_status, stripe_subscription_id, hotel:hotels(name), business:businesses(name, billing_email, billing_status, subscription_tier, billing_exempt)',
       )
       .order('updated_at', { ascending: false }),
   ]);
@@ -57,6 +59,12 @@ export default async function PartnershipsPage({ params }: Props) {
               paidPriorityScore: r.paid_priority_score,
               subscriptionTier: r.subscription_tier,
               billingStatus: r.billing_status,
+              businessBillingStatus:
+                (r.business as unknown as { billing_status?: string } | null)?.billing_status ?? 'unbilled',
+              businessTier:
+                (r.business as unknown as { subscription_tier?: string } | null)?.subscription_tier ?? 'free',
+              businessExempt:
+                (r.business as unknown as { billing_exempt?: boolean } | null)?.billing_exempt ?? false,
               active: r.active,
               contractStarts: r.contract_starts,
               contractEnds: r.contract_ends,

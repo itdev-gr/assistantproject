@@ -99,6 +99,14 @@ export function SiteFooter({ locale, categories = [] }: Props) {
               </li>
               <li>
                 <Link
+                  href="/pricing"
+                  className="text-sky-200/80 transition-colors duration-200 hover:text-white"
+                >
+                  {t('Pricing', 'Τιμές')}
+                </Link>
+              </li>
+              <li>
+                <Link
                   href="/signup?role=partner"
                   className="text-sky-200/80 transition-colors duration-200 hover:text-white"
                 >

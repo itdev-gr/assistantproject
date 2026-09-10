@@ -3,8 +3,9 @@
 import { useState } from 'react';
 import { useRouter, Link } from '@/i18n/routing';
 import { Button, Input, Label, Textarea, cn } from '@aga/ui';
-import { Store, User, MailCheck } from 'lucide-react';
+import { Store, User, MailCheck, Check } from 'lucide-react';
 import { signUpWithPassword } from '@/app/actions/auth';
+import { PLANS, formatEuro, type PaidTier } from '@/lib/plans';
 
 const selectClass =
   'flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2';
@@ -21,13 +22,15 @@ interface Props {
   locale: string;
   categories: SignupCategoryOption[];
   initialRole?: Role;
+  initialPlan?: PaidTier;
 }
 
-export function SignupForm({ next, locale, categories, initialRole = 'user' }: Props) {
+export function SignupForm({ next, locale, categories, initialRole = 'user', initialPlan }: Props) {
   const router = useRouter();
   const t = (en: string, el: string) => (locale === 'en' ? en : el);
 
   const [role, setRole] = useState<Role>(initialRole);
+  const [plan, setPlan] = useState<PaidTier | ''>(initialPlan ?? '');
   const [displayName, setDisplayName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -71,6 +74,7 @@ export function SignupForm({ next, locale, categories, initialRole = 'user' }: P
       locale: locale === 'en' ? 'en' : 'el',
       ...(role === 'partner'
         ? {
+            plan: plan || undefined,
             businessName,
             businessCategoryId: categoryId,
             businessPhone: phone,
@@ -111,8 +115,8 @@ export function SignupForm({ next, locale, categories, initialRole = 'user' }: P
             {role === 'partner' && (
               <p className="text-muted-foreground mt-2">
                 {t(
-                  'Your partner application has been received. We will review it and let you know.',
-                  'Λάβαμε την αίτηση συνεργασίας σας. Θα την εξετάσουμε και θα σας ενημερώσουμε.',
+                  'Next: sign in and complete the payment for your plan from “Plan & billing”. Your listing goes live once the payment is active and our team has approved it.',
+                  'Επόμενο βήμα: συνδεθείτε και ολοκληρώστε την πληρωμή του πλάνου σας από το «Πλάνο & συνδρομή». Η καταχώριση δημοσιεύεται μόλις η πληρωμή είναι ενεργή και η ομάδα μας την εγκρίνει.',
                 )}
               </p>
             )}
@@ -211,6 +215,48 @@ export function SignupForm({ next, locale, categories, initialRole = 'user' }: P
           />
           {fieldError('password')}
         </div>
+
+        {role === 'partner' && (
+          <fieldset className="space-y-3">
+            <legend className="text-sm font-medium">{t('Choose your plan', 'Επιλέξτε πλάνο')} *</legend>
+            <div className="grid gap-2 sm:grid-cols-3" role="radiogroup" aria-label={t('Plan', 'Πλάνο')}>
+              {PLANS.map((p) => {
+                const selected = plan === p.tier;
+                return (
+                  <button
+                    key={p.tier}
+                    type="button"
+                    role="radio"
+                    aria-checked={selected}
+                    onClick={() => setPlan(p.tier)}
+                    className={cn(
+                      'relative flex flex-col items-start gap-0.5 rounded-lg border p-3 text-left transition-colors',
+                      selected ? 'border-primary bg-primary/5 ring-primary/20 ring-2' : 'border-input hover:bg-muted/50',
+                      fieldErrors.plan && !plan && 'border-destructive',
+                    )}
+                  >
+                    {selected && <Check className="text-primary absolute right-2 top-2 h-4 w-4" aria-hidden />}
+                    <span className="text-sm font-semibold">{locale === 'en' ? p.name.en : p.name.el}</span>
+                    <span className="text-base font-semibold">
+                      {formatEuro(p.cents, locale)}
+                      <span className="text-muted-foreground text-xs font-normal">/{t('month', 'μήνα')}</span>
+                    </span>
+                    <span className="text-muted-foreground text-xs">{locale === 'en' ? p.tagline.en : p.tagline.el}</span>
+                  </button>
+                );
+              })}
+            </div>
+            {fieldErrors.plan && !plan && (
+              <p className="text-destructive text-xs">{t('Choose a plan to continue.', 'Επιλέξτε πλάνο για να συνεχίσετε.')}</p>
+            )}
+            <p className="text-muted-foreground text-xs">
+              {t('You pay after signing in, through Stripe. Cancel anytime.', 'Πληρώνετε μετά τη σύνδεση, μέσω Stripe. Ακύρωση όποτε θέλετε.')}{' '}
+              <Link href="/pricing" className="text-primary underline-offset-4 hover:underline">
+                {t('Compare plans', 'Σύγκριση πλάνων')}
+              </Link>
+            </p>
+          </fieldset>
+        )}
 
         {role === 'partner' && (
           <fieldset className="bg-muted/30 space-y-3 rounded-lg border p-4">

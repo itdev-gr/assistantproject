@@ -85,8 +85,7 @@ export default async function OwnerPartnersPage({ params, searchParams }: Props)
     let query = supabase
       .from('businesses')
       .select('id, name, address, category:business_categories(name_i18n)')
-      .eq('active', true)
-      .eq('verified', true)
+      .eq('listed', true)
       .order('name')
       .limit(60);
     if (q) query = query.ilike('name', `%${q}%`);

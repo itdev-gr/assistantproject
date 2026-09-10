@@ -18,6 +18,9 @@ interface Row {
   paidPriorityScore: number;
   subscriptionTier: SubscriptionTier;
   billingStatus: string;
+  businessBillingStatus: string;
+  businessTier: string;
+  businessExempt: boolean;
   active: boolean;
   contractStarts: string | null;
   contractEnds: string | null;
@@ -180,10 +183,11 @@ export function PartnershipsEditor({ locale, hotels, businesses, rows }: Props) 
               <td className="py-2">{r.paidPriorityScore}</td>
               <td className="py-2">
                 <PartnershipBillingPanel
-                  partnershipId={r.id}
+                  businessId={r.businessId}
                   tier={r.subscriptionTier}
-                  billingStatus={r.billingStatus}
-                  billingEmail={r.billingEmail}
+                  businessBillingStatus={r.businessBillingStatus}
+                  businessTier={r.businessTier}
+                  businessExempt={r.businessExempt}
                 />
               </td>
               <td className="py-2 text-right">

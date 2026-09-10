@@ -42,13 +42,18 @@ interface RawBusinessRow {
   tags: string[] | null;
   images: unknown;
   category: { slug: string; name_i18n: Record<string, string> } | null;
+  /** Business-level plan (migration 0017); 'free' unless the subscription is paying. */
+  subscription_tier: 'free' | 'standard' | 'featured' | 'exclusive';
   partnerships: Array<{
     active: boolean;
     subscription_tier: 'free' | 'standard' | 'featured' | 'exclusive';
   }>;
 }
 
-const TIER_RANK = { free: 0, standard: 1, featured: 2, exclusive: 3 } as const;
+/** Paid plan of a listed business, or null on the free tier. */
+function paidTier(tier: 'free' | 'standard' | 'featured' | 'exclusive'): Exclude<'free' | 'standard' | 'featured' | 'exclusive', 'free'> | null {
+  return tier === 'free' ? null : tier;
+}
 
 export async function listDirectory(locale: Locale): Promise<{
   businesses: DirectoryBusiness[];
@@ -60,13 +65,12 @@ export async function listDirectory(locale: Locale): Promise<{
     .select(
       `
         id, name, description_i18n, lat, lng, address, phone, whatsapp, website,
-        price_band, tags, images,
+        price_band, tags, images, subscription_tier,
         category:business_categories ( slug, name_i18n ),
         partnerships ( active, subscription_tier )
       `,
     )
-    .eq('active', true)
-    .eq('verified', true)
+    .eq('listed', true)
     .order('name')
     .returns<RawBusinessRow[]>();
 
@@ -77,16 +81,7 @@ export async function listDirectory(locale: Locale): Promise<{
       b.description_i18n?.el ??
       null;
     const activePartnerships = (b.partnerships ?? []).filter((p) => p.active);
-    const topTier =
-      activePartnerships.length === 0
-        ? null
-        : activePartnerships.reduce(
-            (best, p) =>
-              TIER_RANK[p.subscription_tier] > TIER_RANK[best]
-                ? p.subscription_tier
-                : best,
-            activePartnerships[0]!.subscription_tier,
-          );
+    const topTier = paidTier(b.subscription_tier);
     const images = Array.isArray(b.images) ? (b.images as unknown[]).filter((i): i is string => typeof i === 'string') : [];
     return {
       id: b.id,
@@ -138,14 +133,13 @@ export async function getBusiness(
     .select(
       `
         id, name, description_i18n, lat, lng, address, phone, whatsapp, website,
-        price_band, tags, images,
+        price_band, tags, images, subscription_tier,
         category:business_categories ( slug, name_i18n ),
         partnerships ( active, subscription_tier, hotel:hotels ( slug, name ) )
       `,
     )
     .eq('id', id)
-    .eq('active', true)
-    .eq('verified', true)
+    .eq('listed', true)
     .maybeSingle();
   if (!data) return null;
 
@@ -164,14 +158,7 @@ export async function getBusiness(
     row.description_i18n?.el ??
     null;
   const activePartnerships = (row.partnerships ?? []).filter((p) => p.active);
-  const topTier =
-    activePartnerships.length === 0
-      ? null
-      : activePartnerships.reduce(
-          (best, p) =>
-            TIER_RANK[p.subscription_tier] > TIER_RANK[best] ? p.subscription_tier : best,
-          activePartnerships[0]!.subscription_tier,
-        );
+  const topTier = paidTier(row.subscription_tier);
   const images = Array.isArray(row.images)
     ? (row.images as unknown[]).filter((i): i is string => typeof i === 'string')
     : [];

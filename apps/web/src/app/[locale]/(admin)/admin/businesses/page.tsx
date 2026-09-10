@@ -1,6 +1,6 @@
 import { setRequestLocale } from 'next-intl/server';
 import { Link } from '@/i18n/routing';
-import { getServerClient } from '@/lib/supabase-server';
+import { createSupabaseServiceClient } from '@aga/db/service';
 import { requireSuperAdmin } from '@/lib/auth-context';
 import { Button } from '@aga/ui';
 import { PageHeader } from '@/components/dashboard/PageHeader';
@@ -32,7 +32,9 @@ export default async function BusinessesListPage({ params, searchParams }: Props
   const status: Status = STATUSES.includes(sp.status as Status) ? (sp.status as Status) : 'all';
   const cat = (sp.cat ?? '').trim();
   const q = (sp.q ?? '').trim();
-  const supabase = await getServerClient();
+  // Behind requireSuperAdmin(): the service role sees billing/secret columns
+  // that client roles are no longer granted (migration 0017).
+  const supabase = createSupabaseServiceClient();
 
   let query = supabase
     .from('businesses')

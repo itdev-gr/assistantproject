@@ -37,6 +37,12 @@ export interface RankingCandidate {
   categoryFit: boolean;
   /** Jaccard overlap between business tags and session preferences, 0..1 */
   preferenceMatch: number;
+  /**
+   * The business's own paid plan (platform-wide, billed per business). When
+   * present it is the tier that drives `tierMultipliers`; the partnership
+   * tier below is only consulted for legacy callers that don't pass it.
+   */
+  businessTier?: SubscriptionTier;
   /** Active partnership for this hotel, or null */
   partnership: {
     subscriptionTier: SubscriptionTier;
@@ -80,14 +86,13 @@ export function scoreOne(c: RankingCandidate, rules: RecommendationRules): Ranke
     rules.preferenceWeight * clamp01(c.preferenceMatch) -
     rules.distancePenaltyPerKm * c.distanceKm;
 
-  let partnerBias = 1.0;
-  let promoted = false;
-  if (c.partnership) {
-    const tierMult = rules.tierMultipliers[c.partnership.subscriptionTier] ?? 1.0;
-    const paid = c.partnership.paidPriorityScore / 100;
-    partnerBias = tierMult * (1 + rules.partnerBiasWeight * paid);
-    promoted = c.partnership.subscriptionTier !== 'free';
-  }
+  const tier: SubscriptionTier = c.businessTier ?? c.partnership?.subscriptionTier ?? 'free';
+  const tierMult = rules.tierMultipliers[tier] ?? 1.0;
+  const paid = (c.partnership?.paidPriorityScore ?? 0) / 100;
+  // Multiplicative on the relevance base: an irrelevant paid place still
+  // cannot beat a relevant free one.
+  const partnerBias = tierMult * (1 + rules.partnerBiasWeight * paid);
+  const promoted = tier !== 'free';
 
   return {
     ...c,

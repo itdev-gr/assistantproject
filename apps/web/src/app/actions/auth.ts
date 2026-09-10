@@ -115,6 +115,7 @@ export async function signUpWithPassword(raw: unknown): Promise<SignUpResult> {
         business_phone: input.businessPhone ?? '',
         business_address: input.businessAddress ?? '',
         business_description: input.businessDescription ?? '',
+        plan: input.plan ?? '',
       },
     },
   });

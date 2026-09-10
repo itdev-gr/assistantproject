@@ -101,12 +101,12 @@ export function buildDataPort(supabase: DB, ctx: RequestCtx): ResponseDataPort {
             tags,
             images,
             price_band,
+            subscription_tier,
             category:business_categories!inner ( slug ),
             partnerships ( id, hotel_id, subscription_tier, paid_priority_score, commission_pct, active, guest_offer )
           `,
         )
-        .eq('active', true)
-        .eq('verified', true);
+        .eq('listed', true);
       if (categorySlug) query = query.eq('business_categories.slug', categorySlug);
       const { data } = await query.limit(openSearch ? 200 : 50);
 
@@ -121,6 +121,7 @@ export function buildDataPort(supabase: DB, ctx: RequestCtx): ResponseDataPort {
         opening_hours_json: unknown;
         tags: string[];
         price_band: number | null;
+        subscription_tier: 'free' | 'standard' | 'featured' | 'exclusive';
         category: { slug: string };
         partnerships: Array<{
           id: string;
@@ -168,6 +169,7 @@ export function buildDataPort(supabase: DB, ctx: RequestCtx): ResponseDataPort {
           openNow: isOpen ?? true,
           categoryFit: true,
           preferenceMatch: 0,
+          businessTier: b.subscription_tier,
           partnership: ours
             ? {
                 subscriptionTier: ours.subscription_tier,
@@ -226,7 +228,7 @@ export function buildDataPort(supabase: DB, ctx: RequestCtx): ResponseDataPort {
             openNow: isOpen,
             priceBand: b.price_band,
             imageUrl: null,
-            promoted: partnership !== null && partnership.subscription_tier !== 'free',
+            promoted: b.subscription_tier !== 'free',
             referralUrl,
             offer: partnership?.guest_offer ?? null,
           };

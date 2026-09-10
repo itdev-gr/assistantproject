@@ -245,10 +245,46 @@ export type Database = {
           },
         ]
       }
+      billing_reconciliation_runs: {
+        Row: {
+          healed_count: number
+          id: string
+          issue_count: number
+          issues: Json
+          ok: boolean
+          ran_at: string
+          summary: Json
+        }
+        Insert: {
+          healed_count?: number
+          id?: string
+          issue_count?: number
+          issues?: Json
+          ok: boolean
+          ran_at?: string
+          summary?: Json
+        }
+        Update: {
+          healed_count?: number
+          id?: string
+          issue_count?: number
+          issues?: Json
+          ok?: boolean
+          ran_at?: string
+          summary?: Json
+        }
+        Relationships: []
+      }
       businesses: {
         Row: {
           active: boolean
           address: string
+          billing_exempt: boolean
+          billing_status: Database["public"]["Enums"]["billing_status"]
+          current_period_end: string | null
+          listed: boolean
+          stripe_subscription_id: string | null
+          subscription_tier: Database["public"]["Enums"]["subscription_tier"]
           billing_email: string | null
           category_id: string
           created_at: string
@@ -271,6 +307,11 @@ export type Database = {
           whatsapp: string | null
         }
         Insert: {
+          billing_exempt?: boolean
+          billing_status?: Database["public"]["Enums"]["billing_status"]
+          current_period_end?: string | null
+          stripe_subscription_id?: string | null
+          subscription_tier?: Database["public"]["Enums"]["subscription_tier"]
           active?: boolean
           address: string
           billing_email?: string | null
@@ -295,6 +336,11 @@ export type Database = {
           whatsapp?: string | null
         }
         Update: {
+          billing_exempt?: boolean
+          billing_status?: Database["public"]["Enums"]["billing_status"]
+          current_period_end?: string | null
+          stripe_subscription_id?: string | null
+          subscription_tier?: Database["public"]["Enums"]["subscription_tier"]
           active?: boolean
           address?: string
           billing_email?: string | null
@@ -1166,6 +1212,9 @@ export type Database = {
       }
       stripe_webhook_events: {
         Row: {
+          attempts: number
+          error: string | null
+          last_error_at: string | null
           id: string
           payload: Json
           processed_at: string | null
@@ -1173,6 +1222,9 @@ export type Database = {
           type: string
         }
         Insert: {
+          attempts?: number
+          error?: string | null
+          last_error_at?: string | null
           id: string
           payload: Json
           processed_at?: string | null
@@ -1180,6 +1232,9 @@ export type Database = {
           type: string
         }
         Update: {
+          attempts?: number
+          error?: string | null
+          last_error_at?: string | null
           id?: string
           payload?: Json
           processed_at?: string | null
@@ -1244,6 +1299,7 @@ export type Database = {
           id: string
           locale: string
           phone: string
+          requested_tier: Database["public"]["Enums"]["subscription_tier"] | null
           rejection_reason: string | null
           reviewed_at: string | null
           reviewed_by: string | null
@@ -1251,6 +1307,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          requested_tier?: Database["public"]["Enums"]["subscription_tier"] | null
           address?: string
           business_id?: string | null
           business_name: string
@@ -1268,6 +1325,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          requested_tier?: Database["public"]["Enums"]["subscription_tier"] | null
           address?: string
           business_id?: string | null
           business_name?: string

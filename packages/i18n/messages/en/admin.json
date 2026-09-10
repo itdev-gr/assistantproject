@@ -17,7 +17,8 @@
     "flags": "Feature flags",
     "usage": "Usage",
     "partners": "Partner applications",
-    "connections": "Connection requests"
+    "connections": "Connection requests",
+    "billing": "Billing audit"
   },
   "moderation": {
     "approve": "Approve",

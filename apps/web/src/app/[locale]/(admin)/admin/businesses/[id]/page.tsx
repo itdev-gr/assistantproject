@@ -1,10 +1,11 @@
 import { setRequestLocale } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 import type { BusinessUpsert } from '@aga/api-contracts';
-import { getServerClient } from '@/lib/supabase-server';
+import { createSupabaseServiceClient } from '@aga/db/service';
 import { requireSuperAdmin } from '@/lib/auth-context';
 import { BusinessForm } from '@/components/admin/BusinessForm';
 import { WebhookSecretCard } from '@/components/admin/WebhookSecretCard';
+import { BusinessBillingPanel } from '@/components/admin/BusinessBillingPanel';
 import { PageHeader } from '@/components/dashboard/PageHeader';
 
 interface Props {
@@ -15,13 +16,15 @@ export default async function EditBusinessPage({ params }: Props) {
   const { locale, id } = await params;
   setRequestLocale(locale);
   await requireSuperAdmin();
-  const supabase = await getServerClient();
+  // Behind requireSuperAdmin(): the service role sees billing/secret columns
+  // that client roles are no longer granted (migration 0017).
+  const supabase = createSupabaseServiceClient();
 
   const [{ data }, { data: cats }] = await Promise.all([
     supabase
       .from('businesses')
       .select(
-        'id, name, category_id, description_i18n, lat, lng, address, phone, whatsapp, website, billing_email, price_band, tags, opening_hours_json, images, verified, active, webhook_secret',
+        'id, name, category_id, description_i18n, lat, lng, address, phone, whatsapp, website, billing_email, price_band, tags, opening_hours_json, images, verified, active, webhook_secret, billing_status, subscription_tier, billing_exempt, stripe_subscription_id, current_period_end, listed',
       )
       .eq('id', id)
       .maybeSingle(),
@@ -65,6 +68,19 @@ export default async function EditBusinessPage({ params }: Props) {
           verified: data.verified,
           active: data.active,
         }}
+        />
+      </div>
+      <div className="mb-6">
+        <BusinessBillingPanel
+          locale={locale}
+          businessId={data.id}
+          billingStatus={data.billing_status}
+          subscriptionTier={data.subscription_tier}
+          billingExempt={data.billing_exempt}
+          billingEmail={data.billing_email}
+          hasSubscription={!!data.stripe_subscription_id}
+          currentPeriodEnd={data.current_period_end}
+          listed={data.listed}
         />
       </div>
       <WebhookSecretCard
