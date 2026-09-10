@@ -24,6 +24,8 @@ export const recommendationCardSchema = z.object({
   imageUrl: z.string().url().nullable(),
   promoted: z.boolean(),
   referralUrl: z.string().url(),
+  /** Perk the partner offers this hotel's guests (partnerships.guest_offer). */
+  offer: z.string().nullable().optional(),
 });
 export type RecommendationCard = z.infer<typeof recommendationCardSchema>;
 

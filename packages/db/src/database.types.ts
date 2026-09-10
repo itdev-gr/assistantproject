@@ -865,6 +865,7 @@ export type Database = {
           contract_ends: string | null
           contract_starts: string | null
           created_at: string
+          guest_offer: string | null
           hotel_id: string
           id: string
           notes: string | null
@@ -881,6 +882,7 @@ export type Database = {
           contract_ends?: string | null
           contract_starts?: string | null
           created_at?: string
+          guest_offer?: string | null
           hotel_id: string
           id?: string
           notes?: string | null
@@ -897,6 +899,7 @@ export type Database = {
           contract_ends?: string | null
           contract_starts?: string | null
           created_at?: string
+          guest_offer?: string | null
           hotel_id?: string
           id?: string
           notes?: string | null
@@ -1298,6 +1301,89 @@ export type Database = {
           },
         ]
       }
+      partnership_requests: {
+        Row: {
+          business_id: string
+          created_at: string
+          decided_at: string | null
+          decided_by: string | null
+          decline_reason: string | null
+          guest_offer: string | null
+          hotel_id: string
+          id: string
+          initiated_by: Database["public"]["Enums"]["connection_initiator"]
+          message: string
+          partnership_id: string | null
+          proposed_commission_pct: number | null
+          requested_by: string | null
+          status: Database["public"]["Enums"]["connection_request_status"]
+          updated_at: string
+        }
+        Insert: {
+          business_id: string
+          created_at?: string
+          decided_at?: string | null
+          decided_by?: string | null
+          decline_reason?: string | null
+          guest_offer?: string | null
+          hotel_id: string
+          id?: string
+          initiated_by: Database["public"]["Enums"]["connection_initiator"]
+          message: string
+          partnership_id?: string | null
+          proposed_commission_pct?: number | null
+          requested_by?: string | null
+          status?: Database["public"]["Enums"]["connection_request_status"]
+          updated_at?: string
+        }
+        Update: {
+          business_id?: string
+          created_at?: string
+          decided_at?: string | null
+          decided_by?: string | null
+          decline_reason?: string | null
+          guest_offer?: string | null
+          hotel_id?: string
+          id?: string
+          initiated_by?: Database["public"]["Enums"]["connection_initiator"]
+          message?: string
+          partnership_id?: string | null
+          proposed_commission_pct?: number | null
+          requested_by?: string | null
+          status?: Database["public"]["Enums"]["connection_request_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "partnership_requests_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "partnership_requests_hotel_id_fkey"
+            columns: ["hotel_id"]
+            isOneToOne: false
+            referencedRelation: "hotels"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "partnership_requests_hotel_id_fkey"
+            columns: ["hotel_id"]
+            isOneToOne: false
+            referencedRelation: "public_hotels"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "partnership_requests_partnership_id_fkey"
+            columns: ["partnership_id"]
+            isOneToOne: false
+            referencedRelation: "partnerships"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -1452,6 +1538,21 @@ export type Database = {
       is_business_owner: { Args: { b: string }; Returns: boolean }
       is_super_admin: { Args: never; Returns: boolean }
       record_recent_view: { Args: { p_business_id: string }; Returns: undefined }
+      create_partnership_request: {
+        Args: {
+          p_hotel_id: string
+          p_business_id: string
+          p_initiated_by: Database["public"]["Enums"]["connection_initiator"]
+          p_message: string
+          p_commission?: number | null
+          p_offer?: string | null
+        }
+        Returns: string
+      }
+      accept_partnership_request: { Args: { p_id: string }; Returns: string }
+      decline_partnership_request: { Args: { p_id: string; p_reason?: string | null }; Returns: undefined }
+      cancel_partnership_request: { Args: { p_id: string }; Returns: undefined }
+      disconnect_partnership: { Args: { p_partnership_id: string }; Returns: undefined }
       match_knowledge_chunks: {
         Args: {
           p_hotel: string
@@ -1482,6 +1583,8 @@ export type Database = {
       commission_state: "accrued" | "invoiced" | "paid"
       confirmation_source: "partner_webhook" | "manual" | "self_reported"
       account_role: "user" | "partner"
+      connection_initiator: "hotel" | "business"
+      connection_request_status: "pending" | "accepted" | "declined" | "cancelled"
       hotel_role: "owner" | "manager" | "staff"
       partner_status: "pending" | "approved" | "rejected"
       visit_source: "manual" | "referral"
@@ -1639,6 +1742,8 @@ export const Constants = {
       commission_state: ["accrued", "invoiced", "paid"],
       confirmation_source: ["partner_webhook", "manual", "self_reported"],
       account_role: ["user", "partner"],
+      connection_initiator: ["hotel", "business"],
+      connection_request_status: ["pending", "accepted", "declined", "cancelled"],
       hotel_role: ["owner", "manager", "staff"],
       partner_status: ["pending", "approved", "rejected"],
       visit_source: ["manual", "referral"],

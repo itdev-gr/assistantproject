@@ -2,7 +2,7 @@
 -- Verifies that cross-tenant access is rejected on every scoped table.
 
 begin;
-select plan(15);
+select plan(28);
 
 -- Set up two hotels with separate auth users
 insert into auth.users (id, email) values
@@ -183,6 +183,129 @@ select is(
   (select count(*)::int from partner_applications),
   0,
   'anon cannot read partner applications'
+);
+
+-- ============================================================================
+-- Partnership connection requests (0015).
+-- ============================================================================
+reset role;
+
+-- Partner D becomes an approved partner so the business side can send too.
+update profiles set partner_status = 'approved' where id = '00000000-0000-0000-0000-000000000d01';
+
+-- As owner A: send hotel A -> business bb01 with a proposed commission.
+set local role authenticated;
+set local "request.jwt.claim.sub" = '00000000-0000-0000-0000-000000000a01';
+
+select lives_ok(
+  $$select public.create_partnership_request(
+      '00000000-0000-0000-0000-00000000aaaa', '00000000-0000-0000-0000-00000000bb01',
+      'hotel', 'Would love to recommend you to our guests.', 12, '10% off with the hotel QR')$$,
+  'owner A can send a hotel -> business request'
+);
+
+select throws_ok(
+  $$select public.create_partnership_request(
+      '00000000-0000-0000-0000-00000000aaaa', '00000000-0000-0000-0000-00000000bb01',
+      'hotel', 'Again please', null, null)$$,
+  'P0001', 'already_pending',
+  'second pending request for the same pair is rejected'
+);
+
+select throws_ok(
+  $$select public.accept_partnership_request(
+      (select id from partnership_requests where hotel_id = '00000000-0000-0000-0000-00000000aaaa' and status = 'pending'))$$,
+  'P0001', 'forbidden',
+  'the sender cannot accept their own request'
+);
+
+select throws_ok(
+  $$insert into partnership_requests (hotel_id, business_id, initiated_by, message)
+    values ('00000000-0000-0000-0000-00000000aaaa', '00000000-0000-0000-0000-00000000bb02', 'hotel', 'direct insert')$$,
+  '42501', null,
+  'direct inserts into partnership_requests are not allowed'
+);
+
+-- As owner B: cannot see hotel A's request.
+set local "request.jwt.claim.sub" = '00000000-0000-0000-0000-000000000b01';
+
+select is(
+  (select count(*)::int from partnership_requests),
+  0,
+  'owner B cannot see hotel A requests'
+);
+
+-- As partner D (owner of bb01): sees it, cannot accept one for bb02, and accepts it.
+set local "request.jwt.claim.sub" = '00000000-0000-0000-0000-000000000d01';
+
+select is(
+  (select count(*)::int from partnership_requests where business_id = '00000000-0000-0000-0000-00000000bb01' and status = 'pending'),
+  1,
+  'partner D sees the incoming request for their business'
+);
+
+select throws_ok(
+  $$select public.create_partnership_request(
+      '00000000-0000-0000-0000-00000000aaaa', '00000000-0000-0000-0000-00000000bb01',
+      'business', 'Let us work together', null, null)$$,
+  'P0001', 'reverse_pending',
+  'the receiving side is told a request is already waiting for them'
+);
+
+select lives_ok(
+  $$select public.accept_partnership_request(
+      (select id from partnership_requests where business_id = '00000000-0000-0000-0000-00000000bb01' and status = 'pending'))$$,
+  'partner D can accept the hotel request'
+);
+
+reset role;
+select is(
+  (select active from partnerships where hotel_id = '00000000-0000-0000-0000-00000000aaaa' and business_id = '00000000-0000-0000-0000-00000000bb01'),
+  true,
+  'accepting creates an active partnership'
+);
+select is(
+  (select commission_pct::numeric from partnerships where hotel_id = '00000000-0000-0000-0000-00000000aaaa' and business_id = '00000000-0000-0000-0000-00000000bb01'),
+  12::numeric,
+  'accepting applies the proposed commission'
+);
+select is(
+  (select status::text from partnership_requests where hotel_id = '00000000-0000-0000-0000-00000000aaaa' and business_id = '00000000-0000-0000-0000-00000000bb01'),
+  'accepted',
+  'the request is marked accepted'
+);
+
+-- As partner D again: cannot re-request while connected; can send business -> hotel B.
+set local role authenticated;
+set local "request.jwt.claim.sub" = '00000000-0000-0000-0000-000000000d01';
+
+select throws_ok(
+  $$select public.create_partnership_request(
+      '00000000-0000-0000-0000-00000000aaaa', '00000000-0000-0000-0000-00000000bb01',
+      'business', 'Connect again?', null, null)$$,
+  'P0001', 'already_connected',
+  'no new request while a partnership is active'
+);
+
+select lives_ok(
+  $$select public.create_partnership_request(
+      '00000000-0000-0000-0000-00000000bbbb', '00000000-0000-0000-0000-00000000bb01',
+      'business', 'We would love to be recommended to your guests.', null, null)$$,
+  'approved partner can send a business -> hotel request'
+);
+
+-- Owner A disconnects; the partnership row survives but is inactive.
+set local "request.jwt.claim.sub" = '00000000-0000-0000-0000-000000000a01';
+select lives_ok(
+  $$select public.disconnect_partnership(
+      (select id from partnerships where hotel_id = '00000000-0000-0000-0000-00000000aaaa' and business_id = '00000000-0000-0000-0000-00000000bb01'))$$,
+  'hotel owner can disconnect'
+);
+reset role;
+select is(
+  (select active from partnerships where hotel_id = '00000000-0000-0000-0000-00000000aaaa' and business_id = '00000000-0000-0000-0000-00000000bb01'),
+  false,
+  'disconnect deactivates instead of deleting'
 );
 
 select * from finish();

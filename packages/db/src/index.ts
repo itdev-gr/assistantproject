@@ -32,6 +32,7 @@ export const TABLES = {
   userFavorites: 'user_favorites',
   userVisits: 'user_visits',
   userRecentViews: 'user_recent_views',
+  partnershipRequests: 'partnership_requests',
 } as const;
 
 export type TableName = (typeof TABLES)[keyof typeof TABLES];
