@@ -13,14 +13,17 @@ import {
   Receipt,
   CreditCard,
   Settings,
+  Handshake,
 } from 'lucide-react';
 import { SidebarNav } from '@/components/dashboard/SidebarNav';
 
 interface Props {
   email?: string | null;
+  /** Incoming connection requests waiting for an answer. */
+  pendingConnections?: number;
 }
 
-export function OwnerSidebar({ email }: Props) {
+export function OwnerSidebar({ email, pendingConnections = 0 }: Props) {
   const t = useTranslations('owner.nav');
   return (
     <SidebarNav
@@ -48,6 +51,7 @@ export function OwnerSidebar({ email }: Props) {
         {
           heading: t('groupRevenue'),
           items: [
+            { href: '/owner/partners', label: t('partners'), Icon: Handshake, badge: pendingConnections },
             { href: '/owner/referrals', label: t('referrals'), Icon: ListChecks },
             { href: '/owner/bookings', label: t('bookings'), Icon: Receipt },
             { href: '/owner/billing', label: t('billing'), Icon: CreditCard },

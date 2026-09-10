@@ -16,7 +16,8 @@
     "rules": "Κανόνες προτάσεων",
     "flags": "Feature flags",
     "usage": "Χρήση",
-    "partners": "Αιτήσεις συνεργατών"
+    "partners": "Αιτήσεις συνεργατών",
+    "connections": "Αιτήματα συνεργασίας"
   },
   "moderation": {
     "approve": "Έγκριση",

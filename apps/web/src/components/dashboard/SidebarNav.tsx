@@ -12,6 +12,8 @@ export interface NavItem {
   Icon: LucideIcon;
   /** Match only the exact path (for index routes like /admin). */
   exact?: boolean;
+  /** Pending-items count shown as a small pill (hidden when 0). */
+  badge?: number;
 }
 
 export interface NavGroup {
@@ -71,7 +73,17 @@ export function SidebarNav({ brand, tagline, groups, email, siteLabel, signOutLa
                     )}
                   >
                     <item.Icon className="h-[18px] w-[18px] shrink-0" strokeWidth={1.75} aria-hidden />
-                    {item.label}
+                    <span className="min-w-0 flex-1 truncate">{item.label}</span>
+                    {item.badge != null && item.badge > 0 && (
+                      <span
+                        className={cn(
+                          'ml-auto inline-flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-[11px] font-semibold tabular-nums',
+                          active ? 'bg-primary-foreground/20 text-primary-foreground' : 'bg-gold/30 text-deep-ink',
+                        )}
+                      >
+                        {item.badge > 99 ? '99+' : item.badge}
+                      </span>
+                    )}
                   </Link>
                 </li>
               );

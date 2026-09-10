@@ -16,7 +16,8 @@
     "rules": "Recommendation rules",
     "flags": "Feature flags",
     "usage": "Usage",
-    "partners": "Partner applications"
+    "partners": "Partner applications",
+    "connections": "Connection requests"
   },
   "moderation": {
     "approve": "Approve",

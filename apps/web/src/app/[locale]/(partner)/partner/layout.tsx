@@ -28,9 +28,27 @@ export default async function PartnerLayout({ children, params }: Props) {
     approved = data?.partner_status === 'approved';
   }
   if (!approved) return <>{children}</>;
+  let pendingConnections = 0;
+  if (ctx) {
+    const supabase = await getServerClient();
+    const { data: owned } = await supabase
+      .from('business_owners')
+      .select('business_id')
+      .eq('auth_user_id', ctx.userId);
+    const ids = (owned ?? []).map((o) => o.business_id);
+    if (ids.length > 0) {
+      const { count } = await supabase
+        .from('partnership_requests')
+        .select('id', { count: 'exact', head: true })
+        .in('business_id', ids)
+        .eq('status', 'pending')
+        .eq('initiated_by', 'hotel');
+      pendingConnections = count ?? 0;
+    }
+  }
   return (
     <div className="dash flex min-h-dvh flex-col bg-background text-foreground lg:flex-row">
-      <PartnerSidebar email={ctx?.email} />
+      <PartnerSidebar email={ctx?.email} pendingConnections={pendingConnections} />
       <main className="min-w-0 flex-1 px-5 py-8 md:px-10">{children}</main>
     </div>
   );
