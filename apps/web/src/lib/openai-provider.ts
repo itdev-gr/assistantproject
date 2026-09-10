@@ -74,7 +74,7 @@ export class OpenAiProvider implements ResponseProvider {
           .map((m) => ({ role: m.role as 'guest' | 'assistant', content: m.content }))
           .slice(-10),
         userMessage: input.message,
-        cards: cards?.map((c) => ({ name: c.name, category: c.category, description: c.description })),
+        cards: cards?.map((c) => ({ name: c.name, category: c.category, description: c.description, offer: c.offer ?? null })),
       });
 
       const reply = await completeChat(messages, { maxTokens: 500 });

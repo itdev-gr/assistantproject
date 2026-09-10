@@ -102,7 +102,7 @@ export function buildDataPort(supabase: DB, ctx: RequestCtx): ResponseDataPort {
             images,
             price_band,
             category:business_categories!inner ( slug ),
-            partnerships ( id, hotel_id, subscription_tier, paid_priority_score, commission_pct, active )
+            partnerships ( id, hotel_id, subscription_tier, paid_priority_score, commission_pct, active, guest_offer )
           `,
         )
         .eq('active', true)
@@ -129,6 +129,7 @@ export function buildDataPort(supabase: DB, ctx: RequestCtx): ResponseDataPort {
           paid_priority_score: number;
           commission_pct: number;
           active: boolean;
+          guest_offer: string | null;
         }>;
       }>;
 
@@ -227,6 +228,7 @@ export function buildDataPort(supabase: DB, ctx: RequestCtx): ResponseDataPort {
             imageUrl: null,
             promoted: partnership !== null && partnership.subscription_tier !== 'free',
             referralUrl,
+            offer: partnership?.guest_offer ?? null,
           };
         },
       };

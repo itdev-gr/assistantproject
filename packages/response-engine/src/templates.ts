@@ -92,7 +92,7 @@ export const PLACES_FOUND = {
  * "Taverna Acropolis (0.4 km, open now) and Cafe Plateia (1.2 km)".
  */
 export function describePlaces(
-  places: Array<{ name: string; distanceKm: number | null; openNow: boolean | null }>,
+  places: Array<{ name: string; distanceKm: number | null; openNow: boolean | null; offer?: string | null }>,
   locale: Locale,
   max = 2,
 ): string {
@@ -100,6 +100,7 @@ export function describePlaces(
     const details: string[] = [];
     if (p.distanceKm != null) details.push(`${p.distanceKm} km`);
     if (p.openNow === true) details.push(locale === 'el' ? 'ανοιχτό τώρα' : 'open now');
+    if (p.offer) details.push(`${locale === 'el' ? 'προσφορά' : 'offer'}: ${p.offer}`);
     return details.length ? `${p.name} (${details.join(', ')})` : p.name;
   });
   if (parts.length <= 1) return parts.join('');

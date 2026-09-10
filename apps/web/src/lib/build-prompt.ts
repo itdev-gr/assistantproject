@@ -18,6 +18,8 @@ export interface PromptCard {
   name: string;
   category: string;
   description: string | null;
+  /** Perk the place offers this hotel's guests, if any. */
+  offer?: string | null;
 }
 
 interface ChatMessage {
@@ -54,6 +56,14 @@ export function buildChatMessages(input: {
     lines.push(
       `Always name at least one of these places explicitly, using its exact name, and say in a few words why it fits what the guest asked. If none of them really fits the question, answer from the facts and say you have no specific place to suggest.`,
     );
+    const withOffer = input.cards.filter((c) => c.offer);
+    if (withOffer.length > 0) {
+      lines.push(
+        `Special offers for guests of this hotel (mention the offer when you name the place): ${withOffer
+          .map((c) => `${c.name}: ${c.offer}`)
+          .join('; ')}.`,
+      );
+    }
   }
 
   lines.push('FACTS:');

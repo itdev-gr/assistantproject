@@ -179,6 +179,35 @@ describe('buildKnowledgeDocs — internal events', () => {
   });
 });
 
+describe('buildKnowledgeDocs — guest offer', () => {
+  it('adds a localized guest offer line when the partnership has one', () => {
+    const docs = buildKnowledgeDocs({
+      ...emptyInput,
+      businesses: [
+        {
+          id: 'b-9',
+          name: 'Cafe Plateia',
+          categoryName: 'Cafe',
+          descriptionI18n: { en: 'Coffee on the square.' },
+          address: 'Main square',
+          phone: null,
+          whatsapp: null,
+          priceBand: null,
+          tags: [],
+          openingHoursJson: null,
+          tier: 'free',
+          guestOffer: '10% off with the hotel QR',
+          offerings: [],
+        },
+      ],
+    });
+    const en = docs.find((d) => d.locale === 'en' && d.sourceId === 'b-9');
+    const el = docs.find((d) => d.locale === 'el' && d.sourceId === 'b-9');
+    expect(en?.content).toContain('Guest offer: 10% off with the hotel QR');
+    expect(el?.content).toContain('Προσφορά για επισκέπτες: 10% off with the hotel QR');
+  });
+});
+
 describe('buildKnowledgeDocs — businesses', () => {
   const input: HotelKnowledgeInput = {
     ...emptyInput,

@@ -121,6 +121,11 @@ function RecommendationCardView({ card }: { card: RecommendationCard }) {
             {card.description && (
               <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">{card.description}</p>
             )}
+            {card.offer && (
+              <p className="mt-1 w-fit rounded bg-amber-100 px-1.5 py-0.5 text-[11px] font-medium text-amber-900">
+                {t('offerLabel')}: {card.offer}
+              </p>
+            )}
           </div>
         </div>
         <div className="mt-3 flex gap-2">

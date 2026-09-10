@@ -98,6 +98,8 @@ export interface BusinessRow {
   tags: string[];
   openingHoursJson: Record<string, unknown> | null;
   tier: 'free' | 'standard' | 'featured' | 'exclusive';
+  /** Perk for this hotel's guests (partnerships.guest_offer). */
+  guestOffer?: string | null;
   offerings: OfferingRow[];
 }
 
@@ -267,6 +269,7 @@ function buildBusinessDocs(businesses: BusinessRow[]): KnowledgeDoc[] {
       if (business.tags.length > 0) lines.push(`Tags: ${business.tags.join(', ')}`);
       if (isNonEmptyObject(business.openingHoursJson)) lines.push(`Opening hours: ${JSON.stringify(business.openingHoursJson)}`);
       if (business.tier === 'featured' || business.tier === 'exclusive') lines.push(`Partner tier: ${business.tier}`);
+      if (business.guestOffer) lines.push(`${locale === 'el' ? 'Προσφορά για επισκέπτες' : 'Guest offer'}: ${business.guestOffer}`);
       for (const offering of business.offerings) lines.push(formatOffering(offering));
       const doc = makeDoc(locale, 'businesses', business.id, title, lines);
       if (doc) docs.push(doc);

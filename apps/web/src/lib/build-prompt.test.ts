@@ -133,6 +133,23 @@ describe('buildChatMessages', () => {
     expect(messages[0]!.content).toContain('Always name at least one of these places');
   });
 
+  it('lists guest offers only for cards that have one', () => {
+    const messages = buildChatMessages({
+      locale: 'en',
+      hotelName: 'Aegean Blue',
+      chunks: [],
+      history: [],
+      userMessage: 'Where can I eat?',
+      cards: [
+        { name: 'Taverna Apolafsi', category: 'restaurants', description: null, offer: '10% off with the hotel QR' },
+        { name: 'Sunset Grill', category: 'restaurants', description: null, offer: null },
+      ],
+    });
+    const system = messages[0]!.content;
+    expect(system).toContain('Taverna Apolafsi: 10% off with the hotel QR');
+    expect(system).not.toContain('Sunset Grill:');
+  });
+
   it('omits the recommendations section when no cards are provided', () => {
     const messages = buildChatMessages({
       locale: 'en',

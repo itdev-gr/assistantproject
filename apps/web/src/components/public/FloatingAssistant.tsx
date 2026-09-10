@@ -202,6 +202,11 @@ function RecommendationRow({ card, locale }: { card: RecommendationCard; locale:
           {card.description && (
             <p className="line-clamp-1 text-xs text-muted-foreground">{card.description}</p>
           )}
+          {card.offer && (
+            <p className="mt-1 line-clamp-1 rounded bg-amber-100 px-1.5 py-0.5 text-[11px] font-medium text-amber-900">
+              {t('Offer', 'Προσφορά')}: {card.offer}
+            </p>
+          )}
         </div>
         <a
           href={card.referralUrl}

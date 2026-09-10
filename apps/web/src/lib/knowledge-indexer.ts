@@ -37,6 +37,7 @@ interface RawOfferingRow {
 
 interface RawPartnershipRow {
   subscription_tier: Database['public']['Enums']['subscription_tier'];
+  guest_offer: string | null;
   business: {
     id: string;
     name: string;
@@ -98,6 +99,7 @@ async function fetchKnowledgeInput(admin: DB, hotelId: string): Promise<HotelKno
       .select(
         `
           subscription_tier,
+          guest_offer,
           business:businesses!inner (
             id, name, description_i18n, address, phone, whatsapp, price_band, tags, opening_hours_json,
             category:business_categories ( name_i18n ),
@@ -177,6 +179,7 @@ async function fetchKnowledgeInput(admin: DB, hotelId: string): Promise<HotelKno
       tags: b.tags ?? [],
       openingHoursJson: b.opening_hours_json,
       tier: row.subscription_tier,
+      guestOffer: row.guest_offer,
       offerings: (b.offerings ?? [])
         .filter((o) => o.active)
         .map((o) => ({
