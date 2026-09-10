@@ -25,7 +25,7 @@ export function ModerationActions({ kind, id }: Props) {
   }
 
   return (
-    <div className="flex gap-2 pt-1">
+    <div className="flex gap-2">
       <Button size="sm" disabled={pending} onClick={() => decide(true)}>
         {t('approve')}
       </Button>

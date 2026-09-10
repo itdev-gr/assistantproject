@@ -31,5 +31,7 @@ export async function decideModeration(raw: unknown) {
     if (error) return { ok: false as const, error: error.message };
   }
   revalidatePath('/[locale]/(admin)/admin/moderation', 'layout');
+  revalidatePath('/[locale]/(admin)/admin/businesses', 'layout');
+  revalidatePath('/[locale]', 'page');
   return { ok: true as const };
 }
