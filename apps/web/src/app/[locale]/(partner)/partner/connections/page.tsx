@@ -54,7 +54,7 @@ export default async function PartnerConnectionsPage({ params, searchParams }: P
   // minimal column list — same precedent as the partner overview counts.
   const admin = createSupabaseServiceClient();
 
-  const [{ data: partnerships }, { data: requests }] = await Promise.all([
+  const [{ data: partnerships }, { data: requests }, { data: ownBusiness }] = await Promise.all([
     admin
       .from('partnerships')
       .select('id, hotel_id, commission_pct, guest_offer, active, created_at')
@@ -68,7 +68,9 @@ export default async function PartnerConnectionsPage({ params, searchParams }: P
       .eq('business_id', businessId)
       .order('created_at', { ascending: false })
       .limit(200),
+    supabase.from('businesses').select('verified').eq('id', businessId).maybeSingle(),
   ]);
+  const verified = ownBusiness?.verified === true;
 
   const active = (partnerships ?? []).filter((p) => p.active);
   const reqs = requests ?? [];
@@ -245,7 +247,18 @@ export default async function PartnerConnectionsPage({ params, searchParams }: P
         </TableFrame>
       )}
 
-      {tab === 'find' && (
+      {tab === 'find' && !verified && (
+        <TableFrame minWidth="min-w-0">
+          <EmptyState
+            message={t(
+              'You can send requests to hotels as soon as your listing is approved.',
+              'Θα μπορείτε να στέλνετε αιτήματα σε ξενοδοχεία μόλις εγκριθεί η καταχώρισή σας.',
+            )}
+          />
+        </TableFrame>
+      )}
+
+      {tab === 'find' && verified && (
         <div className="space-y-4">
           <SearchForm
             action="/partner/connections"

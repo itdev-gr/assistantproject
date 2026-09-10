@@ -66,6 +66,17 @@ export default async function PartnerOverviewPage({ params }: Props) {
           </>
         }
       />
+      {business && !business.verified && (
+        <div className="mb-6 rounded-lg border border-gold/60 bg-gold/10 p-4 text-[14px] text-deep-ink">
+          <p className="font-semibold">{t('Your listing is being reviewed', 'Η καταχώρισή σας εξετάζεται')}</p>
+          <p className="mt-1">
+            {t(
+              'Our team checks every business by hand. Meanwhile add photos, opening hours and a description — the more complete the listing, the faster it goes live. Hotel connections unlock once it is approved.',
+              'Η ομάδα μας ελέγχει κάθε επιχείρηση. Στο μεταξύ προσθέστε φωτογραφίες, ωράρια και περιγραφή — όσο πιο πλήρης η καταχώριση, τόσο πιο γρήγορα βγαίνει online. Οι συνεργασίες με ξενοδοχεία ξεκλειδώνουν μετά την έγκριση.',
+            )}
+          </p>
+        </div>
+      )}
       <div className="mb-6 flex flex-wrap gap-2">
         <Pill tone={business?.verified ? 'ok' : 'warn'}>
           {business?.verified ? t('Verified', 'Εγκεκριμένη') : t('Awaiting verification', 'Αναμονή έγκρισης')}

@@ -8,11 +8,13 @@ import { decidePartnerApplication } from '@/app/actions/admin-partners';
 interface Props {
   applicationId: string;
   locale: string;
+  /** Since 0016 signups already own a listing; approving verifies it. */
+  hasBusiness?: boolean;
 }
 
 type Mode = 'idle' | 'link' | 'reject';
 
-export function PartnerApplicationActions({ applicationId, locale }: Props) {
+export function PartnerApplicationActions({ applicationId, locale, hasBusiness = false }: Props) {
   const router = useRouter();
   const t = (en: string, el: string) => (locale === 'en' ? en : el);
   const [mode, setMode] = useState<Mode>('idle');
@@ -38,16 +40,20 @@ export function PartnerApplicationActions({ applicationId, locale }: Props) {
     <div className="space-y-2 pt-1">
       <div className="flex flex-wrap gap-2">
         <Button size="sm" disabled={pending} onClick={() => run({ approve: true })}>
-          {t('Approve & create listing', 'Έγκριση & δημιουργία')}
+          {hasBusiness
+            ? t('Approve listing', 'Έγκριση καταχώρισης')
+            : t('Approve & create listing', 'Έγκριση & δημιουργία')}
         </Button>
-        <Button
-          size="sm"
-          variant="outline"
-          disabled={pending}
-          onClick={() => setMode(mode === 'link' ? 'idle' : 'link')}
-        >
-          {t('Link existing business', 'Σύνδεση με υπάρχουσα')}
-        </Button>
+        {!hasBusiness && (
+          <Button
+            size="sm"
+            variant="outline"
+            disabled={pending}
+            onClick={() => setMode(mode === 'link' ? 'idle' : 'link')}
+          >
+            {t('Link existing business', 'Σύνδεση με υπάρχουσα')}
+          </Button>
+        )}
         <Button
           size="sm"
           variant="ghost"

@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { createSupabaseServiceClient } from '@aga/db/service';
 import { requireSuperAdmin } from '@/lib/auth-context';
+import { approveBusinessListing, rejectBusinessListing } from '@/lib/partner-approval';
 
 const decideSchema = z.object({
   kind: z.enum(['faq', 'business']),
@@ -12,7 +13,7 @@ const decideSchema = z.object({
 });
 
 export async function decideModeration(raw: unknown) {
-  await requireSuperAdmin();
+  const ctx = await requireSuperAdmin();
   const parsed = decideSchema.safeParse(raw);
   if (!parsed.success) return { ok: false as const, error: 'invalid' };
   const { kind, id, approve } = parsed.data;
@@ -24,14 +25,15 @@ export async function decideModeration(raw: unknown) {
       .eq('id', id);
     if (error) return { ok: false as const, error: error.message };
   } else {
-    const { error } = await admin
-      .from('businesses')
-      .update(approve ? { verified: true } : { active: false })
-      .eq('id', id);
-    if (error) return { ok: false as const, error: error.message };
+    const r = approve
+      ? await approveBusinessListing(admin, id, ctx.userId)
+      : await rejectBusinessListing(admin, id, ctx.userId);
+    if (!r.ok) return { ok: false as const, error: r.error };
   }
   revalidatePath('/[locale]/(admin)/admin/moderation', 'layout');
   revalidatePath('/[locale]/(admin)/admin/businesses', 'layout');
+  revalidatePath('/[locale]/(admin)/admin/partners', 'layout');
+  revalidatePath('/[locale]/(partner)/partner', 'layout');
   revalidatePath('/[locale]', 'page');
   return { ok: true as const };
 }

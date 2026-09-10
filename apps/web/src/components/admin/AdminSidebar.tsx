@@ -10,7 +10,6 @@ import {
   Sliders,
   Flag,
   BarChart3,
-  UserCheck,
   Link2,
 } from 'lucide-react';
 import { SidebarNav } from '@/components/dashboard/SidebarNav';
@@ -41,7 +40,6 @@ export function AdminSidebar({ email, pendingConnections = 0 }: Props) {
             { href: '/admin/businesses', label: t('businesses'), Icon: Store },
             { href: '/admin/categories', label: t('categories'), Icon: ListTree },
             { href: '/admin/partnerships', label: t('partnerships'), Icon: Handshake },
-            { href: '/admin/partners', label: t('partners'), Icon: UserCheck },
             { href: '/admin/connections', label: t('connections'), Icon: Link2, badge: pendingConnections },
           ],
         },

@@ -2,7 +2,7 @@
 -- Verifies that cross-tenant access is rejected on every scoped table.
 
 begin;
-select plan(28);
+select plan(30);
 
 -- Set up two hotels with separate auth users
 insert into auth.users (id, email) values
@@ -119,6 +119,20 @@ select is(
   (select count(*)::int from partner_applications where user_id = '00000000-0000-0000-0000-000000000d01' and status = 'pending'),
   1,
   'signup trigger creates a pending partner application'
+);
+
+select is(
+  (select b.verified from partner_applications a join businesses b on b.id = a.business_id
+   where a.user_id = '00000000-0000-0000-0000-000000000d01'),
+  false,
+  'signup trigger creates an unverified listing for the partner'
+);
+
+select is(
+  (select count(*)::int from business_owners o join partner_applications a on a.business_id = o.business_id
+   where o.auth_user_id = '00000000-0000-0000-0000-000000000d01'),
+  1,
+  'signup trigger links the partner to their listing'
 );
 
 -- As visitor C

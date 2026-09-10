@@ -65,9 +65,10 @@ export interface PartnerContext extends AuthContext {
 }
 
 /**
- * Approved partner (or a super admin peeking at the partner surface).
- * Pending / rejected applicants are sent to /partner/pending, which must NOT
- * call this helper.
+ * Partner account (approved or still pending review) or a super admin peeking
+ * at the partner surface. Rejected applicants are sent to /partner/pending,
+ * which must NOT call this helper. Pending partners keep their dashboard so
+ * they can complete the listing while it is reviewed.
  */
 export async function requirePartner(): Promise<PartnerContext> {
   const ctx = await getAuthContext();
@@ -79,7 +80,7 @@ export async function requirePartner(): Promise<PartnerContext> {
     supabase.from('business_owners').select('business_id').eq('auth_user_id', ctx.userId),
   ]);
   const partnerStatus = (profile?.partner_status ?? null) as PartnerStatus | null;
-  if (ctx.role === 'partner' && partnerStatus !== 'approved') redirect('/partner/pending');
+  if (ctx.role === 'partner' && partnerStatus === 'rejected') redirect('/partner/pending');
   return {
     ...ctx,
     partnerStatus,

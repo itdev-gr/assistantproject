@@ -45,7 +45,7 @@ export default async function BusinessesListPage({ params, searchParams }: Props
   if (status === 'verified') query = query.eq('verified', true).eq('active', true);
   if (status === 'inactive') query = query.eq('active', false);
 
-  const [{ data: rows }, { data: categories }, pendingCount, verifiedCount, inactiveCount, allCount, applications] =
+  const [{ data: rows }, { data: categories }, pendingCount, verifiedCount, inactiveCount, allCount, { data: apps }] =
     await Promise.all([
       query.order('name'),
       supabase.from('business_categories').select('id, slug, name_i18n').order('slug'),
@@ -53,8 +53,9 @@ export default async function BusinessesListPage({ params, searchParams }: Props
       supabase.from('businesses').select('id', { count: 'exact', head: true }).eq('verified', true).eq('active', true),
       supabase.from('businesses').select('id', { count: 'exact', head: true }).eq('active', false),
       supabase.from('businesses').select('id', { count: 'exact', head: true }),
-      supabase.from('partner_applications').select('id', { count: 'exact', head: true }).eq('status', 'pending'),
+      supabase.from('partner_applications').select('business_id, email').eq('status', 'pending'),
     ]);
+  const applicantByBusiness = new Map((apps ?? []).flatMap((a) => (a.business_id ? [[a.business_id, a.email]] : [])));
 
   // Pending (unverified, active) listings always float to the top so they can
   // be approved right here; everything else stays alphabetical.
@@ -92,8 +93,6 @@ export default async function BusinessesListPage({ params, searchParams }: Props
   };
   const catName = (c: Pick<Category, 'slug' | 'name_i18n'> | null) =>
     c?.name_i18n?.[locale] ?? c?.name_i18n?.el ?? c?.slug ?? '';
-  const pendingApplications = applications.count ?? 0;
-
   return (
     <div>
       <PageHeader
@@ -108,21 +107,6 @@ export default async function BusinessesListPage({ params, searchParams }: Props
           </Button>
         }
       />
-
-      {pendingApplications > 0 && (
-        <Link
-          href="/admin/partners?status=pending"
-          className="mb-4 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-gold/60 bg-gold/10 px-4 py-3 text-[14px] text-deep-ink hover:bg-gold/20"
-        >
-          <span>
-            <span className="font-semibold">{pendingApplications}</span>{' '}
-            {pendingApplications === 1
-              ? t('new partner application is waiting for approval.', 'νέα αίτηση συνεργάτη περιμένει έγκριση.')
-              : t('new partner applications are waiting for approval.', 'νέες αιτήσεις συνεργατών περιμένουν έγκριση.')}
-          </span>
-          <span className="font-semibold">{t('Review →', 'Έλεγχος →')}</span>
-        </Link>
-      )}
 
       <div className="mb-4 flex flex-wrap items-center gap-3">
         <FilterChips
@@ -180,7 +164,13 @@ export default async function BusinessesListPage({ params, searchParams }: Props
                   <span className="block truncate text-xs text-muted-foreground">
                     {catName(c)}
                     {b.address ? ` · ${b.address}` : ''}
+                    {applicantByBusiness.has(b.id) ? ` · ${applicantByBusiness.get(b.id)}` : ''}
                   </span>
+                  {applicantByBusiness.has(b.id) && (
+                    <Pill tone="info" className="mt-1">
+                      {t('Partner signup', 'Εγγραφή συνεργάτη')}
+                    </Pill>
+                  )}
                 </span>
                 <span className="text-xs text-muted-foreground">
                   {b.price_band ? '€'.repeat(b.price_band) : '—'}

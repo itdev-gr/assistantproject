@@ -9,9 +9,9 @@ interface Props {
 }
 
 /**
- * Approved partners get the sidebar shell; pending/rejected applicants see
- * the bare /partner/pending page. Access itself is enforced by the middleware
- * and per-page requirePartner().
+ * Approved and pending partners get the sidebar shell; rejected applicants
+ * see the bare /partner/pending page. Access itself is enforced by the
+ * middleware and per-page requirePartner().
  */
 export default async function PartnerLayout({ children, params }: Props) {
   const { locale } = await params;
@@ -25,7 +25,7 @@ export default async function PartnerLayout({ children, params }: Props) {
       .select('partner_status')
       .eq('id', ctx.userId)
       .maybeSingle();
-    approved = data?.partner_status === 'approved';
+    approved = data?.partner_status === 'approved' || data?.partner_status === 'pending';
   }
   if (!approved) return <>{children}</>;
   let pendingConnections = 0;

@@ -6,13 +6,14 @@ import { businessUpsertSchema, businessCategoryUpsertSchema } from '@aga/api-con
 import { createSupabaseServiceClient } from '@aga/db/service';
 import type { Database, Json } from '@aga/db/types';
 import { requireSuperAdmin } from '@/lib/auth-context';
+import { syncPartnerApplication } from '@/lib/partner-approval';
 
 type BusinessRow = Database['public']['Tables']['businesses']['Insert'];
 
 const idSchema = z.object({ id: z.string().uuid() });
 
 export async function upsertBusiness(raw: unknown) {
-  await requireSuperAdmin();
+  const ctx = await requireSuperAdmin();
   const parsed = businessUpsertSchema.safeParse(raw);
   if (!parsed.success) return { ok: false as const, error: parsed.error.message };
   const b = parsed.data;
@@ -40,6 +41,10 @@ export async function upsertBusiness(raw: unknown) {
   if (b.id) {
     const { error } = await admin.from('businesses').update(row).eq('id', b.id);
     if (error) return { ok: false as const, error: error.message };
+    if (b.verified) {
+      const r = await syncPartnerApplication(admin, b.id, ctx.userId, 'approved', null);
+      if (!r.ok) return { ok: false as const, error: r.error };
+    }
   } else {
     const { error } = await admin.from('businesses').insert(row);
     if (error) return { ok: false as const, error: error.message };

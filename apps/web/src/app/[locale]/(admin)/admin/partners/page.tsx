@@ -126,7 +126,7 @@ export default async function PartnerApplicationsPage({ params, searchParams }: 
                   </p>
                 )}
                 {a.status === 'pending' && (
-                  <PartnerApplicationActions applicationId={a.id} locale={locale} />
+                  <PartnerApplicationActions applicationId={a.id} locale={locale} hasBusiness={!!a.business_id} />
                 )}
               </div>
             );

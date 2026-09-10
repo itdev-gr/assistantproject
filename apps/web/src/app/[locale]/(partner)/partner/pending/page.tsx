@@ -32,7 +32,9 @@ export default async function PartnerPendingPage({ params }: Props) {
       .limit(1)
       .maybeSingle(),
   ]);
-  if (profile?.partner_status === 'approved') redirect(`${prefix}/partner`);
+  if (profile?.partner_status === 'approved' || profile?.partner_status === 'pending') {
+    redirect(`${prefix}/partner`);
+  }
   const rejected = profile?.partner_status === 'rejected';
   const catNames = (app?.category as unknown as { name_i18n?: Record<string, string> } | null)?.name_i18n;
   const catName = catNames?.[locale] ?? catNames?.el ?? catNames?.en;

@@ -8,11 +8,13 @@ import { requireSuperAdmin } from '@/lib/auth-context';
 import { geocodeAddress, GREECE_CENTROID } from '@/lib/geocode';
 import { NEEDS_GEOCODE_TAG } from '@/lib/listing-request';
 import { PARTNER_OWNED_TAG } from '@/lib/partners';
+import { approveBusinessListing, rejectBusinessListing } from '@/lib/partner-approval';
 
 type Result = { ok: true; businessId: string | null } | { ok: false; error: string };
 
 function revalidate() {
   revalidatePath('/[locale]/(admin)/admin/partners', 'layout');
+  revalidatePath('/[locale]/(admin)/admin/businesses', 'layout');
   revalidatePath('/[locale]/(partner)/partner', 'layout');
   revalidatePath('/[locale]', 'page');
 }
@@ -37,6 +39,18 @@ export async function decidePartnerApplication(raw: unknown): Promise<Result> {
   if (app.status !== 'pending') return { ok: false, error: 'already_decided' };
 
   const reviewed = { reviewed_by: ctx.userId, reviewed_at: new Date().toISOString() };
+
+  // Since 0016 a partner signup already owns an unverified listing: the
+  // decision is about that listing, and the shared path keeps application,
+  // profile and business in step.
+  if (app.business_id && !existingBusinessId) {
+    const r = approve
+      ? await approveBusinessListing(admin, app.business_id, ctx.userId)
+      : await rejectBusinessListing(admin, app.business_id, ctx.userId, rejectionReason || null);
+    if (!r.ok) return { ok: false, error: r.error };
+    revalidate();
+    return { ok: true, businessId: approve ? app.business_id : null };
+  }
 
   if (!approve) {
     const { error } = await admin
