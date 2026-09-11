@@ -234,6 +234,54 @@ end;
 $$;
 
 -- ===== Audit trail for business billing changes ============================
+-- The 0007 trigger function reads `hotel_id` as its first statement and bails
+-- out through the `undefined_column` handler on tables that lack it — which
+-- would make auditing `businesses` a silent no-op. Tolerate the missing column
+-- per-field instead, so billing changes land in audit_log with hotel_id null.
+create or replace function public.audit_changes() returns trigger
+language plpgsql security definer set search_path = public, auth as $$
+declare
+  v_hotel uuid;
+  v_actor uuid := auth.uid();
+  v_diff jsonb;
+begin
+  begin
+    if tg_op = 'DELETE' then
+      v_hotel := (old).hotel_id;
+    elsif tg_op = 'UPDATE' then
+      v_hotel := coalesce((new).hotel_id, (old).hotel_id);
+    else
+      v_hotel := (new).hotel_id;
+    end if;
+  exception when undefined_column then
+    v_hotel := null; -- table is not tenant-scoped (e.g. businesses)
+  end;
+
+  if tg_op = 'DELETE' then
+    v_diff := jsonb_build_object('before', to_jsonb(old));
+  elsif tg_op = 'UPDATE' then
+    v_diff := jsonb_build_object('before', to_jsonb(old), 'after', to_jsonb(new));
+  else
+    v_diff := jsonb_build_object('after', to_jsonb(new));
+  end if;
+
+  insert into audit_log (hotel_id, actor_id, action, entity_type, entity_id, diff_jsonb)
+  values (
+    v_hotel,
+    v_actor,
+    tg_op,
+    tg_table_name,
+    coalesce((new).id, (old).id),
+    v_diff
+  );
+  return coalesce(new, old);
+exception
+  -- Never let an audit failure block the underlying operation.
+  when others then
+    return coalesce(new, old);
+end;
+$$;
+
 drop trigger if exists audit_changes_trg on businesses;
 create trigger audit_changes_trg
   after insert or update or delete on businesses
