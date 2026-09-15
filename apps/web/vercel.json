@@ -4,6 +4,7 @@
   "installCommand": "pnpm install --frozen-lockfile",
   "framework": "nextjs",
   "outputDirectory": ".next",
+  "regions": ["dub1"],
   "crons": [
     { "path": "/api/cron/invoice-commissions", "schedule": "0 6 1 * *" },
     { "path": "/api/cron/reconcile-billing", "schedule": "30 2 * * *" },

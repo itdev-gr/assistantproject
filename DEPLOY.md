@@ -30,6 +30,9 @@ git push -u origin main
 2. **Framework Preset**: Vercel will detect Next.js automatically.
 3. **Root Directory**: leave at the repo root — `vercel.json` already points the build at `apps/web`.
 4. **Build & Output Settings**: leave defaults — `vercel.json` sets `buildCommand`, `installCommand`, `outputDirectory`.
+5. **Function region**: leave the dashboard setting alone — `vercel.json` pins `regions: ["dub1"]`.
+
+   Dublin is the same datacentre as the Supabase project (AWS `eu-west-1`). This is not cosmetic: functions used to run in the project default `iad1` (Washington), so every Postgres round trip crossed the Atlantic. Measured on production, one query cost ~125 ms from `iad1` against ~12 ms in-region, and the guest chat endpoint makes roughly ten of them in sequence. **If the Supabase project is ever moved to another region, move this too**, or the assistant silently gets a second slower. Guests are unaffected either way: they terminate TLS at their nearest edge and only the edge-to-function hop moves.
 
 ### 3. Set environment variables
 
