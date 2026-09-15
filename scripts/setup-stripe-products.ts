@@ -90,7 +90,7 @@ const COUPONS = PRICES.filter((p) =>
   ['professional', 'advanced', 'enterprise'].includes(p.tier),
 ).map((p) => ({
   id: `launch50_${p.tier}`,
-  name: `Launch offer — first 50 hotels (${p.tier})`,
+  name: `Launch offer 50 hotels: ${p.tier}`,
   amountOff: p.amount - LAUNCH_OFFER_CENTS,
 }));
 
