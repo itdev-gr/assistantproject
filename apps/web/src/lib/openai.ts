@@ -5,10 +5,14 @@ let cached: OpenAI | null = null;
 /**
  * Guest-facing budget for a single OpenAI call. The SDK defaults to a 10-minute
  * timeout with 2 retries, so a stalled call could hold a guest for half an hour
- * before `OpenAiProvider` falls back to the rule-based reply. A guest who has
- * waited 8s is better served by the instant templated answer.
+ * before `OpenAiProvider` degrades to the rule-based reply.
+ *
+ * Sized above the observed distribution on purpose: the slowest real reply
+ * measured in production took 7.5s end to end. A tighter ceiling would not make
+ * anything faster — it would swap the slow tail of *correct* answers for canned
+ * templates. This only exists to bound the pathological case.
  */
-const REQUEST_TIMEOUT_MS = 8_000;
+const REQUEST_TIMEOUT_MS = 15_000;
 
 /** Server-only OpenAI client. Throws if OPENAI_API_KEY is unset. */
 export function getOpenAI(): OpenAI {
