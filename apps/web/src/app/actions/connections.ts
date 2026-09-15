@@ -59,8 +59,8 @@ export async function createHotelRequest(raw: unknown): Promise<Result<{ request
     p_business_id: input.businessId,
     p_initiated_by: 'hotel',
     p_message: input.message,
-    p_commission: input.proposedCommissionPct ?? null,
-    p_offer: input.guestOffer ?? null,
+    p_commission: input.proposedCommissionPct ?? undefined,
+    p_offer: input.guestOffer ?? undefined,
   });
   if (error) return { ok: false, error: requestErrorCode(error.message) };
 
@@ -89,8 +89,8 @@ export async function createBusinessRequest(raw: unknown): Promise<Result<{ requ
     p_business_id: input.businessId,
     p_initiated_by: 'business',
     p_message: input.message,
-    p_commission: input.proposedCommissionPct ?? null,
-    p_offer: input.guestOffer ?? null,
+    p_commission: input.proposedCommissionPct ?? undefined,
+    p_offer: input.guestOffer ?? undefined,
   });
   if (error) return { ok: false, error: requestErrorCode(error.message) };
 
@@ -121,7 +121,7 @@ export async function decideRequest(raw: unknown): Promise<Result<{ partnershipI
 
   const { error } = await supabase.rpc('decline_partnership_request', {
     p_id: input.requestId,
-    p_reason: input.declineReason ?? null,
+    p_reason: input.declineReason ?? undefined,
   });
   if (error) return { ok: false, error: requestErrorCode(error.message) };
   revalidate();

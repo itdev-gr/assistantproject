@@ -80,7 +80,7 @@ export default async function EditBusinessPage({ params }: Props) {
           billingEmail={data.billing_email}
           hasSubscription={!!data.stripe_subscription_id}
           currentPeriodEnd={data.current_period_end}
-          listed={data.listed}
+          listed={data.listed ?? false}
         />
       </div>
       <WebhookSecretCard
