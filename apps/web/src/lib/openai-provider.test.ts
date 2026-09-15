@@ -230,4 +230,58 @@ describe('OpenAiProvider', () => {
     expect(result).toEqual(FALLBACK_RESULT);
     expect(mockCompleteChat).not.toHaveBeenCalled();
   });
+
+  // Latency guards: these pin the request ordering, not the output. Reverting
+  // either one silently adds a full network round trip to every guest reply.
+  it('starts the query embedding before the card pipeline finishes', async () => {
+    let releaseSearch: () => void = () => {};
+    const searchGate = new Promise<void>((resolve) => {
+      releaseSearch = resolve;
+    });
+    const data = makeData({
+      searchRecommendationCandidates: vi.fn().mockImplementation(async () => {
+        await searchGate;
+        return { candidates: [], cardFor: vi.fn().mockResolvedValue(null) };
+      }),
+    });
+    const provider = new OpenAiProvider({
+      admin: makeAdmin(),
+      data,
+      fallback: makeFallback(FALLBACK_RESULT),
+      hotelName: HOTEL_NAME,
+    });
+
+    const pending = provider.respond({ ...baseInput, message: 'where can we eat tonight?' });
+    await Promise.resolve();
+
+    // The card search is still blocked, yet the embedding is already in flight.
+    expect(mockEmbedTexts).toHaveBeenCalledWith(['where can we eat tonight?']);
+    releaseSearch();
+    await pending;
+  });
+
+  it('fetches the candidates and the ranking rules concurrently', async () => {
+    let searchDone = false;
+    const data = makeData({
+      searchRecommendationCandidates: vi.fn().mockImplementation(async () => {
+        await new Promise((r) => setTimeout(r, 5));
+        searchDone = true;
+        return { candidates: [], cardFor: vi.fn().mockResolvedValue(null) };
+      }),
+      // If these ran in sequence, the search would have finished by now.
+      getRules: vi.fn().mockImplementation(async () => {
+        expect(searchDone).toBe(false);
+        return DEFAULT_RULES;
+      }),
+    });
+    const provider = new OpenAiProvider({
+      admin: makeAdmin(),
+      data,
+      fallback: makeFallback(FALLBACK_RESULT),
+      hotelName: HOTEL_NAME,
+    });
+
+    await provider.respond({ ...baseInput, message: 'where can we eat tonight?' });
+    expect(data.getRules).toHaveBeenCalledOnce();
+  });
 });

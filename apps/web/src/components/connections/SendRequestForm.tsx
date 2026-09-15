@@ -6,6 +6,7 @@ import { Button, Input, Textarea } from '@aga/ui';
 import { createBusinessRequest, createHotelRequest } from '@/app/actions/connections';
 import { errorMessage } from '@/lib/connections';
 import { dashLabel } from '@/components/dashboard/field-classes';
+import { MAX_COMMISSION_PCT } from '@aga/api-contracts';
 
 interface Props {
   locale: string;
@@ -23,7 +24,14 @@ interface Props {
  * Inline "Send request" expander: a required message plus optional extras
  * (commission %, guest offer) hidden behind an "Add extras" toggle.
  */
-export function SendRequestForm({ locale, side, targetId, targetName, businessId, triggerLabel }: Props) {
+export function SendRequestForm({
+  locale,
+  side,
+  targetId,
+  targetName,
+  businessId,
+  triggerLabel,
+}: Props) {
   const router = useRouter();
   const t = (en: string, el: string) => (locale === 'en' ? en : el);
   const [open, setOpen] = useState(false);
@@ -38,13 +46,16 @@ export function SendRequestForm({ locale, side, targetId, targetName, businessId
   function submit() {
     setError(null);
     start(async () => {
-      const extra = extras
-        ? { proposedCommissionPct: commission, guestOffer: offer }
-        : {};
+      const extra = extras ? { proposedCommissionPct: commission, guestOffer: offer } : {};
       const r =
         side === 'hotel'
           ? await createHotelRequest({ businessId: targetId, message, ...extra })
-          : await createBusinessRequest({ hotelId: targetId, businessId: businessId ?? '', message, ...extra });
+          : await createBusinessRequest({
+              hotelId: targetId,
+              businessId: businessId ?? '',
+              message,
+              ...extra,
+            });
       if (!r.ok) {
         setError(errorMessage(r.error, locale));
         return;
@@ -74,9 +85,10 @@ export function SendRequestForm({ locale, side, targetId, targetName, businessId
   }
 
   return (
-    <div className="mt-2 w-full max-w-xl space-y-3 rounded-lg border bg-background/60 p-3">
-      <p className="text-[13px] text-muted-foreground">
-        {t('Request to', 'Αίτημα προς')} <span className="font-medium text-foreground">{targetName}</span>
+    <div className="bg-background/60 mt-2 w-full max-w-xl space-y-3 rounded-lg border p-3">
+      <p className="text-muted-foreground text-[13px]">
+        {t('Request to', 'Αίτημα προς')}{' '}
+        <span className="text-foreground font-medium">{targetName}</span>
       </p>
       <div className="space-y-1">
         <label className={dashLabel} htmlFor={`msg-${targetId}`}>
@@ -98,7 +110,7 @@ export function SendRequestForm({ locale, side, targetId, targetName, businessId
         <button
           type="button"
           onClick={() => setExtras(true)}
-          className="cursor-pointer text-[13px] text-primary hover:underline"
+          className="text-primary cursor-pointer text-[13px] hover:underline"
         >
           + {t('Add extras (commission, guest offer)', 'Προσθήκη extra (προμήθεια, προσφορά)')}
         </button>
@@ -112,14 +124,17 @@ export function SendRequestForm({ locale, side, targetId, targetName, businessId
               id={`pct-${targetId}`}
               type="number"
               min={0}
-              max={100}
+              max={MAX_COMMISSION_PCT}
               step={0.5}
               value={commission}
               onChange={(e) => setCommission(e.target.value)}
               placeholder="10"
             />
-            <p className="text-[11px] text-muted-foreground">
-              {t('On referrals. Leave empty for no commission.', 'Στις παραπομπές. Κενό = χωρίς προμήθεια.')}
+            <p className="text-muted-foreground text-[11px]">
+              {t(
+                'On bookings made through RoomRiv. Up to 10%, depending on the partnership. Leave empty for no commission.',
+                'Σε κρατήσεις μέσω RoomRiv. Έως 10%, ανάλογα με τη συνεργασία. Κενό = χωρίς προμήθεια.',
+              )}
             </p>
           </div>
           <div className="space-y-1">
@@ -133,8 +148,11 @@ export function SendRequestForm({ locale, side, targetId, targetName, businessId
               onChange={(e) => setOffer(e.target.value)}
               placeholder={t('10% off with the hotel QR', '10% έκπτωση με το QR του ξενοδοχείου')}
             />
-            <p className="text-[11px] text-muted-foreground">
-              {t('Shown to guests in the assistant once connected.', 'Εμφανίζεται στους επισκέπτες μόλις συνδεθείτε.')}
+            <p className="text-muted-foreground text-[11px]">
+              {t(
+                'Shown to guests in the assistant once connected.',
+                'Εμφανίζεται στους επισκέπτες μόλις συνδεθείτε.',
+              )}
             </p>
           </div>
         </div>

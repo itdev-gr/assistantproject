@@ -7,7 +7,8 @@ import type Stripe from 'stripe';
 import { createSupabaseServiceClient } from '@aga/db/service';
 import { requirePartner } from '@/lib/auth-context';
 import { getStripe, priceIdForTier, priceToTierMap } from '@/lib/stripe';
-import { PLANS, isPaidTier, type PaidTier } from '@/lib/plans';
+import { findLiveSubscription } from '@/lib/stripe-subscriptions';
+import { PAID_TIERS, PLANS, isPaidTier, type PaidTier } from '@/lib/plans';
 import {
   periodEndFromSubscription,
   subscriptionToBillingState,
@@ -44,7 +45,7 @@ type BusinessBillingRow = {
 };
 
 const checkoutSchema = z.object({
-  tier: z.enum(['standard', 'featured', 'exclusive']),
+  tier: z.enum(PAID_TIERS as [PaidTier, ...PaidTier[]]),
   locale: z.enum(['el', 'en']).default('el'),
 });
 const localeSchema = z.object({ locale: z.enum(['el', 'en']).default('el') });
@@ -64,7 +65,11 @@ async function loadOwnedBusiness(): Promise<
   const businessId = ctx.businessIds[0];
   if (!businessId) return { ok: false, error: 'no_business' };
   const admin = createSupabaseServiceClient();
-  const { data, error } = await admin.from('businesses').select(BILLING_COLUMNS).eq('id', businessId).single();
+  const { data, error } = await admin
+    .from('businesses')
+    .select(BILLING_COLUMNS)
+    .eq('id', businessId)
+    .single();
   if (error || !data) return { ok: false, error: 'business_not_found' };
   return { ok: true, email: ctx.email, business: data as BusinessBillingRow };
 }
@@ -81,12 +86,6 @@ async function ensureCustomer(business: BusinessBillingRow, email: string): Prom
     .update({ stripe_customer_id: customer.id })
     .eq('id', business.id);
   return customer.id;
-}
-
-/** A live (non-ended) subscription for this customer, if Stripe has one. */
-async function findLiveSubscription(customerId: string): Promise<Stripe.Subscription | null> {
-  const list = await getStripe().subscriptions.list({ customer: customerId, status: 'all', limit: 10 });
-  return list.data.find((s) => s.status !== 'canceled' && s.status !== 'incomplete_expired') ?? null;
 }
 
 /** Starts Stripe Checkout for the chosen plan. */
@@ -183,11 +182,18 @@ export async function syncMyBillingFromStripe(raw: unknown) {
       });
       const belongsToUs =
         session.client_reference_id === business.id || session.metadata?.businessId === business.id;
-      const customerId = typeof session.customer === 'string' ? session.customer : session.customer?.id;
-      if (!belongsToUs || (business.stripe_customer_id && customerId !== business.stripe_customer_id)) {
+      const customerId =
+        typeof session.customer === 'string' ? session.customer : session.customer?.id;
+      if (
+        !belongsToUs ||
+        (business.stripe_customer_id && customerId !== business.stripe_customer_id)
+      ) {
         return { ok: false as const, error: 'session_mismatch' };
       }
-      sub = typeof session.subscription === 'object' ? (session.subscription as Stripe.Subscription) : null;
+      sub =
+        typeof session.subscription === 'object'
+          ? (session.subscription as Stripe.Subscription)
+          : null;
     } else if (business.stripe_subscription_id) {
       sub = await stripe.subscriptions.retrieve(business.stripe_subscription_id);
     } else if (business.stripe_customer_id) {
@@ -196,11 +202,22 @@ export async function syncMyBillingFromStripe(raw: unknown) {
 
     let state: BusinessBillingState;
     if (sub) {
-      state = subscriptionToBillingState(sub as unknown as Record<string, unknown>, priceToTierMap());
-    } else if (business.billing_status === 'unbilled' || business.billing_status === 'checkout_sent') {
+      state = subscriptionToBillingState(
+        sub as unknown as Record<string, unknown>,
+        priceToTierMap(),
+      );
+    } else if (
+      business.billing_status === 'unbilled' ||
+      business.billing_status === 'checkout_sent'
+    ) {
       return { ok: true as const, state: null };
     } else {
-      state = { billing_status: 'canceled', subscription_tier: 'free', stripe_subscription_id: null, current_period_end: null };
+      state = {
+        billing_status: 'canceled',
+        subscription_tier: 'free',
+        stripe_subscription_id: null,
+        current_period_end: null,
+      };
     }
     await applyBusinessBillingState(admin, business.id, state);
     after(() => reindexBusinessPartners(admin, business.id));
@@ -305,7 +322,10 @@ export async function getPartnerBillingSummary(): Promise<
       pdfUrl: inv.invoice_pdf ?? null,
     }));
   } catch (err) {
-    console.error('getPartnerBillingSummary stripe read failed', err instanceof Error ? err.message : err);
+    console.error(
+      'getPartnerBillingSummary stripe read failed',
+      err instanceof Error ? err.message : err,
+    );
   }
   return { ok: true, summary };
 }

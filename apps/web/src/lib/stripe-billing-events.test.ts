@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   applyStripeEvent,
   billingStatusFromStripe,
+  hotelSubscriptionToState,
   subscriptionToBillingState,
   tierFromSubscription,
   type StripeEventLike,
@@ -13,7 +14,8 @@ const ev = (type: string, object: Record<string, unknown>): StripeEventLike => (
   data: { object },
 });
 
-const PRICES = { price_std: 'standard', price_feat: 'featured', price_exc: 'exclusive' } as const;
+const PRICES = { price_std: 'standard', price_feat: 'featured' } as const;
+const HOTEL_PRICES = { price_pro: 'professional', price_adv: 'advanced' } as const;
 
 describe('billingStatusFromStripe', () => {
   it('maps every Stripe status, failing closed for unknown ones', () => {
@@ -53,7 +55,11 @@ describe('subscriptionToBillingState', () => {
   });
 
   it('reads current_period_end from the subscription on legacy API shapes', () => {
-    const legacy = { ...sub, items: { data: [{ price: 'price_std' }] }, current_period_end: 1_700_000_000 };
+    const legacy = {
+      ...sub,
+      items: { data: [{ price: 'price_std' }] },
+      current_period_end: 1_700_000_000,
+    };
     expect(subscriptionToBillingState(legacy, PRICES).current_period_end).toBe(
       new Date(1_700_000_000 * 1000).toISOString(),
     );
@@ -69,7 +75,38 @@ describe('subscriptionToBillingState', () => {
   });
 
   it('returns null tier when nothing resolves', () => {
-    expect(tierFromSubscription({ id: 'sub_x', status: 'active', metadata: {} }, PRICES)).toBeNull();
+    expect(
+      tierFromSubscription({ id: 'sub_x', status: 'active', metadata: {} }, PRICES),
+    ).toBeNull();
+  });
+});
+
+describe('hotelSubscriptionToState', () => {
+  const sub = {
+    id: 'sub_h1',
+    status: 'active',
+    metadata: { kind: 'hotel_plan', plan: 'basic' },
+    items: { data: [{ price: { id: 'price_pro' }, current_period_end: 1_800_000_000 }] },
+  };
+
+  it('derives the package from the price, then the checkout metadata', () => {
+    expect(hotelSubscriptionToState(sub, HOTEL_PRICES)).toEqual({
+      billing_status: 'active',
+      stripe_subscription_id: 'sub_h1',
+      current_period_end: new Date(1_800_000_000 * 1000).toISOString(),
+      plan: 'professional',
+    });
+    expect(hotelSubscriptionToState(sub, {}).plan).toBe('basic');
+    expect(hotelSubscriptionToState({ ...sub, metadata: {} }, {}).plan).toBeNull();
+  });
+
+  it('clears ids and dates on a canceled subscription', () => {
+    expect(hotelSubscriptionToState({ ...sub, status: 'canceled' }, HOTEL_PRICES)).toEqual({
+      billing_status: 'canceled',
+      stripe_subscription_id: null,
+      current_period_end: null,
+      plan: null,
+    });
   });
 });
 
@@ -86,7 +123,11 @@ describe('applyStripeEvent', () => {
       {
         target: 'business',
         match: { id: 'b-1' },
-        set: { subscription_tier: 'featured', billing_status: 'active', stripe_subscription_id: 'sub_b1' },
+        set: {
+          subscription_tier: 'featured',
+          billing_status: 'active',
+          stripe_subscription_id: 'sub_b1',
+        },
       },
     ]);
   });
@@ -124,46 +165,100 @@ describe('applyStripeEvent', () => {
       {
         target: 'partnership',
         match: { id: 'p-1' },
-        set: { subscription_tier: 'featured', billing_status: 'active', stripe_subscription_id: 'sub_123' },
+        set: {
+          subscription_tier: 'featured',
+          billing_status: 'active',
+          stripe_subscription_id: 'sub_123',
+        },
       },
     ]);
   });
 
-  it('activates a hotel plan on completed checkout', () => {
+  it('activates a hotel package on completed checkout', () => {
     const actions = applyStripeEvent(
       ev('checkout.session.completed', {
         subscription: 'sub_h1',
-        metadata: { kind: 'hotel_plan', hotelId: 'h-1' },
+        metadata: { kind: 'hotel_plan', hotelId: 'h-1', plan: 'professional', launchOffer: '1' },
       }),
     );
     expect(actions).toEqual([
-      { target: 'hotel', match: { id: 'h-1' }, set: { billing_status: 'active', stripe_subscription_id: 'sub_h1' } },
+      {
+        target: 'hotel',
+        match: { id: 'h-1' },
+        set: { billing_status: 'active', stripe_subscription_id: 'sub_h1', plan: 'professional' },
+      },
+    ]);
+  });
+
+  it('activates a legacy hotel checkout without touching the package', () => {
+    const actions = applyStripeEvent(
+      ev('checkout.session.completed', {
+        subscription: 'sub_h1',
+        metadata: { kind: 'hotel_plan', hotelId: 'h-1', plan: 'gold' },
+      }),
+    );
+    expect(actions).toEqual([
+      {
+        target: 'hotel',
+        match: { id: 'h-1' },
+        set: { billing_status: 'active', stripe_subscription_id: 'sub_h1' },
+      },
     ]);
   });
 
   it('marks past_due on failed subscription invoice across all subscription holders', () => {
     const actions = applyStripeEvent(ev('invoice.payment_failed', { subscription: 'sub_123' }));
     expect(actions).toEqual([
-      { target: 'business', match: { stripe_subscription_id: 'sub_123' }, set: { billing_status: 'past_due' } },
-      { target: 'partnership', match: { stripe_subscription_id: 'sub_123' }, set: { billing_status: 'past_due' } },
-      { target: 'hotel', match: { stripe_subscription_id: 'sub_123' }, set: { billing_status: 'past_due' } },
+      {
+        target: 'business',
+        match: { stripe_subscription_id: 'sub_123' },
+        set: { billing_status: 'past_due' },
+      },
+      {
+        target: 'partnership',
+        match: { stripe_subscription_id: 'sub_123' },
+        set: { billing_status: 'past_due' },
+      },
+      {
+        target: 'hotel',
+        match: { stripe_subscription_id: 'sub_123' },
+        set: { billing_status: 'past_due' },
+      },
     ]);
   });
 
   it('marks past_due on failed subscription invoice using the current API subscription shape', () => {
     const actions = applyStripeEvent(
-      ev('invoice.payment_failed', { parent: { subscription_details: { subscription: 'sub_123' } } }),
+      ev('invoice.payment_failed', {
+        parent: { subscription_details: { subscription: 'sub_123' } },
+      }),
     );
     expect(actions.map((a) => a.target)).toEqual(['business', 'partnership', 'hotel']);
-    expect(actions.every((a) => 'stripe_subscription_id' in a.match && a.match.stripe_subscription_id === 'sub_123')).toBe(true);
+    expect(
+      actions.every(
+        (a) => 'stripe_subscription_id' in a.match && a.match.stripe_subscription_id === 'sub_123',
+      ),
+    ).toBe(true);
   });
 
   it('recovers to active when a subscription invoice is paid', () => {
     const actions = applyStripeEvent(ev('invoice.paid', { subscription: 'sub_123' }));
     expect(actions).toEqual([
-      { target: 'business', match: { stripe_subscription_id: 'sub_123' }, set: { billing_status: 'active' } },
-      { target: 'partnership', match: { stripe_subscription_id: 'sub_123' }, set: { billing_status: 'active' } },
-      { target: 'hotel', match: { stripe_subscription_id: 'sub_123' }, set: { billing_status: 'active' } },
+      {
+        target: 'business',
+        match: { stripe_subscription_id: 'sub_123' },
+        set: { billing_status: 'active' },
+      },
+      {
+        target: 'partnership',
+        match: { stripe_subscription_id: 'sub_123' },
+        set: { billing_status: 'active' },
+      },
+      {
+        target: 'hotel',
+        match: { stripe_subscription_id: 'sub_123' },
+        set: { billing_status: 'active' },
+      },
     ]);
   });
 
@@ -182,17 +277,28 @@ describe('applyStripeEvent', () => {
   });
 
   it('demotes business and partnership to free on subscription deletion', () => {
-    const actions = applyStripeEvent(ev('customer.subscription.deleted', { id: 'sub_123', metadata: {} }));
+    const actions = applyStripeEvent(
+      ev('customer.subscription.deleted', { id: 'sub_123', metadata: {} }),
+    );
     expect(actions).toEqual([
       {
         target: 'business',
         match: { stripe_subscription_id: 'sub_123' },
-        set: { subscription_tier: 'free', billing_status: 'canceled', stripe_subscription_id: null, current_period_end: null },
+        set: {
+          subscription_tier: 'free',
+          billing_status: 'canceled',
+          stripe_subscription_id: null,
+          current_period_end: null,
+        },
       },
       {
         target: 'partnership',
         match: { stripe_subscription_id: 'sub_123' },
-        set: { subscription_tier: 'free', billing_status: 'canceled', stripe_subscription_id: null },
+        set: {
+          subscription_tier: 'free',
+          billing_status: 'canceled',
+          stripe_subscription_id: null,
+        },
       },
     ]);
   });
@@ -205,7 +311,7 @@ describe('applyStripeEvent', () => {
       {
         target: 'hotel',
         match: { stripe_subscription_id: 'sub_h1' },
-        set: { billing_status: 'canceled', stripe_subscription_id: null },
+        set: { billing_status: 'canceled', stripe_subscription_id: null, current_period_end: null },
       },
     ]);
   });
@@ -220,7 +326,11 @@ describe('applyStripeEvent', () => {
         match: { stripe_subscription_id: 'sub_123' },
         set: { billing_status: 'past_due', current_period_end: null },
       },
-      { target: 'partnership', match: { stripe_subscription_id: 'sub_123' }, set: { billing_status: 'past_due' } },
+      {
+        target: 'partnership',
+        match: { stripe_subscription_id: 'sub_123' },
+        set: { billing_status: 'past_due' },
+      },
     ]);
   });
 
@@ -230,7 +340,7 @@ describe('applyStripeEvent', () => {
         id: 'sub_123',
         status: 'active',
         metadata: { kind: 'business_plan', tier: 'standard' },
-        items: { data: [{ price: { id: 'price_exc' }, current_period_end: 1_800_000_000 }] },
+        items: { data: [{ price: { id: 'price_feat' }, current_period_end: 1_800_000_000 }] },
       }),
       PRICES,
     );
@@ -240,7 +350,7 @@ describe('applyStripeEvent', () => {
       set: {
         billing_status: 'active',
         current_period_end: new Date(1_800_000_000 * 1000).toISOString(),
-        subscription_tier: 'exclusive',
+        subscription_tier: 'featured',
       },
     });
   });
@@ -252,16 +362,70 @@ describe('applyStripeEvent', () => {
     expect(actions[0]).toEqual({
       target: 'business',
       match: { stripe_subscription_id: 'sub_123' },
-      set: { billing_status: 'canceled', subscription_tier: 'free', stripe_subscription_id: null, current_period_end: null },
+      set: {
+        billing_status: 'canceled',
+        subscription_tier: 'free',
+        stripe_subscription_id: null,
+        current_period_end: null,
+      },
     });
   });
 
-  it('marks a hotel plan active on subscription.updated', () => {
+  it('marks a hotel active on subscription.updated and keeps the package when the price is unknown', () => {
     const actions = applyStripeEvent(
-      ev('customer.subscription.updated', { id: 'sub_h1', status: 'active', metadata: { kind: 'hotel_plan' } }),
+      ev('customer.subscription.updated', {
+        id: 'sub_h1',
+        status: 'active',
+        metadata: { kind: 'hotel_plan' },
+      }),
     );
     expect(actions).toEqual([
-      { target: 'hotel', match: { stripe_subscription_id: 'sub_h1' }, set: { billing_status: 'active' } },
+      {
+        target: 'hotel',
+        match: { stripe_subscription_id: 'sub_h1' },
+        set: { billing_status: 'active', current_period_end: null },
+      },
+    ]);
+  });
+
+  it('propagates a hotel portal plan switch (price wins over checkout metadata)', () => {
+    const actions = applyStripeEvent(
+      ev('customer.subscription.updated', {
+        id: 'sub_h1',
+        status: 'active',
+        metadata: { kind: 'hotel_plan', plan: 'professional' },
+        items: { data: [{ price: { id: 'price_adv' }, current_period_end: 1_800_000_000 }] },
+      }),
+      PRICES,
+      HOTEL_PRICES,
+    );
+    expect(actions).toEqual([
+      {
+        target: 'hotel',
+        match: { stripe_subscription_id: 'sub_h1' },
+        set: {
+          billing_status: 'active',
+          current_period_end: new Date(1_800_000_000 * 1000).toISOString(),
+          plan: 'advanced',
+        },
+      },
+    ]);
+  });
+
+  it('cancels a hotel that stopped paying on subscription.updated (fails closed)', () => {
+    const actions = applyStripeEvent(
+      ev('customer.subscription.updated', {
+        id: 'sub_h1',
+        status: 'unpaid',
+        metadata: { kind: 'hotel_plan' },
+      }),
+    );
+    expect(actions).toEqual([
+      {
+        target: 'hotel',
+        match: { stripe_subscription_id: 'sub_h1' },
+        set: { billing_status: 'canceled', stripe_subscription_id: null, current_period_end: null },
+      },
     ]);
   });
 

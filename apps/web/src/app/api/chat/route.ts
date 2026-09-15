@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { hotelHasFeature } from '@/lib/hotel-features';
 import { chatRequestSchema, type ChatResponse } from '@aga/api-contracts';
 import { RuleBasedProvider } from '@aga/response-engine';
 import { detectLocale } from '@aga/i18n';
@@ -29,13 +30,18 @@ export async function POST(req: Request) {
   if (error || !hotelRow || !hotelRow.id || !hotelRow.name || !hotelRow.timezone) {
     return NextResponse.json({ error: 'hotel_not_found' }, { status: 404 });
   }
-  const hotel = hotelRow as { id: string; name: string; timezone: string; default_locale: string | null };
+  const hotel = hotelRow as {
+    id: string;
+    name: string;
+    timezone: string;
+    default_locale: string | null;
+  };
 
   // public_hotels doesn't expose lat/lng (see supabase/migrations/0004_rls_helpers_and_views.sql),
   // so fetch coordinates from the underlying table via the service client.
   const { data: hotelCoords } = await supabase
     .from('hotels')
-    .select('lat, lng')
+    .select('lat, lng, plan')
     .eq('id', hotel.id)
     .maybeSingle();
   const hotelLocation =
@@ -97,19 +103,28 @@ export async function POST(req: Request) {
   });
 
   const appOrigin = process.env.NEXT_PUBLIC_APP_URL ?? new URL(req.url).origin;
-  const dataPort = buildDataPort(supabase, { sessionId, appOrigin, hmacSecret: secret, hotelLocation });
+  const dataPort = buildDataPort(supabase, {
+    sessionId,
+    appOrigin,
+    hmacSecret: secret,
+    hotelLocation,
+  });
   const ruleProvider = new RuleBasedProvider(dataPort);
-  const { data: flag } = await supabase
-    .from('feature_flags')
-    .select('enabled')
-    .eq('flag', 'llm_chat')
-    .or(`hotel_id.eq.${hotel.id},hotel_id.is.null`)
-    .order('hotel_id', { ascending: false, nullsFirst: false })
-    .limit(1)
-    .maybeSingle();
+  // The AI provider is part of the Professional package and up; a per-hotel
+  // feature flag can override either way (see hotel-features.ts).
+  const llmAllowed = await hotelHasFeature(
+    supabase,
+    { id: hotel.id, plan: hotelCoords?.plan ?? 'basic' },
+    'llmChat',
+  );
   const provider =
-    flag?.enabled && process.env.OPENAI_API_KEY
-      ? new OpenAiProvider({ admin: supabase, data: dataPort, fallback: ruleProvider, hotelName: hotel.name })
+    llmAllowed && process.env.OPENAI_API_KEY
+      ? new OpenAiProvider({
+          admin: supabase,
+          data: dataPort,
+          fallback: ruleProvider,
+          hotelName: hotel.name,
+        })
       : ruleProvider;
   const result = await provider.respond({
     sessionId,

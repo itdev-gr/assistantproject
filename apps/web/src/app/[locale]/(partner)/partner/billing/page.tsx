@@ -40,13 +40,17 @@ export default async function PartnerBillingPage({ params, searchParams }: Props
     return (
       <div>
         <PageHeader title={t('Plan & billing', 'Πλάνο & συνδρομή')} />
-        <div className="rounded-lg border bg-card p-6 text-sm text-muted-foreground">
-          {t('No business is linked to this account yet.', 'Δεν υπάρχει ακόμη συνδεδεμένη επιχείρηση σε αυτόν τον λογαριασμό.')}
+        <div className="bg-card text-muted-foreground rounded-lg border p-6 text-sm">
+          {t(
+            'No business is linked to this account yet.',
+            'Δεν υπάρχει ακόμη συνδεδεμένη επιχείρηση σε αυτόν τον λογαριασμό.',
+          )}
         </div>
       </div>
     );
   }
-  const { business, plan, subscription, requestedTier, invoices, stripeConfigured } = result.summary;
+  const { business, plan, subscription, requestedTier, invoices, stripeConfigured } =
+    result.summary;
   const subscribed = billingOk(business) && !business.billing_exempt;
   const statusLabel: Record<string, string> = {
     active: t('Active', 'Ενεργή'),
@@ -56,19 +60,24 @@ export default async function PartnerBillingPage({ params, searchParams }: Props
     unbilled: t('Not started', 'Δεν έχει ξεκινήσει'),
   };
   const fmtDate = (iso: string | null) =>
-    iso ? new Date(iso).toLocaleDateString(locale === 'en' ? 'en-GB' : 'el-GR', { day: 'numeric', month: 'long', year: 'numeric' }) : '—';
+    iso
+      ? new Date(iso).toLocaleDateString(locale === 'en' ? 'en-GB' : 'el-GR', {
+          day: 'numeric',
+          month: 'long',
+          year: 'numeric',
+        })
+      : '—';
 
   return (
     <div>
-      <PageHeader
-        title={t('Plan & billing', 'Πλάνο & συνδρομή')}
-        subtitle={business.name}
-      />
+      <PageHeader title={t('Plan & billing', 'Πλάνο & συνδρομή')} subtitle={business.name} />
 
       {sp.status === 'success' && (
-        <div className="mb-6 rounded-lg border border-olive/40 bg-olive/10 p-4 text-[14px]">
-          <p className="font-semibold">{t('Thank you — payment received.', 'Ευχαριστούμε — η πληρωμή ελήφθη.')}</p>
-          <p className="mt-1 text-muted-foreground">
+        <div className="border-olive/40 bg-olive/10 mb-6 rounded-lg border p-4 text-[14px]">
+          <p className="font-semibold">
+            {t('Thank you — payment received.', 'Ευχαριστούμε — η πληρωμή ελήφθη.')}
+          </p>
+          <p className="text-muted-foreground mt-1">
             {syncedOk
               ? t(
                   'Your subscription is active. Your listing goes live as soon as our team approves it.',
@@ -82,7 +91,7 @@ export default async function PartnerBillingPage({ params, searchParams }: Props
         </div>
       )}
       {sp.status === 'canceled' && (
-        <div className="mb-6 rounded-lg border border-gold/60 bg-gold/10 p-4 text-[14px]">
+        <div className="border-gold/60 bg-gold/10 mb-6 rounded-lg border p-4 text-[14px]">
           {t(
             'Checkout was cancelled. Your listing stays hidden until the payment is completed.',
             'Η πληρωμή ακυρώθηκε. Η καταχώρισή σας παραμένει κρυφή μέχρι να ολοκληρωθεί.',
@@ -90,25 +99,34 @@ export default async function PartnerBillingPage({ params, searchParams }: Props
         </div>
       )}
       {!stripeConfigured && (
-        <div className="mb-6 rounded-lg border border-destructive/30 bg-destructive/10 p-4 text-[14px] text-destructive">
-          {t('Payments are not configured on this environment.', 'Οι πληρωμές δεν είναι ρυθμισμένες σε αυτό το περιβάλλον.')}
+        <div className="border-destructive/30 bg-destructive/10 text-destructive mb-6 rounded-lg border p-4 text-[14px]">
+          {t(
+            'Payments are not configured on this environment.',
+            'Οι πληρωμές δεν είναι ρυθμισμένες σε αυτό το περιβάλλον.',
+          )}
         </div>
       )}
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
-        <section className="rounded-lg border bg-card p-6">
+        <section className="bg-card rounded-lg border p-6">
           <h2 className="text-base font-semibold">{t('Current plan', 'Τρέχον πλάνο')}</h2>
           <div className="mt-3 flex flex-wrap items-center gap-2">
             <span className="font-serif text-2xl font-semibold">
               {plan ? (locale === 'en' ? plan.name.en : plan.name.el) : t('No plan', 'Χωρίς πλάνο')}
             </span>
             {plan && (
-              <span className="text-sm text-muted-foreground">
-                {formatEuro(plan.cents, locale)}/{t('month', 'μήνα')}
+              <span className="text-muted-foreground text-sm">
+                {formatEuro(plan.cents, locale)}/{t('year', 'έτος')}
               </span>
             )}
-            <Pill tone={business.billing_exempt ? 'ok' : (STATUS_TONE[business.billing_status] ?? 'muted')}>
-              {business.billing_exempt ? t('Exempt', 'Απαλλαγή') : statusLabel[business.billing_status] ?? business.billing_status}
+            <Pill
+              tone={
+                business.billing_exempt ? 'ok' : (STATUS_TONE[business.billing_status] ?? 'muted')
+              }
+            >
+              {business.billing_exempt
+                ? t('Exempt', 'Απαλλαγή')
+                : (statusLabel[business.billing_status] ?? business.billing_status)}
             </Pill>
           </div>
           <dl className="mt-4 grid gap-2 text-sm sm:grid-cols-2">
@@ -116,7 +134,9 @@ export default async function PartnerBillingPage({ params, searchParams }: Props
               <dt className="text-muted-foreground">{t('Renews on', 'Ανανέωση')}</dt>
               <dd className="font-medium">
                 {subscription?.cancelAtPeriodEnd
-                  ? t('Ends on', 'Λήγει στις') + ' ' + fmtDate(subscription.renewsAt ?? business.current_period_end)
+                  ? t('Ends on', 'Λήγει στις') +
+                    ' ' +
+                    fmtDate(subscription.renewsAt ?? business.current_period_end)
                   : fmtDate(subscription?.renewsAt ?? business.current_period_end)}
               </dd>
             </div>
@@ -128,7 +148,7 @@ export default async function PartnerBillingPage({ params, searchParams }: Props
             </div>
           </dl>
           {business.billing_status === 'past_due' && (
-            <p className="mt-4 rounded-md bg-gold/10 p-3 text-sm text-deep-ink">
+            <p className="bg-gold/10 text-deep-ink mt-4 rounded-md p-3 text-sm">
               {t(
                 'Your last payment failed. Update your card in the Stripe portal to keep the listing live.',
                 'Η τελευταία πληρωμή απέτυχε. Ενημερώστε την κάρτα σας στο portal της Stripe για να παραμείνει η καταχώριση ενεργή.',
@@ -137,13 +157,18 @@ export default async function PartnerBillingPage({ params, searchParams }: Props
           )}
         </section>
 
-        <section className="rounded-lg border bg-card p-6">
+        <section className="bg-card rounded-lg border p-6">
           <h2 className="text-base font-semibold">
-            {subscribed ? t('Manage', 'Διαχείριση') : t('Complete your subscription', 'Ολοκληρώστε τη συνδρομή σας')}
-          </h2>
-          <p className="mb-4 mt-1 text-sm text-muted-foreground">
             {subscribed
-              ? t('Your subscription is billed monthly through Stripe.', 'Η συνδρομή σας χρεώνεται μηνιαία μέσω Stripe.')
+              ? t('Manage', 'Διαχείριση')
+              : t('Complete your subscription', 'Ολοκληρώστε τη συνδρομή σας')}
+          </h2>
+          <p className="text-muted-foreground mb-4 mt-1 text-sm">
+            {subscribed
+              ? t(
+                  'Your subscription is billed yearly through Stripe.',
+                  'Η συνδρομή σας χρεώνεται ετησίως μέσω Stripe.',
+                )
               : t(
                   'Your listing is published only after the payment is active and our team has approved it.',
                   'Η καταχώρισή σας δημοσιεύεται μόνο αφού η πληρωμή είναι ενεργή και η ομάδα μας την εγκρίνει.',
@@ -156,7 +181,7 @@ export default async function PartnerBillingPage({ params, searchParams }: Props
             initialTier={requestedTier}
             currentTier={business.subscription_tier}
           />
-          <p className="mt-4 text-xs text-muted-foreground">
+          <p className="text-muted-foreground mt-4 text-xs">
             <Link href="/pricing" className="text-primary underline-offset-4 hover:underline">
               {t('Compare plans', 'Σύγκριση πλάνων')}
             </Link>
@@ -175,24 +200,41 @@ export default async function PartnerBillingPage({ params, searchParams }: Props
             <span />
           </div>
           {invoices.length === 0 ? (
-            <p className="px-4 py-6 text-sm text-muted-foreground">
+            <p className="text-muted-foreground px-4 py-6 text-sm">
               {t('No invoices yet.', 'Δεν υπάρχουν τιμολόγια ακόμη.')}
             </p>
           ) : (
             invoices.map((inv) => (
-              <div key={inv.id} className={`grid grid-cols-[1fr_8rem_7rem_6rem_auto] items-center gap-3 px-4 py-3 text-sm ${tableRow}`}>
+              <div
+                key={inv.id}
+                className={`grid grid-cols-[1fr_8rem_7rem_6rem_auto] items-center gap-3 px-4 py-3 text-sm ${tableRow}`}
+              >
                 <span className="font-medium">{inv.number ?? inv.id}</span>
                 <span>{fmtDate(inv.createdAt)}</span>
                 <span>{formatEuro(inv.totalCents, locale)}</span>
-                <Pill tone={inv.status === 'paid' ? 'ok' : inv.status === 'open' ? 'warn' : 'muted'}>{inv.status}</Pill>
+                <Pill
+                  tone={inv.status === 'paid' ? 'ok' : inv.status === 'open' ? 'warn' : 'muted'}
+                >
+                  {inv.status}
+                </Pill>
                 <span className="flex gap-3 text-xs">
                   {inv.hostedUrl && (
-                    <a href={inv.hostedUrl} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+                    <a
+                      href={inv.hostedUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-primary hover:underline"
+                    >
                       {t('View', 'Προβολή')}
                     </a>
                   )}
                   {inv.pdfUrl && (
-                    <a href={inv.pdfUrl} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+                    <a
+                      href={inv.pdfUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-primary hover:underline"
+                    >
                       PDF
                     </a>
                   )}

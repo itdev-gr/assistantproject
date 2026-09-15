@@ -4,10 +4,17 @@ import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { createSupabaseServiceClient } from '@aga/db/service';
 import { requireSuperAdmin } from '@/lib/auth-context';
-import { getStripe, priceIdForTier, priceToTierMap } from '@/lib/stripe';
+import { getStripe, priceIdForTier, priceToHotelPlanMap, priceToTierMap } from '@/lib/stripe';
+import { findLiveSubscription } from '@/lib/stripe-subscriptions';
+import { hotelPlanSchema } from '@aga/api-contracts';
+import { PAID_TIERS, type PaidTier } from '@/lib/plans';
 import { runCommissionInvoicing } from '@/lib/commission-invoicing-runner';
-import { subscriptionToBillingState } from '@/lib/stripe-billing-events';
-import { applyBusinessBillingState, reindexBusinessPartners } from '@/lib/business-billing-sync';
+import { hotelSubscriptionToState, subscriptionToBillingState } from '@/lib/stripe-billing-events';
+import {
+  applyBusinessBillingState,
+  applyHotelBillingState,
+  reindexBusinessPartners,
+} from '@/lib/business-billing-sync';
 import { billingOk } from '@/lib/business-visibility';
 
 /**
@@ -18,8 +25,10 @@ import { billingOk } from '@/lib/business-visibility';
 
 const checkoutSchema = z.object({
   businessId: z.string().uuid(),
-  tier: z.enum(['standard', 'featured', 'exclusive']),
+  tier: z.enum(PAID_TIERS as [PaidTier, ...PaidTier[]]),
 });
+const hotelIdSchema = z.object({ hotelId: z.string().uuid() });
+const hotelPlanInput = z.object({ hotelId: z.string().uuid(), plan: hotelPlanSchema });
 const idSchema = z.object({ businessId: z.string().uuid() });
 const exemptSchema = z.object({ businessId: z.string().uuid(), exempt: z.boolean() });
 
@@ -44,7 +53,8 @@ export async function createBusinessCheckoutLink(raw: unknown) {
     .eq('id', businessId)
     .single();
   if (error || !business) return { ok: false as const, error: 'business_not_found' };
-  if (billingOk(business) && !business.billing_exempt) return { ok: false as const, error: 'already_active' };
+  if (billingOk(business) && !business.billing_exempt)
+    return { ok: false as const, error: 'already_active' };
   if (!business.billing_email) return { ok: false as const, error: 'missing_billing_email' };
 
   try {
@@ -57,7 +67,10 @@ export async function createBusinessCheckoutLink(raw: unknown) {
         metadata: { businessId: business.id },
       });
       customerId = customer.id;
-      await admin.from('businesses').update({ stripe_customer_id: customerId }).eq('id', business.id);
+      await admin
+        .from('businesses')
+        .update({ stripe_customer_id: customerId })
+        .eq('id', business.id);
     }
 
     const metadata = { kind: 'business_plan', businessId, tier };
@@ -78,7 +91,10 @@ export async function createBusinessCheckoutLink(raw: unknown) {
     revalidatePath('/[locale]/(admin)/admin/businesses', 'layout');
     return { ok: true as const, url: session.url };
   } catch (err) {
-    console.error('createBusinessCheckoutLink stripe call failed', err instanceof Error ? err.message : err);
+    console.error(
+      'createBusinessCheckoutLink stripe call failed',
+      err instanceof Error ? err.message : err,
+    );
     return { ok: false as const, error: 'stripe_error' };
   }
 }
@@ -98,10 +114,15 @@ export async function cancelBusinessSubscription(raw: unknown) {
   if (error || !b?.stripe_subscription_id) return { ok: false as const, error: 'no_subscription' };
 
   try {
-    await getStripe().subscriptions.update(b.stripe_subscription_id, { cancel_at_period_end: true });
+    await getStripe().subscriptions.update(b.stripe_subscription_id, {
+      cancel_at_period_end: true,
+    });
     return { ok: true as const };
   } catch (err) {
-    console.error('cancelBusinessSubscription stripe call failed', err instanceof Error ? err.message : err);
+    console.error(
+      'cancelBusinessSubscription stripe call failed',
+      err instanceof Error ? err.message : err,
+    );
     return { ok: false as const, error: 'stripe_error' };
   }
 }
@@ -143,10 +164,19 @@ export async function syncBusinessBillingFromStripe(raw: unknown) {
     const stripe = getStripe();
     let sub: Record<string, unknown> | null = null;
     if (b.stripe_subscription_id) {
-      sub = (await stripe.subscriptions.retrieve(b.stripe_subscription_id)) as unknown as Record<string, unknown>;
+      sub = (await stripe.subscriptions.retrieve(b.stripe_subscription_id)) as unknown as Record<
+        string,
+        unknown
+      >;
     } else if (b.stripe_customer_id) {
-      const list = await stripe.subscriptions.list({ customer: b.stripe_customer_id, status: 'all', limit: 10 });
-      const live = list.data.find((s) => s.status !== 'canceled' && s.status !== 'incomplete_expired');
+      const list = await stripe.subscriptions.list({
+        customer: b.stripe_customer_id,
+        status: 'all',
+        limit: 10,
+      });
+      const live = list.data.find(
+        (s) => s.status !== 'canceled' && s.status !== 'incomplete_expired',
+      );
       sub = (live ?? null) as unknown as Record<string, unknown> | null;
     }
     if (!sub) {
@@ -174,10 +204,80 @@ export async function syncBusinessBillingFromStripe(raw: unknown) {
 export async function invoiceAccruedCommissions() {
   await requireSuperAdmin();
   try {
-    const { invoiced, failed } = await runCommissionInvoicing(createSupabaseServiceClient(), getStripe());
+    const { invoiced, failed } = await runCommissionInvoicing(
+      createSupabaseServiceClient(),
+      getStripe(),
+    );
     return { ok: true as const, invoiced, failed };
   } catch (err) {
     console.error('invoiceAccruedCommissions failed', err instanceof Error ? err.message : err);
     return { ok: false as const, error: 'stripe_error' };
   }
+}
+
+/**
+ * Pulls a hotel's subscription from Stripe and rewrites its billing columns
+ * (status, package, renewal) with the webhook's mapper — the manual "make DB = Stripe".
+ */
+export async function syncHotelBillingFromStripe(raw: unknown) {
+  await requireSuperAdmin();
+  const parsed = hotelIdSchema.safeParse(raw);
+  if (!parsed.success) return { ok: false as const, error: 'invalid' };
+  const admin = createSupabaseServiceClient();
+  const { data: h, error } = await admin
+    .from('hotels')
+    .select('id, stripe_customer_id, stripe_subscription_id, billing_status')
+    .eq('id', parsed.data.hotelId)
+    .single();
+  if (error || !h) return { ok: false as const, error: 'hotel_not_found' };
+
+  try {
+    const stripe = getStripe();
+    let sub: Record<string, unknown> | null = null;
+    if (h.stripe_subscription_id) {
+      sub = (await stripe.subscriptions
+        .retrieve(h.stripe_subscription_id)
+        .catch(() => null)) as unknown as Record<string, unknown> | null;
+    }
+    if (!sub && h.stripe_customer_id) {
+      sub = (await findLiveSubscription(h.stripe_customer_id)) as unknown as Record<
+        string,
+        unknown
+      > | null;
+    }
+    if (!sub) {
+      if (h.billing_status !== 'unbilled' && h.billing_status !== 'canceled') {
+        await applyHotelBillingState(admin, h.id, {
+          billing_status: 'canceled',
+          stripe_subscription_id: null,
+          current_period_end: null,
+          plan: null,
+        });
+      }
+      revalidatePath('/[locale]/(admin)/admin', 'layout');
+      return { ok: true as const, state: null };
+    }
+    const state = hotelSubscriptionToState(sub, priceToHotelPlanMap());
+    await applyHotelBillingState(admin, h.id, state);
+    revalidatePath('/[locale]/(admin)/admin', 'layout');
+    return { ok: true as const, state };
+  } catch (err) {
+    console.error('syncHotelBillingFromStripe failed', err instanceof Error ? err.message : err);
+    return { ok: false as const, error: 'stripe_error' };
+  }
+}
+
+/** Admin override of the package on record (e.g. phone onboarding before payment). */
+export async function setHotelPlan(raw: unknown) {
+  await requireSuperAdmin();
+  const parsed = hotelPlanInput.safeParse(raw);
+  if (!parsed.success) return { ok: false as const, error: 'invalid' };
+  const admin = createSupabaseServiceClient();
+  const { error } = await admin
+    .from('hotels')
+    .update({ plan: parsed.data.plan })
+    .eq('id', parsed.data.hotelId);
+  if (error) return { ok: false as const, error: error.message };
+  revalidatePath('/[locale]/(admin)/admin', 'layout');
+  return { ok: true as const };
 }

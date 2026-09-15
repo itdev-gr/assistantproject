@@ -23,34 +23,48 @@ describe('createHotelConnectionRequestSchema', () => {
     const r = createHotelConnectionRequestSchema.safeParse({
       businessId: business,
       message,
-      proposedCommissionPct: '12.5',
+      proposedCommissionPct: '7.5',
       guestOffer: '   ',
     });
     expect(r.success).toBe(true);
     if (r.success) {
-      expect(r.data.proposedCommissionPct).toBe(12.5);
+      expect(r.data.proposedCommissionPct).toBe(7.5);
       expect(r.data.guestOffer).toBeUndefined();
     }
   });
 
   it('rejects short messages, out-of-range commission and long offers', () => {
-    expect(createHotelConnectionRequestSchema.safeParse({ businessId: business, message: 'hi' }).success).toBe(false);
     expect(
-      createHotelConnectionRequestSchema.safeParse({ businessId: business, message, proposedCommissionPct: 120 })
-        .success,
+      createHotelConnectionRequestSchema.safeParse({ businessId: business, message: 'hi' }).success,
     ).toBe(false);
     expect(
-      createHotelConnectionRequestSchema.safeParse({ businessId: business, message, guestOffer: 'x'.repeat(201) })
-        .success,
+      createHotelConnectionRequestSchema.safeParse({
+        businessId: business,
+        message,
+        proposedCommissionPct: 120,
+      }).success,
+    ).toBe(false);
+    expect(
+      createHotelConnectionRequestSchema.safeParse({
+        businessId: business,
+        message,
+        guestOffer: 'x'.repeat(201),
+      }).success,
     ).toBe(false);
   });
 });
 
 describe('createBusinessConnectionRequestSchema', () => {
   it('requires both ids', () => {
-    expect(createBusinessConnectionRequestSchema.safeParse({ hotelId: hotel, message }).success).toBe(false);
     expect(
-      createBusinessConnectionRequestSchema.safeParse({ hotelId: hotel, businessId: business, message }).success,
+      createBusinessConnectionRequestSchema.safeParse({ hotelId: hotel, message }).success,
+    ).toBe(false);
+    expect(
+      createBusinessConnectionRequestSchema.safeParse({
+        hotelId: hotel,
+        businessId: business,
+        message,
+      }).success,
     ).toBe(true);
   });
 });
@@ -59,10 +73,18 @@ describe('decideConnectionRequestSchema', () => {
   it('allows a reason only when declining', () => {
     const base = { requestId: business };
     expect(decideConnectionRequestSchema.safeParse({ ...base, accept: true }).success).toBe(true);
-    expect(decideConnectionRequestSchema.safeParse({ ...base, accept: false, declineReason: 'Fully booked' }).success).toBe(
-      true,
-    );
-    const r = decideConnectionRequestSchema.safeParse({ ...base, accept: true, declineReason: 'x' });
+    expect(
+      decideConnectionRequestSchema.safeParse({
+        ...base,
+        accept: false,
+        declineReason: 'Fully booked',
+      }).success,
+    ).toBe(true);
+    const r = decideConnectionRequestSchema.safeParse({
+      ...base,
+      accept: true,
+      declineReason: 'x',
+    });
     expect(r.success).toBe(false);
     if (!r.success) expect(String(r.error.issues[0]?.path[0])).toBe('declineReason');
   });

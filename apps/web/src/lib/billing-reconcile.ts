@@ -8,12 +8,15 @@
  * renders the latest run. No I/O in here so every rule is unit-tested.
  */
 import {
+  hotelSubscriptionToState,
   subscriptionToBillingState,
   type BillingStatus,
+  type PriceToHotelPlan,
   type PriceToTier,
   type Tier,
 } from './stripe-billing-events';
 import { BILLING_OK } from './business-visibility';
+import type { HotelPlan } from './hotel-plans';
 
 export type IssueKind =
   | 'status_mismatch'
@@ -28,20 +31,32 @@ export type IssueKind =
   | 'commission_state_stale'
   | 'commission_invoice_lost'
   | 'price_drift'
-  | 'customer_email_drift';
+  | 'customer_email_drift'
+  | 'legacy_price'
+  | 'plan_mismatch'
+  | 'launch_offer_stale';
 
 export type FixAction =
   | { action: 'sync_business'; businessId: string }
   | { action: 'sync_hotel'; hotelId: string }
   | { action: 'replay_event'; eventId: string }
   | { action: 'ingest_event'; eventId: string }
-  | { action: 'mark_commission_paid'; commissionEventId: string };
+  | { action: 'mark_commission_paid'; commissionEventId: string }
+  | { action: 'release_launch_offer'; hotelId: string };
 
 export interface ReconcileIssue {
   kind: IssueKind;
   severity: 'error' | 'warn';
   entity: {
-    type: 'business' | 'hotel' | 'partnership' | 'commission_event' | 'webhook_event' | 'subscription' | 'price' | 'customer';
+    type:
+      | 'business'
+      | 'hotel'
+      | 'partnership'
+      | 'commission_event'
+      | 'webhook_event'
+      | 'subscription'
+      | 'price'
+      | 'customer';
     id: string;
     name?: string;
   };
@@ -65,11 +80,18 @@ export interface ReconcileInput {
   /** ISO timestamp the snapshot was taken. */
   now: string;
   priceToTier: PriceToTier;
-  /** What the pricing page promises, per configured price id. */
-  plans: Array<{ tier: Exclude<Tier, 'free'>; cents: number; priceId: string | null }>;
+  priceToHotelPlan: PriceToHotelPlan;
+  /** What the pricing page promises, per configured price id (label e.g. "business:standard", "hotel:basic"). */
+  plans: Array<{ label: string; cents: number; priceId: string | null }>;
   stripe: {
     subscriptions: StripeSubscriptionSnapshot[];
-    prices: Array<{ id: string; unitAmount: number | null; currency: string; active: boolean }>;
+    prices: Array<{
+      id: string;
+      unitAmount: number | null;
+      currency: string;
+      active: boolean;
+      interval: string | null;
+    }>;
     /** Ids of relevant Stripe events created in the lookback window (and older than the grace period). */
     recentEventIds: string[];
     /** Status of every Stripe invoice referenced by an `invoiced` commission event. */
@@ -95,9 +117,20 @@ export interface ReconcileInput {
       name: string;
       stripe_subscription_id: string | null;
       billing_status: BillingStatus;
+      plan: HotelPlan;
+      launch_offer_applied: boolean;
+      launch_offer_claimed_at: string | null;
     }>;
-    partnerships: Array<{ id: string; stripe_subscription_id: string | null; billing_status: BillingStatus }>;
-    commissionEvents: Array<{ id: string; state: 'accrued' | 'invoiced' | 'paid'; stripe_invoice_id: string | null }>;
+    partnerships: Array<{
+      id: string;
+      stripe_subscription_id: string | null;
+      billing_status: BillingStatus;
+    }>;
+    commissionEvents: Array<{
+      id: string;
+      state: 'accrued' | 'invoiced' | 'paid';
+      stripe_invoice_id: string | null;
+    }>;
     webhookEvents: Array<{
       id: string;
       type: string;
@@ -116,6 +149,7 @@ export interface ReconcileSummary {
   businessesExempt: number;
   businessesListed: number;
   hotelsPaying: number;
+  launchOfferClaimed: number;
   webhookEventsPending: number;
   issuesByKind: Partial<Record<IssueKind, number>>;
 }
@@ -128,6 +162,8 @@ export interface ReconcileResult {
 
 /** Events older than this with `processed_at = null` count as stuck. */
 export const WEBHOOK_GRACE_MS = 10 * 60 * 1000;
+/** A launch-offer slot claimed at checkout but never paid is released after this. */
+export const LAUNCH_OFFER_HOLD_MS = 3 * 24 * 60 * 60 * 1000;
 
 const ENDED = new Set(['canceled', 'incomplete_expired']);
 
@@ -136,7 +172,14 @@ function toSubLike(s: StripeSubscriptionSnapshot): Record<string, unknown> {
     id: s.id,
     status: s.status,
     metadata: s.metadata,
-    items: { data: [{ price: s.priceId ? { id: s.priceId } : undefined, current_period_end: s.currentPeriodEnd ?? undefined }] },
+    items: {
+      data: [
+        {
+          price: s.priceId ? { id: s.priceId } : undefined,
+          current_period_end: s.currentPeriodEnd ?? undefined,
+        },
+      ],
+    },
   };
 }
 
@@ -146,11 +189,14 @@ export function reconcileBilling(input: ReconcileInput): ReconcileResult {
   const nowMs = Date.parse(input.now);
 
   const businessBySub = new Map<string, ReconcileInput['db']['businesses'][number]>();
-  for (const b of input.db.businesses) if (b.stripe_subscription_id) businessBySub.set(b.stripe_subscription_id, b);
+  for (const b of input.db.businesses)
+    if (b.stripe_subscription_id) businessBySub.set(b.stripe_subscription_id, b);
   const hotelBySub = new Map<string, ReconcileInput['db']['hotels'][number]>();
-  for (const h of input.db.hotels) if (h.stripe_subscription_id) hotelBySub.set(h.stripe_subscription_id, h);
+  for (const h of input.db.hotels)
+    if (h.stripe_subscription_id) hotelBySub.set(h.stripe_subscription_id, h);
   const partnershipBySub = new Map<string, ReconcileInput['db']['partnerships'][number]>();
-  for (const p of input.db.partnerships) if (p.stripe_subscription_id) partnershipBySub.set(p.stripe_subscription_id, p);
+  for (const p of input.db.partnerships)
+    if (p.stripe_subscription_id) partnershipBySub.set(p.stripe_subscription_id, p);
   const businessById = new Map(input.db.businesses.map((b) => [b.id, b]));
 
   // ---- businesses -------------------------------------------------------
@@ -182,7 +228,11 @@ export function reconcileBilling(input: ReconcileInput): ReconcileResult {
             fix,
           });
         }
-        if (expected.billing_status !== 'canceled' && expected.subscription_tier !== 'free' && expected.subscription_tier !== b.subscription_tier) {
+        if (
+          expected.billing_status !== 'canceled' &&
+          expected.subscription_tier !== 'free' &&
+          expected.subscription_tier !== b.subscription_tier
+        ) {
           issues.push({
             kind: 'tier_mismatch',
             severity: 'error',
@@ -218,7 +268,11 @@ export function reconcileBilling(input: ReconcileInput): ReconcileResult {
 
     if (b.stripe_customer_id && b.billing_email) {
       const customer = input.stripe.customers.find((c) => c.id === b.stripe_customer_id);
-      if (customer && customer.email && customer.email.toLowerCase() !== b.billing_email.toLowerCase()) {
+      if (
+        customer &&
+        customer.email &&
+        customer.email.toLowerCase() !== b.billing_email.toLowerCase()
+      ) {
         issues.push({
           kind: 'customer_email_drift',
           severity: 'warn',
@@ -238,15 +292,64 @@ export function reconcileBilling(input: ReconcileInput): ReconcileResult {
     if (h.stripe_subscription_id) {
       const sub = subsById.get(h.stripe_subscription_id);
       if (!sub) {
-        issues.push({ kind: 'missing_subscription', severity: 'error', entity, message: `Hotel references subscription ${h.stripe_subscription_id} unknown to Stripe`, actual: h.billing_status, fix });
+        issues.push({
+          kind: 'missing_subscription',
+          severity: 'error',
+          entity,
+          message: `Hotel references subscription ${h.stripe_subscription_id} unknown to Stripe`,
+          actual: h.billing_status,
+          fix,
+        });
       } else {
-        const expected = subscriptionToBillingState(toSubLike(sub), input.priceToTier).billing_status;
-        if (expected !== h.billing_status) {
-          issues.push({ kind: 'status_mismatch', severity: 'error', entity, message: `Stripe subscription is ${sub.status} → ${expected}, DB says ${h.billing_status}`, expected, actual: h.billing_status, fix });
+        const expected = hotelSubscriptionToState(toSubLike(sub), input.priceToHotelPlan);
+        if (expected.billing_status !== h.billing_status) {
+          issues.push({
+            kind: 'status_mismatch',
+            severity: 'error',
+            entity,
+            message: `Stripe subscription is ${sub.status} → ${expected.billing_status}, DB says ${h.billing_status}`,
+            expected: expected.billing_status,
+            actual: h.billing_status,
+            fix,
+          });
+        }
+        if (expected.billing_status !== 'canceled' && expected.plan && expected.plan !== h.plan) {
+          issues.push({
+            kind: 'plan_mismatch',
+            severity: 'error',
+            entity,
+            message: `Stripe price maps to the ${expected.plan} package, DB says ${h.plan}`,
+            expected: expected.plan,
+            actual: h.plan,
+            fix,
+          });
         }
       }
     } else if (BILLING_OK.has(h.billing_status)) {
-      issues.push({ kind: 'missing_subscription', severity: 'error', entity, message: `Hotel is ${h.billing_status} but has no Stripe subscription id`, actual: h.billing_status, fix });
+      issues.push({
+        kind: 'missing_subscription',
+        severity: 'error',
+        entity,
+        message: `Hotel is ${h.billing_status} but has no Stripe subscription id`,
+        actual: h.billing_status,
+        fix,
+      });
+    }
+
+    if (
+      h.launch_offer_applied &&
+      !BILLING_OK.has(h.billing_status) &&
+      h.launch_offer_claimed_at &&
+      nowMs - Date.parse(h.launch_offer_claimed_at) > LAUNCH_OFFER_HOLD_MS
+    ) {
+      issues.push({
+        kind: 'launch_offer_stale',
+        severity: 'warn',
+        entity,
+        message: `Launch-offer slot claimed on ${h.launch_offer_claimed_at.slice(0, 10)} was never paid; releasing it`,
+        actual: h.billing_status,
+        fix: { action: 'release_launch_offer', hotelId: h.id },
+      });
     }
   }
 
@@ -268,8 +371,23 @@ export function reconcileBilling(input: ReconcileInput): ReconcileResult {
   for (const sub of input.stripe.subscriptions) {
     if (ENDED.has(sub.status)) continue;
     live += 1;
-    const known = businessBySub.has(sub.id) || hotelBySub.has(sub.id) || partnershipBySub.has(sub.id);
-    if (known) continue;
+    const known =
+      businessBySub.has(sub.id) || hotelBySub.has(sub.id) || partnershipBySub.has(sub.id);
+    if (known) {
+      // A live subscription on a price we no longer sell (e.g. the retired
+      // monthly plans) keeps working but must be moved by hand.
+      if (sub.priceId && !input.priceToTier[sub.priceId] && !input.priceToHotelPlan[sub.priceId]) {
+        const owner = businessBySub.get(sub.id) ?? hotelBySub.get(sub.id);
+        issues.push({
+          kind: 'legacy_price',
+          severity: 'warn',
+          entity: { type: 'subscription', id: sub.id, name: owner?.name },
+          message: `Live subscription for ${owner?.name ?? sub.id} is on price ${sub.priceId}, which is not in the current price list — switch it to a yearly package`,
+          actual: sub.priceId,
+        });
+      }
+      continue;
+    }
     const businessId = sub.metadata.businessId;
     const business = businessId ? businessById.get(businessId) : undefined;
     issues.push({
@@ -352,24 +470,48 @@ export function reconcileBilling(input: ReconcileInput): ReconcileResult {
 
   // ---- pricing page vs Stripe prices --------------------------------------
   for (const plan of input.plans) {
-    const entity = { type: 'price' as const, id: plan.priceId ?? plan.tier, name: plan.tier };
+    const entity = { type: 'price' as const, id: plan.priceId ?? plan.label, name: plan.label };
     if (!plan.priceId) {
-      issues.push({ kind: 'price_drift', severity: 'error', entity, message: `No Stripe price configured for the ${plan.tier} plan (STRIPE_PRICE_* env missing)` });
+      issues.push({
+        kind: 'price_drift',
+        severity: 'error',
+        entity,
+        message: `No Stripe price configured for the ${plan.label} plan (STRIPE_PRICE_* env missing)`,
+      });
       continue;
     }
     const price = input.stripe.prices.find((p) => p.id === plan.priceId);
     if (!price) {
-      issues.push({ kind: 'price_drift', severity: 'error', entity, message: `Configured price ${plan.priceId} for ${plan.tier} does not exist in Stripe` });
+      issues.push({
+        kind: 'price_drift',
+        severity: 'error',
+        entity,
+        message: `Configured price ${plan.priceId} for ${plan.label} does not exist in Stripe`,
+      });
     } else if (!price.active) {
-      issues.push({ kind: 'price_drift', severity: 'error', entity, message: `Stripe price for ${plan.tier} is archived` });
+      issues.push({
+        kind: 'price_drift',
+        severity: 'error',
+        entity,
+        message: `Stripe price for ${plan.label} is archived`,
+      });
     } else if (price.unitAmount !== plan.cents || price.currency.toLowerCase() !== 'eur') {
       issues.push({
         kind: 'price_drift',
         severity: 'error',
         entity,
-        message: `Pricing page shows ${plan.cents} cents EUR for ${plan.tier}, Stripe charges ${price.unitAmount} ${price.currency.toUpperCase()}`,
+        message: `Pricing page shows ${plan.cents} cents EUR for ${plan.label}, Stripe charges ${price.unitAmount} ${price.currency.toUpperCase()}`,
         expected: plan.cents,
         actual: price.unitAmount,
+      });
+    } else if (price.interval && price.interval !== 'year') {
+      issues.push({
+        kind: 'price_drift',
+        severity: 'error',
+        entity,
+        message: `Pricing page promises yearly billing for ${plan.label}, Stripe price renews every ${price.interval}`,
+        expected: 'year',
+        actual: price.interval,
       });
     }
   }
@@ -380,10 +522,13 @@ export function reconcileBilling(input: ReconcileInput): ReconcileResult {
   const summary: ReconcileSummary = {
     subscriptionsInStripe: input.stripe.subscriptions.length,
     liveSubscriptionsInStripe: live,
-    businessesPaying: input.db.businesses.filter((b) => BILLING_OK.has(b.billing_status) && !b.billing_exempt).length,
+    businessesPaying: input.db.businesses.filter(
+      (b) => BILLING_OK.has(b.billing_status) && !b.billing_exempt,
+    ).length,
     businessesExempt: input.db.businesses.filter((b) => b.billing_exempt).length,
     businessesListed: input.db.businesses.filter((b) => b.listed).length,
     hotelsPaying: input.db.hotels.filter((h) => BILLING_OK.has(h.billing_status)).length,
+    launchOfferClaimed: input.db.hotels.filter((h) => h.launch_offer_applied).length,
     webhookEventsPending: pending,
     issuesByKind,
   };

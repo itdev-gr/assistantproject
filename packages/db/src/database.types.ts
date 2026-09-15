@@ -684,6 +684,11 @@ export type Database = {
           stripe_customer_id: string | null
           stripe_subscription_id: string | null
           subscription_tier: Database["public"]["Enums"]["subscription_tier"]
+          plan: Database["public"]["Enums"]["hotel_plan"]
+          current_period_end: string | null
+          launch_offer_applied: boolean
+          launch_offer_rank: number | null
+          launch_offer_claimed_at: string | null
           timezone: string
           updated_at: string
         }
@@ -701,6 +706,11 @@ export type Database = {
           stripe_customer_id?: string | null
           stripe_subscription_id?: string | null
           subscription_tier?: Database["public"]["Enums"]["subscription_tier"]
+          plan?: Database["public"]["Enums"]["hotel_plan"]
+          current_period_end?: string | null
+          launch_offer_applied?: boolean
+          launch_offer_rank?: number | null
+          launch_offer_claimed_at?: string | null
           timezone?: string
           updated_at?: string
         }
@@ -718,6 +728,11 @@ export type Database = {
           stripe_customer_id?: string | null
           stripe_subscription_id?: string | null
           subscription_tier?: Database["public"]["Enums"]["subscription_tier"]
+          plan?: Database["public"]["Enums"]["hotel_plan"]
+          current_period_end?: string | null
+          launch_offer_applied?: boolean
+          launch_offer_rank?: number | null
+          launch_offer_claimed_at?: string | null
           timezone?: string
           updated_at?: string
         }
@@ -1608,6 +1623,9 @@ export type Database = {
         Returns: string
       }
       accept_partnership_request: { Args: { p_id: string }; Returns: string }
+      claim_launch_offer: { Args: { p_hotel_id: string }; Returns: number | null }
+      release_launch_offer: { Args: { p_hotel_id: string }; Returns: boolean }
+      launch_offer_remaining: { Args: never; Returns: number }
       decline_partnership_request: { Args: { p_id: string; p_reason?: string | null }; Returns: undefined }
       cancel_partnership_request: { Args: { p_id: string }; Returns: undefined }
       disconnect_partnership: { Args: { p_partnership_id: string }; Returns: undefined }
@@ -1643,6 +1661,12 @@ export type Database = {
       account_role: "user" | "partner"
       connection_initiator: "hotel" | "business"
       connection_request_status: "pending" | "accepted" | "declined" | "cancelled"
+      hotel_plan:
+        | "accommodation"
+        | "basic"
+        | "professional"
+        | "advanced"
+        | "enterprise"
       hotel_role: "owner" | "manager" | "staff"
       partner_status: "pending" | "approved" | "rejected"
       visit_source: "manual" | "referral"
@@ -1802,6 +1826,7 @@ export const Constants = {
       account_role: ["user", "partner"],
       connection_initiator: ["hotel", "business"],
       connection_request_status: ["pending", "accepted", "declined", "cancelled"],
+      hotel_plan: ["accommodation", "basic", "professional", "advanced", "enterprise"],
       hotel_role: ["owner", "manager", "staff"],
       partner_status: ["pending", "approved", "rejected"],
       visit_source: ["manual", "referral"],

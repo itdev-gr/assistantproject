@@ -37,26 +37,38 @@ export class OpenAiProvider implements ResponseProvider {
         return this.deps.fallback.respond(input);
       }
 
+      // The query embedding depends only on the guest's message, so start it
+      // now and let it run alongside the card pipeline below instead of after
+      // it. That hides a whole OpenAI round trip from the guest.
+      const embeddingPromise = embedTexts([input.message]);
+      // The pipeline below can throw before we await this; attaching a no-op
+      // handler keeps that from surfacing as an unhandled rejection. The real
+      // error still propagates where the promise is awaited.
+      embeddingPromise.catch(() => {});
+
       // Attach place cards for explicit recommendation intents and for
       // free-form questions the keyword matcher couldn't classify — the data
       // port then searches every category and only returns real matches.
       let cards: RecommendationCard[] | undefined;
       if (isRecommendationIntent(match.slug) || match.slug === 'out_of_scope') {
-        const search = await this.deps.data.searchRecommendationCandidates({
-          hotelId: input.hotelId,
-          intent: match.slug,
-          locale: input.locale,
-          text: input.message,
-          guestLocalTime: input.guestLocalTime,
-        });
-        const rules = await this.deps.data.getRules(input.hotelId);
+        // Independent queries — the rule-based provider parallelizes these too.
+        const [search, rules] = await Promise.all([
+          this.deps.data.searchRecommendationCandidates({
+            hotelId: input.hotelId,
+            intent: match.slug,
+            locale: input.locale,
+            text: input.message,
+            guestLocalTime: input.guestLocalTime,
+          }),
+          this.deps.data.getRules(input.hotelId),
+        ]);
         const ranked = rank(search.candidates, rules);
         cards = (await Promise.all(ranked.map((r) => search.cardFor(r.businessId)))).filter(
           (c): c is RecommendationCard => c != null,
         );
       }
 
-      const [queryEmbedding] = await embedTexts([input.message]);
+      const [queryEmbedding] = await embeddingPromise;
       const { data: chunks, error } = await this.deps.admin.rpc('match_knowledge_chunks', {
         p_hotel: input.hotelId,
         p_embedding: JSON.stringify(queryEmbedding),

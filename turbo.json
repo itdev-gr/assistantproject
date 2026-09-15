@@ -5,7 +5,28 @@
     "build": {
       "dependsOn": ["^build"],
       "inputs": ["$TURBO_DEFAULT$", ".env*"],
-      "env": ["SUPABASE_SERVICE_ROLE_KEY", "SESSION_HMAC_SECRET", "NODE_ENV", "VERCEL", "VERCEL_ENV", "VERCEL_URL", "STRIPE_SECRET_KEY", "STRIPE_WEBHOOK_SECRET", "STRIPE_PRICE_STANDARD", "STRIPE_PRICE_FEATURED", "STRIPE_PRICE_EXCLUSIVE", "STRIPE_PRICE_HOTEL", "CRON_SECRET", "OPENAI_API_KEY", "OPENAI_MODEL", "OPENAI_EMBEDDING_MODEL"],
+      "env": [
+        "SUPABASE_SERVICE_ROLE_KEY",
+        "SESSION_HMAC_SECRET",
+        "NODE_ENV",
+        "VERCEL",
+        "VERCEL_ENV",
+        "VERCEL_URL",
+        "STRIPE_SECRET_KEY",
+        "STRIPE_WEBHOOK_SECRET",
+        "STRIPE_PRICE_STANDARD",
+        "STRIPE_PRICE_FEATURED",
+        "STRIPE_PRICE_HOTEL_ACCOMMODATION",
+        "STRIPE_PRICE_HOTEL_BASIC",
+        "STRIPE_PRICE_HOTEL_PROFESSIONAL",
+        "STRIPE_PRICE_HOTEL_ADVANCED",
+        "STRIPE_PRICE_HOTEL_ENTERPRISE",
+        "NEXT_PUBLIC_CONTACT_EMAIL",
+        "CRON_SECRET",
+        "OPENAI_API_KEY",
+        "OPENAI_MODEL",
+        "OPENAI_EMBEDDING_MODEL"
+      ],
       "outputs": [".next/**", "!.next/cache/**", "dist/**", "build/**"]
     },
     "lint": {

@@ -5,13 +5,15 @@ import { useRouter } from '@/i18n/routing';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { hotelProfileSchema, subscriptionTierSchema, uuidSchema } from '@aga/api-contracts';
+import { hotelPlanSchema, hotelProfileSchema, uuidSchema } from '@aga/api-contracts';
+import { HOTEL_PLANS } from '@/lib/hotel-plans';
+import { formatEuro } from '@/lib/plans';
 import { Button, Input, Label, Card, CardContent } from '@aga/ui';
 import { updateTenant } from '@/app/actions/admin-tenants';
 
 const formSchema = hotelProfileSchema.extend({
   id: uuidSchema,
-  subscriptionTier: subscriptionTierSchema,
+  plan: hotelPlanSchema,
   active: z.boolean(),
 });
 type FormValues = z.infer<typeof formSchema>;
@@ -53,7 +55,11 @@ export function TenantEditForm({ locale, initial }: Props) {
         <CardContent className="space-y-4 p-6">
           <input type="hidden" {...register('id')} />
           <div className="grid gap-4 md:grid-cols-2">
-            <Field id="name" label={locale === 'en' ? 'Name' : 'Όνομα'} error={errors.name?.message}>
+            <Field
+              id="name"
+              label={locale === 'en' ? 'Name' : 'Όνομα'}
+              error={errors.name?.message}
+            >
               <Input id="name" {...register('name')} />
             </Field>
             <Field id="slug" label="Slug" error={errors.slug?.message}>
@@ -62,19 +68,23 @@ export function TenantEditForm({ locale, initial }: Props) {
           </div>
           <div className="grid gap-4 md:grid-cols-2">
             <Field
-              id="subscriptionTier"
-              label={locale === 'en' ? 'Subscription tier' : 'Επίπεδο συνδρομής'}
-              error={errors.subscriptionTier?.message}
+              id="plan"
+              label={locale === 'en' ? 'Package' : 'Πακέτο'}
+              error={errors.plan?.message}
             >
               <select
-                id="subscriptionTier"
-                {...register('subscriptionTier')}
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                id="plan"
+                {...register('plan')}
+                className="border-input bg-background flex h-10 w-full rounded-md border px-3 py-2 text-sm"
               >
-                <option value="free">free</option>
-                <option value="standard">standard</option>
-                <option value="featured">featured</option>
-                <option value="exclusive">exclusive</option>
+                {HOTEL_PLANS.map((p) => (
+                  <option key={p.plan} value={p.plan}>
+                    {(locale === 'en' ? p.name.en : p.name.el) +
+                      ' · ' +
+                      formatEuro(p.cents, locale) +
+                      (locale === 'en' ? '/year' : '/έτος')}
+                  </option>
+                ))}
               </select>
             </Field>
             <Field
@@ -85,7 +95,7 @@ export function TenantEditForm({ locale, initial }: Props) {
               <select
                 id="defaultLocale"
                 {...register('defaultLocale')}
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                className="border-input bg-background flex h-10 w-full rounded-md border px-3 py-2 text-sm"
               >
                 <option value="el">Ελληνικά</option>
                 <option value="en">English</option>
@@ -110,11 +120,11 @@ export function TenantEditForm({ locale, initial }: Props) {
           {locale === 'en' ? 'Save' : 'Αποθήκευση'}
         </Button>
         {status === 'saved' && (
-          <span className="text-sm text-muted-foreground">
+          <span className="text-muted-foreground text-sm">
             {locale === 'en' ? 'Saved' : 'Αποθηκεύτηκε'}
           </span>
         )}
-        {error && <span className="text-sm text-destructive">{error}</span>}
+        {error && <span className="text-destructive text-sm">{error}</span>}
       </div>
     </form>
   );
@@ -135,7 +145,7 @@ function Field({
     <div className="space-y-1.5">
       <Label htmlFor={id}>{label}</Label>
       {children}
-      {error && <p className="text-xs text-destructive">{error}</p>}
+      {error && <p className="text-destructive text-xs">{error}</p>}
     </div>
   );
 }

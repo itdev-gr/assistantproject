@@ -6,6 +6,8 @@
  * partner "sync after checkout" action and the nightly reconciler all call
  * it, so the three can never disagree. Keep this file free of I/O.
  */
+import { isHotelPlan, type HotelPlan } from './hotel-plans';
+
 export interface StripeEventLike {
   id: string;
   type: string;
@@ -17,6 +19,16 @@ export type BillingStatus = 'unbilled' | 'checkout_sent' | 'active' | 'past_due'
 
 /** Stripe price id → paid tier (built from the STRIPE_PRICE_* env vars). */
 export type PriceToTier = Readonly<Record<string, Exclude<Tier, 'free'>>>;
+/** Stripe price id → hotel package (built from the STRIPE_PRICE_HOTEL_* env vars). */
+export type PriceToHotelPlan = Readonly<Record<string, HotelPlan>>;
+
+export interface HotelBillingState {
+  billing_status: BillingStatus;
+  stripe_subscription_id: string | null;
+  current_period_end: string | null;
+  /** null when the price/metadata did not resolve to a package (keep the DB value). */
+  plan: HotelPlan | null;
+}
 
 export interface BusinessBillingState {
   billing_status: BillingStatus;
@@ -43,7 +55,12 @@ export type BillingAction =
   | {
       target: 'hotel';
       match: { id: string } | { stripe_subscription_id: string };
-      set: Partial<{ billing_status: BillingStatus; stripe_subscription_id: string | null }>;
+      set: Partial<{
+        billing_status: BillingStatus;
+        stripe_subscription_id: string | null;
+        current_period_end: string | null;
+        plan: HotelPlan;
+      }>;
     }
   | { target: 'commission_events'; match: { stripe_invoice_id: string }; set: { state: 'paid' } };
 
@@ -87,9 +104,11 @@ export function tierFromSubscription(
 ): Exclude<Tier, 'free'> | null {
   const rawPrice = firstItem(sub)?.price;
   const priceId =
-    typeof rawPrice === 'string' ? rawPrice
-    : rawPrice && typeof rawPrice === 'object' ? (rawPrice as { id?: unknown }).id
-    : undefined;
+    typeof rawPrice === 'string'
+      ? rawPrice
+      : rawPrice && typeof rawPrice === 'object'
+        ? (rawPrice as { id?: unknown }).id
+        : undefined;
   const fromPrice = typeof priceId === 'string' ? priceToTier[priceId] : undefined;
   if (fromPrice) return fromPrice;
   const meta = (sub.metadata ?? {}) as Record<string, string>;
@@ -100,10 +119,51 @@ export function tierFromSubscription(
 export function periodEndFromSubscription(sub: Record<string, unknown>): string | null {
   const first = firstItem(sub);
   const seconds =
-    typeof first?.current_period_end === 'number' ? first.current_period_end
-    : typeof sub.current_period_end === 'number' ? sub.current_period_end
-    : null;
+    typeof first?.current_period_end === 'number'
+      ? first.current_period_end
+      : typeof sub.current_period_end === 'number'
+        ? sub.current_period_end
+        : null;
   return seconds ? new Date(seconds * 1000).toISOString() : null;
+}
+
+/**
+ * Package of a hotel subscription: the price on its first item (portal plan
+ * switches change this), falling back to the `plan` metadata written at
+ * checkout. `null` when neither resolves (legacy or unconfigured price).
+ */
+export function hotelPlanFromSubscription(
+  sub: Record<string, unknown>,
+  priceToHotelPlan: PriceToHotelPlan = {},
+): HotelPlan | null {
+  const rawPrice = firstItem(sub)?.price;
+  const priceId =
+    typeof rawPrice === 'string'
+      ? rawPrice
+      : rawPrice && typeof rawPrice === 'object'
+        ? (rawPrice as { id?: unknown }).id
+        : undefined;
+  const fromPrice = typeof priceId === 'string' ? priceToHotelPlan[priceId] : undefined;
+  if (fromPrice) return fromPrice;
+  const meta = (sub.metadata ?? {}) as Record<string, string>;
+  return isHotelPlan(meta.plan) ? meta.plan : null;
+}
+
+/** Subscription → the exact billing state a hotel row should have. */
+export function hotelSubscriptionToState(
+  sub: Record<string, unknown>,
+  priceToHotelPlan: PriceToHotelPlan = {},
+): HotelBillingState {
+  const id = typeof sub.id === 'string' ? sub.id : null;
+  const billingStatus = billingStatusFromStripe(typeof sub.status === 'string' ? sub.status : null);
+  const canceled = billingStatus === 'canceled';
+  return {
+    billing_status: billingStatus,
+    stripe_subscription_id: canceled ? null : id,
+    current_period_end: canceled ? null : periodEndFromSubscription(sub),
+    // A lapsed subscription keeps the package on record (re-subscribe preselects it).
+    plan: canceled ? null : hotelPlanFromSubscription(sub, priceToHotelPlan),
+  };
 }
 
 /** Subscription → the exact row state a business should have. */
@@ -130,10 +190,14 @@ export function subscriptionToBillingState(
  */
 function invoiceSubscriptionId(obj: Record<string, unknown>): string | null {
   if (typeof obj.subscription === 'string') return obj.subscription; // legacy shape
-  const parent = obj.parent as { subscription_details?: { subscription?: unknown } } | null | undefined;
+  const parent = obj.parent as
+    | { subscription_details?: { subscription?: unknown } }
+    | null
+    | undefined;
   const sub = parent?.subscription_details?.subscription;
   if (typeof sub === 'string') return sub;
-  if (sub && typeof sub === 'object' && typeof (sub as { id?: unknown }).id === 'string') return (sub as { id: string }).id;
+  if (sub && typeof sub === 'object' && typeof (sub as { id?: unknown }).id === 'string')
+    return (sub as { id: string }).id;
   return null;
 }
 
@@ -142,7 +206,11 @@ function invoiceSubscriptionId(obj: Record<string, unknown>): string | null {
  * every table that can hold a subscription (business / partnership / hotel);
  * the webhook counts a delivery as processed when at least one row matched.
  */
-export function applyStripeEvent(event: StripeEventLike, priceToTier: PriceToTier = {}): BillingAction[] {
+export function applyStripeEvent(
+  event: StripeEventLike,
+  priceToTier: PriceToTier = {},
+  priceToHotelPlan: PriceToHotelPlan = {},
+): BillingAction[] {
   const obj = event.data.object;
   const meta = (obj.metadata ?? {}) as Record<string, string>;
 
@@ -167,7 +235,12 @@ export function applyStripeEvent(event: StripeEventLike, priceToTier: PriceToTie
           },
         ];
       }
-      if (meta.kind === 'partnership_tier' && meta.partnershipId && meta.tier && PAID_TIERS.has(meta.tier)) {
+      if (
+        meta.kind === 'partnership_tier' &&
+        meta.partnershipId &&
+        meta.tier &&
+        PAID_TIERS.has(meta.tier)
+      ) {
         return [
           {
             target: 'partnership',
@@ -185,7 +258,11 @@ export function applyStripeEvent(event: StripeEventLike, priceToTier: PriceToTie
           {
             target: 'hotel',
             match: { id: meta.hotelId },
-            set: { billing_status: 'active', stripe_subscription_id: subscriptionId },
+            set: {
+              billing_status: 'active',
+              stripe_subscription_id: subscriptionId,
+              ...(isHotelPlan(meta.plan) ? { plan: meta.plan } : {}),
+            },
           },
         ];
       }
@@ -196,9 +273,21 @@ export function applyStripeEvent(event: StripeEventLike, priceToTier: PriceToTie
       const subscriptionId = invoiceSubscriptionId(obj);
       if (!subscriptionId) return [];
       return [
-        { target: 'business', match: { stripe_subscription_id: subscriptionId }, set: { billing_status: 'past_due' } },
-        { target: 'partnership', match: { stripe_subscription_id: subscriptionId }, set: { billing_status: 'past_due' } },
-        { target: 'hotel', match: { stripe_subscription_id: subscriptionId }, set: { billing_status: 'past_due' } },
+        {
+          target: 'business',
+          match: { stripe_subscription_id: subscriptionId },
+          set: { billing_status: 'past_due' },
+        },
+        {
+          target: 'partnership',
+          match: { stripe_subscription_id: subscriptionId },
+          set: { billing_status: 'past_due' },
+        },
+        {
+          target: 'hotel',
+          match: { stripe_subscription_id: subscriptionId },
+          set: { billing_status: 'past_due' },
+        },
       ];
     }
 
@@ -206,14 +295,30 @@ export function applyStripeEvent(event: StripeEventLike, priceToTier: PriceToTie
       const subscriptionId = invoiceSubscriptionId(obj);
       if (subscriptionId) {
         return [
-          { target: 'business', match: { stripe_subscription_id: subscriptionId }, set: { billing_status: 'active' } },
-          { target: 'partnership', match: { stripe_subscription_id: subscriptionId }, set: { billing_status: 'active' } },
-          { target: 'hotel', match: { stripe_subscription_id: subscriptionId }, set: { billing_status: 'active' } },
+          {
+            target: 'business',
+            match: { stripe_subscription_id: subscriptionId },
+            set: { billing_status: 'active' },
+          },
+          {
+            target: 'partnership',
+            match: { stripe_subscription_id: subscriptionId },
+            set: { billing_status: 'active' },
+          },
+          {
+            target: 'hotel',
+            match: { stripe_subscription_id: subscriptionId },
+            set: { billing_status: 'active' },
+          },
         ];
       }
       if (obj.billing_reason === 'manual' && typeof obj.id === 'string') {
         return [
-          { target: 'commission_events', match: { stripe_invoice_id: obj.id }, set: { state: 'paid' } },
+          {
+            target: 'commission_events',
+            match: { stripe_invoice_id: obj.id },
+            set: { state: 'paid' },
+          },
         ];
       }
       return [];
@@ -227,13 +332,25 @@ export function applyStripeEvent(event: StripeEventLike, priceToTier: PriceToTie
           {
             target: 'hotel',
             match: { stripe_subscription_id: subscriptionId },
-            set: { billing_status: 'canceled', stripe_subscription_id: null },
+            set: {
+              billing_status: 'canceled',
+              stripe_subscription_id: null,
+              current_period_end: null,
+            },
           },
         ];
       }
-      const canceled = { subscription_tier: 'free' as Tier, billing_status: 'canceled' as BillingStatus, stripe_subscription_id: null };
+      const canceled = {
+        subscription_tier: 'free' as Tier,
+        billing_status: 'canceled' as BillingStatus,
+        stripe_subscription_id: null,
+      };
       return [
-        { target: 'business', match: { stripe_subscription_id: subscriptionId }, set: { ...canceled, current_period_end: null } },
+        {
+          target: 'business',
+          match: { stripe_subscription_id: subscriptionId },
+          set: { ...canceled, current_period_end: null },
+        },
         { target: 'partnership', match: { stripe_subscription_id: subscriptionId }, set: canceled },
       ];
     }
@@ -243,8 +360,19 @@ export function applyStripeEvent(event: StripeEventLike, priceToTier: PriceToTie
       if (!subscriptionId) return [];
       const state = subscriptionToBillingState(obj, priceToTier);
       if (meta.kind === 'hotel_plan') {
+        const hotel = hotelSubscriptionToState(obj, priceToHotelPlan);
+        const hotelSet: BillingAction['set'] & { target?: never } =
+          hotel.billing_status === 'canceled'
+            ? { billing_status: 'canceled', stripe_subscription_id: null, current_period_end: null }
+            : {
+                billing_status: hotel.billing_status,
+                current_period_end: hotel.current_period_end,
+                // Only touch the package when the price resolved; an unmapped
+                // (legacy) price must never demote a paying hotel.
+                ...(hotel.plan ? { plan: hotel.plan } : {}),
+              };
         return [
-          { target: 'hotel', match: { stripe_subscription_id: subscriptionId }, set: { billing_status: state.billing_status } },
+          { target: 'hotel', match: { stripe_subscription_id: subscriptionId }, set: hotelSet },
         ];
       }
       // Business rows get the full derived state (tier follows the price, so
@@ -263,7 +391,11 @@ export function applyStripeEvent(event: StripeEventLike, priceToTier: PriceToTie
             };
       return [
         { target: 'business', match: { stripe_subscription_id: subscriptionId }, set: businessSet },
-        { target: 'partnership', match: { stripe_subscription_id: subscriptionId }, set: { billing_status: state.billing_status } },
+        {
+          target: 'partnership',
+          match: { stripe_subscription_id: subscriptionId },
+          set: { billing_status: state.billing_status },
+        },
       ];
     }
 
@@ -273,7 +405,9 @@ export function applyStripeEvent(event: StripeEventLike, priceToTier: PriceToTie
 }
 
 /** Table for each action target (used by the webhook and the replay action). */
-export function tableForTarget(target: BillingAction['target']): 'businesses' | 'partnerships' | 'hotels' | 'commission_events' {
+export function tableForTarget(
+  target: BillingAction['target'],
+): 'businesses' | 'partnerships' | 'hotels' | 'commission_events' {
   switch (target) {
     case 'business':
       return 'businesses';

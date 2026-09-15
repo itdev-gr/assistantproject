@@ -2,13 +2,13 @@
 
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
-import { hotelProfileSchema, slugSchema, subscriptionTierSchema, uuidSchema } from '@aga/api-contracts';
+import { hotelPlanSchema, hotelProfileSchema, slugSchema, uuidSchema } from '@aga/api-contracts';
 import { createSupabaseServiceClient } from '@aga/db/service';
 import { requireSuperAdmin } from '@/lib/auth-context';
 
 const createSchema = hotelProfileSchema.extend({
   ownerEmail: z.string().email(),
-  subscriptionTier: subscriptionTierSchema.default('standard'),
+  plan: hotelPlanSchema.default('basic'),
 });
 
 export async function createTenant(raw: unknown) {
@@ -28,11 +28,12 @@ export async function createTenant(raw: unknown) {
       lat: p.lat,
       lng: p.lng,
       brand_json: { logoUrl: p.brand.logoUrl ?? null, primaryColor: p.brand.primaryColor ?? null },
-      subscription_tier: p.subscriptionTier,
+      plan: p.plan,
     })
     .select('id, slug')
     .single();
-  if (hotelErr || !hotel) return { ok: false as const, error: hotelErr?.message ?? 'insert_failed' };
+  if (hotelErr || !hotel)
+    return { ok: false as const, error: hotelErr?.message ?? 'insert_failed' };
 
   const origin = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000';
   const { data: invited, error: inviteErr } = await admin.auth.admin.inviteUserByEmail(
@@ -60,7 +61,7 @@ export async function createTenant(raw: unknown) {
 
 const updateSchema = hotelProfileSchema.extend({
   id: uuidSchema,
-  subscriptionTier: subscriptionTierSchema,
+  plan: hotelPlanSchema,
   active: z.boolean(),
 });
 
@@ -80,7 +81,7 @@ export async function updateTenant(raw: unknown) {
       lat: p.lat,
       lng: p.lng,
       brand_json: { logoUrl: p.brand.logoUrl ?? null, primaryColor: p.brand.primaryColor ?? null },
-      subscription_tier: p.subscriptionTier,
+      plan: p.plan,
       active: p.active,
     })
     .eq('id', p.id);

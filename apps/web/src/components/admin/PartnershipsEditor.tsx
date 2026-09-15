@@ -2,8 +2,9 @@
 
 import { useState, useTransition } from 'react';
 import { useRouter } from '@/i18n/routing';
-import type { SubscriptionTier } from '@aga/api-contracts';
+import { MAX_COMMISSION_PCT, type SubscriptionTier } from '@aga/api-contracts';
 import { Button, Input, Badge } from '@aga/ui';
+import { Pill } from '@/components/dashboard/Pill';
 import { upsertPartnership, deletePartnership } from '@/app/actions/admin-partnerships';
 import { PartnershipBillingPanel } from './PartnershipBillingPanel';
 
@@ -33,7 +34,8 @@ interface Props {
   rows: Row[];
 }
 
-const TIERS: SubscriptionTier[] = ['free', 'standard', 'featured', 'exclusive'];
+/** `exclusive` is no longer sold; it stays selectable only on rows that already have it. */
+const TIERS: SubscriptionTier[] = ['free', 'standard', 'featured'];
 
 export function PartnershipsEditor({ locale, hotels, businesses, rows }: Props) {
   const router = useRouter();
@@ -118,11 +120,11 @@ export function PartnershipsEditor({ locale, hotels, businesses, rows }: Props) 
   return (
     <div className="space-y-6">
       {missing.length > 0 && (
-        <div className="rounded-md border border-dashed bg-muted/40 p-4 text-sm">
+        <div className="bg-muted/40 rounded-md border border-dashed p-4 text-sm">
           <p className="mb-2 font-medium">
             {locale === 'en' ? 'Set up the prerequisites first:' : 'Πρώτα οριστε τα παρακάτω:'}
           </p>
-          <ul className="list-disc pl-5 text-muted-foreground">
+          <ul className="text-muted-foreground list-disc pl-5">
             {hotels.length === 0 && (
               <li>
                 <a href="/en/admin/new-tenant" className="text-primary hover:underline">
@@ -143,7 +145,7 @@ export function PartnershipsEditor({ locale, hotels, businesses, rows }: Props) 
 
       <table className="w-full text-sm">
         <thead>
-          <tr className="border-b text-left text-xs uppercase text-muted-foreground">
+          <tr className="text-muted-foreground border-b text-left text-xs uppercase">
             <th className="py-2">{locale === 'en' ? 'Hotel' : 'Κατάλυμα'}</th>
             <th className="py-2">{locale === 'en' ? 'Business' : 'Επιχείρηση'}</th>
             <th className="py-2">Tier</th>
@@ -156,7 +158,7 @@ export function PartnershipsEditor({ locale, hotels, businesses, rows }: Props) 
         <tbody>
           {rows.length === 0 && (
             <tr>
-              <td colSpan={7} className="py-6 text-center text-sm text-muted-foreground">
+              <td colSpan={7} className="text-muted-foreground py-6 text-center text-sm">
                 {locale === 'en' ? 'No partnerships yet.' : 'Καμία συνεργασία ακόμη.'}
               </td>
             </tr>
@@ -177,9 +179,27 @@ export function PartnershipsEditor({ locale, hotels, businesses, rows }: Props) 
                       {t}
                     </option>
                   ))}
+                  {r.subscriptionTier === 'exclusive' && (
+                    <option value="exclusive">exclusive (legacy)</option>
+                  )}
                 </select>
               </td>
-              <td className="py-2">{r.commissionPct.toFixed(1)}</td>
+              <td className="py-2">
+                <span className="flex items-center gap-1.5">
+                  {r.commissionPct.toFixed(1)}
+                  {r.commissionPct > MAX_COMMISSION_PCT && (
+                    <span
+                      title={
+                        locale === 'en'
+                          ? 'Above the 10% cap — lower it to keep editing this row'
+                          : 'Πάνω από το όριο 10% — μειώστε το για να επεξεργαστείτε τη γραμμή'
+                      }
+                    >
+                      <Pill tone="warn">&gt;{MAX_COMMISSION_PCT}%</Pill>
+                    </span>
+                  )}
+                </span>
+              </td>
               <td className="py-2">{r.paidPriorityScore}</td>
               <td className="py-2">
                 <PartnershipBillingPanel
@@ -196,14 +216,15 @@ export function PartnershipsEditor({ locale, hotels, businesses, rows }: Props) 
                   className="cursor-pointer"
                   onClick={() => toggleActive(r)}
                 >
-                  {r.active ? (locale === 'en' ? 'active' : 'ενεργή') : locale === 'en' ? 'inactive' : 'ανενεργή'}
+                  {r.active
+                    ? locale === 'en'
+                      ? 'active'
+                      : 'ενεργή'
+                    : locale === 'en'
+                      ? 'inactive'
+                      : 'ανενεργή'}
                 </Badge>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => remove(r.id)}
-                  disabled={pending}
-                >
+                <Button variant="ghost" size="sm" onClick={() => remove(r.id)} disabled={pending}>
                   {locale === 'en' ? 'Delete' : 'Διαγραφή'}
                 </Button>
               </td>
@@ -221,7 +242,7 @@ export function PartnershipsEditor({ locale, hotels, businesses, rows }: Props) 
             value={draft.hotelId}
             onChange={(e) => setDraft({ ...draft, hotelId: e.target.value })}
             disabled={hotels.length === 0}
-            className="flex h-10 rounded-md border border-input bg-background px-3 py-2 text-sm disabled:opacity-50"
+            className="border-input bg-background flex h-10 rounded-md border px-3 py-2 text-sm disabled:opacity-50"
           >
             <option value="">
               {hotels.length === 0
@@ -242,7 +263,7 @@ export function PartnershipsEditor({ locale, hotels, businesses, rows }: Props) 
             value={draft.businessId}
             onChange={(e) => setDraft({ ...draft, businessId: e.target.value })}
             disabled={businesses.length === 0}
-            className="flex h-10 rounded-md border border-input bg-background px-3 py-2 text-sm disabled:opacity-50"
+            className="border-input bg-background flex h-10 rounded-md border px-3 py-2 text-sm disabled:opacity-50"
           >
             <option value="">
               {businesses.length === 0
@@ -264,7 +285,7 @@ export function PartnershipsEditor({ locale, hotels, businesses, rows }: Props) 
             onChange={(e) =>
               setDraft({ ...draft, subscriptionTier: e.target.value as SubscriptionTier })
             }
-            className="flex h-10 rounded-md border border-input bg-background px-3 py-2 text-sm"
+            className="border-input bg-background flex h-10 rounded-md border px-3 py-2 text-sm"
           >
             {TIERS.map((t) => (
               <option key={t} value={t}>
@@ -276,8 +297,10 @@ export function PartnershipsEditor({ locale, hotels, businesses, rows }: Props) 
         <div className="mt-3 grid gap-3 md:grid-cols-3">
           <Input
             type="number"
-            step="0.1"
-            placeholder="commission %"
+            step="0.5"
+            min={0}
+            max={MAX_COMMISSION_PCT}
+            placeholder={`commission % (max ${MAX_COMMISSION_PCT})`}
             value={draft.commissionPct}
             onChange={(e) => setDraft({ ...draft, commissionPct: Number(e.target.value) })}
           />
@@ -289,14 +312,11 @@ export function PartnershipsEditor({ locale, hotels, businesses, rows }: Props) 
             value={draft.paidPriorityScore}
             onChange={(e) => setDraft({ ...draft, paidPriorityScore: Number(e.target.value) })}
           />
-          <Button
-            onClick={add}
-            disabled={pending || !draft.hotelId || !draft.businessId}
-          >
+          <Button onClick={add} disabled={pending || !draft.hotelId || !draft.businessId}>
             {locale === 'en' ? 'Add' : 'Προσθήκη'}
           </Button>
         </div>
-        {error && <p className="mt-2 text-xs text-destructive">{error}</p>}
+        {error && <p className="text-destructive mt-2 text-xs">{error}</p>}
       </div>
     </div>
   );

@@ -1,5 +1,6 @@
 import Stripe from 'stripe';
 import type { PaidTier } from './plans';
+import { HOTEL_PLANS, type HotelPlan, type HotelPlanPriceEnv } from './hotel-plans';
 
 let cached: Stripe | null = null;
 
@@ -13,10 +14,11 @@ export function getStripe(): Stripe {
   return cached;
 }
 
+// ----- business (partner) tiers ---------------------------------------------
+
 export const TIER_PRICE_ENV = {
   standard: 'STRIPE_PRICE_STANDARD',
   featured: 'STRIPE_PRICE_FEATURED',
-  exclusive: 'STRIPE_PRICE_EXCLUSIVE',
 } as const satisfies Record<PaidTier, string>;
 
 export type { PaidTier };
@@ -39,6 +41,33 @@ export function priceToTierMap(): Record<string, PaidTier> {
 
 export function tierForPriceId(priceId: string): PaidTier | null {
   return priceToTierMap()[priceId] ?? null;
+}
+
+// ----- hotel / accommodation packages ---------------------------------------
+
+export const HOTEL_PLAN_PRICE_ENV: Record<HotelPlan, HotelPlanPriceEnv> = Object.fromEntries(
+  HOTEL_PLANS.map((p) => [p.plan, p.priceEnv]),
+) as Record<HotelPlan, HotelPlanPriceEnv>;
+
+export function priceIdForHotelPlan(plan: HotelPlan): string {
+  const env = HOTEL_PLAN_PRICE_ENV[plan];
+  const value = process.env[env];
+  if (!value) throw new Error(`Missing env var: ${env}`);
+  return value;
+}
+
+/** price id → hotel plan for every configured package price (unset envs are skipped). */
+export function priceToHotelPlanMap(): Record<string, HotelPlan> {
+  const out: Record<string, HotelPlan> = {};
+  for (const p of HOTEL_PLANS) {
+    const value = process.env[p.priceEnv];
+    if (value) out[value] = p.plan;
+  }
+  return out;
+}
+
+export function hotelPlanForPriceId(priceId: string): HotelPlan | null {
+  return priceToHotelPlanMap()[priceId] ?? null;
 }
 
 /** Stripe stores unix seconds; the DB stores timestamptz. */

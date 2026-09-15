@@ -2,7 +2,8 @@ import type Stripe from 'stripe';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database, Json } from '@aga/db/types';
 import { PLANS } from './plans';
-import { priceToTierMap } from './stripe';
+import { HOTEL_PLANS } from './hotel-plans';
+import { priceToHotelPlanMap, priceToTierMap } from './stripe';
 import {
   reconcileBilling,
   type FixAction,
@@ -11,8 +12,18 @@ import {
   type ReconcileResult,
   type StripeSubscriptionSnapshot,
 } from './billing-reconcile';
-import { periodEndFromSubscription, subscriptionToBillingState, type StripeEventLike } from './stripe-billing-events';
-import { applyBusinessBillingState, processStoredEvent, reindexBusinessPartners } from './business-billing-sync';
+import {
+  hotelSubscriptionToState,
+  periodEndFromSubscription,
+  subscriptionToBillingState,
+  type StripeEventLike,
+} from './stripe-billing-events';
+import {
+  applyBusinessBillingState,
+  applyHotelBillingState,
+  processStoredEvent,
+  reindexBusinessPartners,
+} from './business-billing-sync';
 
 type DB = SupabaseClient<Database>;
 
@@ -34,8 +45,8 @@ function snapshotSubscription(s: Stripe.Subscription): StripeSubscriptionSnapsho
   return {
     id: s.id,
     status: s.status,
-    customer: typeof s.customer === 'string' ? s.customer : s.customer?.id ?? null,
-    priceId: typeof price === 'string' ? price : price?.id ?? null,
+    customer: typeof s.customer === 'string' ? s.customer : (s.customer?.id ?? null),
+    priceId: typeof price === 'string' ? price : (price?.id ?? null),
     metadata: (s.metadata ?? {}) as Record<string, string>,
     currentPeriodEnd: (() => {
       const iso = periodEndFromSubscription(s as unknown as Record<string, unknown>);
@@ -45,21 +56,43 @@ function snapshotSubscription(s: Stripe.Subscription): StripeSubscriptionSnapsho
 }
 
 /** Loads everything the pure reconciler needs. Stripe lists auto-paginate. */
-export async function loadReconcileInput(admin: DB, stripe: Stripe, now = new Date()): Promise<ReconcileInput> {
+export async function loadReconcileInput(
+  admin: DB,
+  stripe: Stripe,
+  now = new Date(),
+): Promise<ReconcileInput> {
   const priceToTier = priceToTierMap();
+  const priceToHotelPlan = priceToHotelPlanMap();
 
   const subscriptions: StripeSubscriptionSnapshot[] = [];
   for await (const s of stripe.subscriptions.list({ status: 'all', limit: 100 })) {
     subscriptions.push(snapshotSubscription(s));
   }
 
-  const plans = PLANS.map((p) => ({ tier: p.tier, cents: p.cents, priceId: process.env[p.priceEnv] ?? null }));
+  const plans: ReconcileInput['plans'] = [
+    ...PLANS.map((p) => ({
+      label: `business:${p.tier}`,
+      cents: p.cents,
+      priceId: process.env[p.priceEnv] ?? null,
+    })),
+    ...HOTEL_PLANS.map((p) => ({
+      label: `hotel:${p.plan}`,
+      cents: p.cents,
+      priceId: process.env[p.priceEnv] ?? null,
+    })),
+  ];
   const prices: ReconcileInput['stripe']['prices'] = [];
   for (const plan of plans) {
     if (!plan.priceId) continue;
     try {
       const price = await stripe.prices.retrieve(plan.priceId);
-      prices.push({ id: price.id, unitAmount: price.unit_amount, currency: price.currency, active: price.active });
+      prices.push({
+        id: price.id,
+        unitAmount: price.unit_amount,
+        currency: price.currency,
+        active: price.active,
+        interval: price.recurring?.interval ?? null,
+      });
     } catch {
       /* missing price → reported as price_drift by the pure function */
     }
@@ -68,15 +101,25 @@ export async function loadReconcileInput(admin: DB, stripe: Stripe, now = new Da
   const since = Math.floor((now.getTime() - LOOKBACK_MS) / 1000);
   const until = Math.floor((now.getTime() - GRACE_MS) / 1000);
   const recentEventIds: string[] = [];
-  for await (const e of stripe.events.list({ types: [...RELEVANT_EVENT_TYPES], created: { gte: since, lte: until }, limit: 100 })) {
+  for await (const e of stripe.events.list({
+    types: [...RELEVANT_EVENT_TYPES],
+    created: { gte: since, lte: until },
+    limit: 100,
+  })) {
     recentEventIds.push(e.id);
   }
 
   const [businesses, hotels, partnerships, commissionEvents, webhookEvents] = await Promise.all([
     admin
       .from('businesses')
-      .select('id, name, stripe_customer_id, stripe_subscription_id, billing_status, subscription_tier, billing_exempt, verified, active, listed, billing_email'),
-    admin.from('hotels').select('id, name, stripe_subscription_id, billing_status'),
+      .select(
+        'id, name, stripe_customer_id, stripe_subscription_id, billing_status, subscription_tier, billing_exempt, verified, active, listed, billing_email',
+      ),
+    admin
+      .from('hotels')
+      .select(
+        'id, name, stripe_subscription_id, billing_status, plan, launch_offer_applied, launch_offer_claimed_at',
+      ),
     admin.from('partnerships').select('id, stripe_subscription_id, billing_status'),
     admin.from('commission_events').select('id, state, stripe_invoice_id').eq('state', 'invoiced'),
     admin
@@ -88,7 +131,11 @@ export async function loadReconcileInput(admin: DB, stripe: Stripe, now = new Da
     if (r.error) throw new Error(`reconcile: DB read failed: ${r.error.message}`);
   }
 
-  const invoiceIds = [...new Set((commissionEvents.data ?? []).map((c) => c.stripe_invoice_id).filter((x): x is string => !!x))];
+  const invoiceIds = [
+    ...new Set(
+      (commissionEvents.data ?? []).map((c) => c.stripe_invoice_id).filter((x): x is string => !!x),
+    ),
+  ];
   const invoices: ReconcileInput['stripe']['invoices'] = [];
   for (const id of invoiceIds) {
     try {
@@ -99,12 +146,17 @@ export async function loadReconcileInput(admin: DB, stripe: Stripe, now = new Da
     }
   }
 
-  const customerIds = [...new Set((businesses.data ?? []).map((b) => b.stripe_customer_id).filter((x): x is string => !!x))];
+  const customerIds = [
+    ...new Set(
+      (businesses.data ?? []).map((b) => b.stripe_customer_id).filter((x): x is string => !!x),
+    ),
+  ];
   const customers: ReconcileInput['stripe']['customers'] = [];
   for (const id of customerIds) {
     try {
       const c = await stripe.customers.retrieve(id);
-      if (!('deleted' in c && c.deleted)) customers.push({ id: c.id, email: (c as Stripe.Customer).email ?? null });
+      if (!('deleted' in c && c.deleted))
+        customers.push({ id: c.id, email: (c as Stripe.Customer).email ?? null });
     } catch {
       /* ignore */
     }
@@ -113,6 +165,7 @@ export async function loadReconcileInput(admin: DB, stripe: Stripe, now = new Da
   return {
     now: now.toISOString(),
     priceToTier,
+    priceToHotelPlan,
     plans,
     stripe: { subscriptions, prices, recentEventIds, invoices, customers },
     db: {
@@ -141,37 +194,70 @@ export async function applyFix(admin: DB, stripe: Stripe, fix: FixAction): Promi
         sub = await stripe.subscriptions.retrieve(b.stripe_subscription_id).catch(() => null);
       }
       if (!sub && b.stripe_customer_id) {
-        const list = await stripe.subscriptions.list({ customer: b.stripe_customer_id, status: 'all', limit: 10 });
-        sub = list.data.find((s) => s.status !== 'canceled' && s.status !== 'incomplete_expired') ?? null;
+        const list = await stripe.subscriptions.list({
+          customer: b.stripe_customer_id,
+          status: 'all',
+          limit: 10,
+        });
+        sub =
+          list.data.find((s) => s.status !== 'canceled' && s.status !== 'incomplete_expired') ??
+          null;
       }
       const state = sub
         ? subscriptionToBillingState(sub as unknown as Record<string, unknown>, priceToTier)
-        : { billing_status: 'canceled' as const, subscription_tier: 'free' as const, stripe_subscription_id: null, current_period_end: null };
+        : {
+            billing_status: 'canceled' as const,
+            subscription_tier: 'free' as const,
+            stripe_subscription_id: null,
+            current_period_end: null,
+          };
       await applyBusinessBillingState(admin, b.id, state);
       await reindexBusinessPartners(admin, b.id);
       return;
     }
     case 'sync_hotel': {
-      const { data: h } = await admin.from('hotels').select('id, stripe_subscription_id').eq('id', fix.hotelId).single();
+      const { data: h } = await admin
+        .from('hotels')
+        .select('id, stripe_subscription_id')
+        .eq('id', fix.hotelId)
+        .single();
       if (!h) return;
       const sub = h.stripe_subscription_id
         ? await stripe.subscriptions.retrieve(h.stripe_subscription_id).catch(() => null)
         : null;
-      const state = sub ? subscriptionToBillingState(sub as unknown as Record<string, unknown>, priceToTier) : null;
-      await admin
-        .from('hotels')
-        .update(
-          state
-            ? { billing_status: state.billing_status, stripe_subscription_id: state.stripe_subscription_id }
-            : { billing_status: 'canceled', stripe_subscription_id: null },
-        )
-        .eq('id', h.id);
+      await applyHotelBillingState(
+        admin,
+        h.id,
+        sub
+          ? hotelSubscriptionToState(
+              sub as unknown as Record<string, unknown>,
+              priceToHotelPlanMap(),
+            )
+          : {
+              billing_status: 'canceled',
+              stripe_subscription_id: null,
+              current_period_end: null,
+              plan: null,
+            },
+      );
+      return;
+    }
+    case 'release_launch_offer': {
+      await admin.rpc('release_launch_offer', { p_hotel_id: fix.hotelId });
       return;
     }
     case 'replay_event': {
-      const { data: row } = await admin.from('stripe_webhook_events').select('id, type, payload').eq('id', fix.eventId).single();
+      const { data: row } = await admin
+        .from('stripe_webhook_events')
+        .select('id, type, payload')
+        .eq('id', fix.eventId)
+        .single();
       if (!row) return;
-      await processStoredEvent(admin, { id: row.id, type: row.type, data: (row.payload as { data: { object: Record<string, unknown> } }).data });
+      await processStoredEvent(admin, {
+        id: row.id,
+        type: row.type,
+        data: (row.payload as { data: { object: Record<string, unknown> } }).data,
+      });
       return;
     }
     case 'ingest_event': {
@@ -184,7 +270,10 @@ export async function applyFix(admin: DB, stripe: Stripe, fix: FixAction): Promi
       return;
     }
     case 'mark_commission_paid': {
-      await admin.from('commission_events').update({ state: 'paid' }).eq('id', fix.commissionEventId);
+      await admin
+        .from('commission_events')
+        .update({ state: 'paid' })
+        .eq('id', fix.commissionEventId);
       return;
     }
   }
@@ -249,5 +338,13 @@ export async function runBillingReconciliation(
     .single();
   if (error) throw new Error(`reconcile: persisting run failed: ${error.message}`);
 
-  return { runId: run.id, ranAt, ok: final.ok, found: first.issues, remaining: final.issues, healed, summary: final.summary };
+  return {
+    runId: run.id,
+    ranAt,
+    ok: final.ok,
+    found: first.issues,
+    remaining: final.issues,
+    healed,
+    summary: final.summary,
+  };
 }

@@ -21,7 +21,13 @@ interface Props {
   currentTier: string;
 }
 
-export function PartnerBillingActions({ locale, subscribed, exempt, initialTier, currentTier }: Props) {
+export function PartnerBillingActions({
+  locale,
+  subscribed,
+  exempt,
+  initialTier,
+  currentTier,
+}: Props) {
   const router = useRouter();
   const [pending, start] = useTransition();
   const [tier, setTier] = useState<PaidTier>(initialTier ?? 'featured');
@@ -32,9 +38,15 @@ export function PartnerBillingActions({ locale, subscribed, exempt, initialTier,
   const describe = (error?: string) => {
     switch (error) {
       case 'already_active':
-        return t('You already have an active subscription — refreshing.', 'Έχετε ήδη ενεργή συνδρομή — ανανέωση.');
+        return t(
+          'You already have an active subscription — refreshing.',
+          'Έχετε ήδη ενεργή συνδρομή — ανανέωση.',
+        );
       case 'exempt':
-        return t('No payment is required for this listing.', 'Δεν απαιτείται πληρωμή για αυτή την καταχώριση.');
+        return t(
+          'No payment is required for this listing.',
+          'Δεν απαιτείται πληρωμή για αυτή την καταχώριση.',
+        );
       case 'no_business':
         return t('No business is linked to this account.', 'Δεν υπάρχει συνδεδεμένη επιχείρηση.');
       default:
@@ -56,7 +68,7 @@ export function PartnerBillingActions({ locale, subscribed, exempt, initialTier,
 
   if (exempt) {
     return (
-      <p className="text-sm text-muted-foreground">
+      <p className="text-muted-foreground text-sm">
         {t(
           'Your listing is billing-exempt: no subscription is needed.',
           'Η καταχώρισή σας είναι απαλλαγμένη: δεν χρειάζεται συνδρομή.',
@@ -69,7 +81,10 @@ export function PartnerBillingActions({ locale, subscribed, exempt, initialTier,
     return (
       <div className="flex flex-col items-start gap-2">
         <div className="flex flex-wrap gap-2">
-          <Button onClick={() => go(() => createPartnerPortalSession({ locale: loc }))} disabled={pending}>
+          <Button
+            onClick={() => go(() => createPartnerPortalSession({ locale: loc }))}
+            disabled={pending}
+          >
             {t('Manage subscription', 'Διαχείριση συνδρομής')}
           </Button>
           <Button
@@ -79,7 +94,11 @@ export function PartnerBillingActions({ locale, subscribed, exempt, initialTier,
               start(async () => {
                 setMessage(null);
                 const res = await syncMyBillingFromStripe({});
-                setMessage(res.ok ? t('Refreshed from Stripe.', 'Ανανεώθηκε από το Stripe.') : describe(res.error));
+                setMessage(
+                  res.ok
+                    ? t('Refreshed from Stripe.', 'Ανανεώθηκε από το Stripe.')
+                    : describe(res.error),
+                );
                 router.refresh();
               })
             }
@@ -87,20 +106,20 @@ export function PartnerBillingActions({ locale, subscribed, exempt, initialTier,
             {t('Refresh status', 'Ανανέωση κατάστασης')}
           </Button>
         </div>
-        <p className="text-xs text-muted-foreground">
+        <p className="text-muted-foreground text-xs">
           {t(
             'Change plan, update your card or cancel from the Stripe portal. Changes apply immediately.',
             'Αλλαγή πλάνου, κάρτας ή ακύρωση από το portal της Stripe. Οι αλλαγές ισχύουν άμεσα.',
           )}
         </p>
-        {message && <p className="text-xs text-muted-foreground">{message}</p>}
+        {message && <p className="text-muted-foreground text-xs">{message}</p>}
       </div>
     );
   }
 
   return (
     <div className="space-y-4">
-      <div className="grid gap-3 sm:grid-cols-3" role="radiogroup" aria-label={t('Plan', 'Πλάνο')}>
+      <div className="grid gap-3 sm:grid-cols-2" role="radiogroup" aria-label={t('Plan', 'Πλάνο')}>
         {PLANS.map((p) => {
           const selected = tier === p.tier;
           return (
@@ -112,18 +131,28 @@ export function PartnerBillingActions({ locale, subscribed, exempt, initialTier,
               onClick={() => setTier(p.tier)}
               className={cn(
                 'relative flex flex-col items-start gap-1 rounded-lg border p-4 text-left transition-colors',
-                selected ? 'border-primary bg-primary/5 ring-primary/20 ring-2' : 'border-input hover:bg-muted/50',
+                selected
+                  ? 'border-primary bg-primary/5 ring-primary/20 ring-2'
+                  : 'border-input hover:bg-muted/50',
               )}
             >
-              {selected && <Check className="absolute right-3 top-3 h-4 w-4 text-primary" aria-hidden />}
-              <span className="text-sm font-semibold">{locale === 'en' ? p.name.en : p.name.el}</span>
+              {selected && (
+                <Check className="text-primary absolute right-3 top-3 h-4 w-4" aria-hidden />
+              )}
+              <span className="text-sm font-semibold">
+                {locale === 'en' ? p.name.en : p.name.el}
+              </span>
               <span className="text-xl font-semibold">
                 {formatEuro(p.cents, locale)}
-                <span className="text-xs font-normal text-muted-foreground">/{t('month', 'μήνα')}</span>
+                <span className="text-muted-foreground text-xs font-normal">
+                  /{t('year', 'έτος')}
+                </span>
               </span>
-              <span className="text-xs text-muted-foreground">{locale === 'en' ? p.tagline.en : p.tagline.el}</span>
+              <span className="text-muted-foreground text-xs">
+                {locale === 'en' ? p.tagline.en : p.tagline.el}
+              </span>
               {currentTier === p.tier && (
-                <span className="mt-1 text-[11px] uppercase tracking-wide text-primary">
+                <span className="text-primary mt-1 text-[11px] uppercase tracking-wide">
                   {t('previous plan', 'προηγούμενο πλάνο')}
                 </span>
               )}
@@ -132,14 +161,23 @@ export function PartnerBillingActions({ locale, subscribed, exempt, initialTier,
         })}
       </div>
       <div className="flex flex-wrap items-center gap-3">
-        <Button size="lg" onClick={() => go(() => createPartnerCheckout({ tier, locale: loc }))} disabled={pending}>
-          {pending ? t('Opening Stripe…', 'Άνοιγμα Stripe…') : t('Complete payment', 'Ολοκλήρωση πληρωμής')}
+        <Button
+          size="lg"
+          onClick={() => go(() => createPartnerCheckout({ tier, locale: loc }))}
+          disabled={pending}
+        >
+          {pending
+            ? t('Opening Stripe…', 'Άνοιγμα Stripe…')
+            : t('Complete payment', 'Ολοκλήρωση πληρωμής')}
         </Button>
-        <p className="text-xs text-muted-foreground">
-          {t('Secure payment by Stripe. Monthly, cancel anytime.', 'Ασφαλής πληρωμή μέσω Stripe. Μηνιαία, ακύρωση όποτε θέλετε.')}
+        <p className="text-muted-foreground text-xs">
+          {t(
+            'Secure payment by Stripe. Billed yearly; cancel anytime and keep access until the period ends.',
+            'Ασφαλής πληρωμή μέσω Stripe. Ετήσια χρέωση· ακύρωση όποτε θέλετε με πρόσβαση έως τη λήξη.',
+          )}
         </p>
       </div>
-      {message && <p className="text-xs text-muted-foreground">{message}</p>}
+      {message && <p className="text-muted-foreground text-xs">{message}</p>}
     </div>
   );
 }

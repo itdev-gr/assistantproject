@@ -2,9 +2,12 @@ import { describe, expect, it } from 'vitest';
 import { reconcileBilling, WEBHOOK_GRACE_MS, type ReconcileInput } from './billing-reconcile';
 
 const NOW = '2026-09-10T03:00:00.000Z';
-const PRICES = { price_std: 'standard', price_feat: 'featured', price_exc: 'exclusive' } as const;
+const PRICES = { price_std: 'standard', price_feat: 'featured' } as const;
+const HOTEL_PRICES = { price_hotel_basic: 'basic', price_hotel_pro: 'professional' } as const;
 
-function business(over: Partial<ReconcileInput['db']['businesses'][number]> = {}): ReconcileInput['db']['businesses'][number] {
+function business(
+  over: Partial<ReconcileInput['db']['businesses'][number]> = {},
+): ReconcileInput['db']['businesses'][number] {
   return {
     id: 'b-1',
     name: 'Taverna',
@@ -21,7 +24,9 @@ function business(over: Partial<ReconcileInput['db']['businesses'][number]> = {}
   };
 }
 
-function sub(over: Partial<ReconcileInput['stripe']['subscriptions'][number]> = {}): ReconcileInput['stripe']['subscriptions'][number] {
+function sub(
+  over: Partial<ReconcileInput['stripe']['subscriptions'][number]> = {},
+): ReconcileInput['stripe']['subscriptions'][number] {
   return {
     id: 'sub_1',
     status: 'active',
@@ -33,33 +38,65 @@ function sub(over: Partial<ReconcileInput['stripe']['subscriptions'][number]> = 
   };
 }
 
-function input(over: {
-  businesses?: ReconcileInput['db']['businesses'];
-  hotels?: ReconcileInput['db']['hotels'];
-  partnerships?: ReconcileInput['db']['partnerships'];
-  commissionEvents?: ReconcileInput['db']['commissionEvents'];
-  webhookEvents?: ReconcileInput['db']['webhookEvents'];
-  subscriptions?: ReconcileInput['stripe']['subscriptions'];
-  prices?: ReconcileInput['stripe']['prices'];
-  recentEventIds?: string[];
-  invoices?: ReconcileInput['stripe']['invoices'];
-  customers?: ReconcileInput['stripe']['customers'];
-  plans?: ReconcileInput['plans'];
-} = {}): ReconcileInput {
+function hotel(
+  over: Partial<ReconcileInput['db']['hotels'][number]> = {},
+): ReconcileInput['db']['hotels'][number] {
+  return {
+    id: 'h-1',
+    name: 'Hotel',
+    stripe_subscription_id: 'sub_h',
+    billing_status: 'active',
+    plan: 'basic',
+    launch_offer_applied: false,
+    launch_offer_claimed_at: null,
+    ...over,
+  };
+}
+
+function input(
+  over: {
+    businesses?: ReconcileInput['db']['businesses'];
+    hotels?: ReconcileInput['db']['hotels'];
+    partnerships?: ReconcileInput['db']['partnerships'];
+    commissionEvents?: ReconcileInput['db']['commissionEvents'];
+    webhookEvents?: ReconcileInput['db']['webhookEvents'];
+    subscriptions?: ReconcileInput['stripe']['subscriptions'];
+    prices?: ReconcileInput['stripe']['prices'];
+    recentEventIds?: string[];
+    invoices?: ReconcileInput['stripe']['invoices'];
+    customers?: ReconcileInput['stripe']['customers'];
+    plans?: ReconcileInput['plans'];
+  } = {},
+): ReconcileInput {
   return {
     now: NOW,
     priceToTier: PRICES,
+    priceToHotelPlan: HOTEL_PRICES,
     plans: over.plans ?? [
-      { tier: 'standard', cents: 2900, priceId: 'price_std' },
-      { tier: 'featured', cents: 5900, priceId: 'price_feat' },
-      { tier: 'exclusive', cents: 9900, priceId: 'price_exc' },
+      { label: 'business:standard', cents: 14900, priceId: 'price_std' },
+      { label: 'business:featured', cents: 29900, priceId: 'price_feat' },
+      { label: 'hotel:basic', cents: 99000, priceId: 'price_hotel_basic' },
+      { label: 'hotel:professional', cents: 149000, priceId: 'price_hotel_pro' },
     ],
     stripe: {
       subscriptions: over.subscriptions ?? [sub()],
       prices: over.prices ?? [
-        { id: 'price_std', unitAmount: 2900, currency: 'eur', active: true },
-        { id: 'price_feat', unitAmount: 5900, currency: 'eur', active: true },
-        { id: 'price_exc', unitAmount: 9900, currency: 'eur', active: true },
+        { id: 'price_std', unitAmount: 14900, currency: 'eur', active: true, interval: 'year' },
+        { id: 'price_feat', unitAmount: 29900, currency: 'eur', active: true, interval: 'year' },
+        {
+          id: 'price_hotel_basic',
+          unitAmount: 99000,
+          currency: 'eur',
+          active: true,
+          interval: 'year',
+        },
+        {
+          id: 'price_hotel_pro',
+          unitAmount: 149000,
+          currency: 'eur',
+          active: true,
+          interval: 'year',
+        },
       ],
       recentEventIds: over.recentEventIds ?? [],
       invoices: over.invoices ?? [],
@@ -82,20 +119,28 @@ describe('reconcileBilling', () => {
     const r = reconcileBilling(input());
     expect(r.ok).toBe(true);
     expect(r.issues).toEqual([]);
-    expect(r.summary).toMatchObject({ businessesPaying: 1, businessesListed: 1, liveSubscriptionsInStripe: 1 });
+    expect(r.summary).toMatchObject({
+      businessesPaying: 1,
+      businessesListed: 1,
+      liveSubscriptionsInStripe: 1,
+    });
   });
 
   it('flags a status mismatch and offers a business sync', () => {
     const r = reconcileBilling(input({ subscriptions: [sub({ status: 'past_due' })] }));
     expect(kinds(r)).toEqual(['status_mismatch']);
-    expect(r.issues[0]).toMatchObject({ expected: 'past_due', actual: 'active', fix: { action: 'sync_business', businessId: 'b-1' } });
+    expect(r.issues[0]).toMatchObject({
+      expected: 'past_due',
+      actual: 'active',
+      fix: { action: 'sync_business', businessId: 'b-1' },
+    });
     expect(r.ok).toBe(false);
   });
 
   it('flags a tier mismatch when the Stripe price differs from the DB tier', () => {
-    const r = reconcileBilling(input({ subscriptions: [sub({ priceId: 'price_exc' })] }));
+    const r = reconcileBilling(input({ subscriptions: [sub({ priceId: 'price_std' })] }));
     expect(kinds(r)).toEqual(['tier_mismatch']);
-    expect(r.issues[0]).toMatchObject({ expected: 'exclusive', actual: 'featured' });
+    expect(r.issues[0]).toMatchObject({ expected: 'standard', actual: 'featured' });
   });
 
   it('flags a DB subscription id Stripe does not know', () => {
@@ -104,16 +149,26 @@ describe('reconcileBilling', () => {
   });
 
   it('flags an active business without any subscription id (unless exempt)', () => {
-    const r = reconcileBilling(input({ subscriptions: [], businesses: [business({ stripe_subscription_id: null })] }));
+    const r = reconcileBilling(
+      input({ subscriptions: [], businesses: [business({ stripe_subscription_id: null })] }),
+    );
     expect(kinds(r)).toEqual(['missing_subscription']);
-    const exempt = reconcileBilling(input({ subscriptions: [], businesses: [business({ stripe_subscription_id: null, billing_exempt: true })] }));
+    const exempt = reconcileBilling(
+      input({
+        subscriptions: [],
+        businesses: [business({ stripe_subscription_id: null, billing_exempt: true })],
+      }),
+    );
     expect(exempt.issues).toEqual([]);
   });
 
   it('flags a live Stripe subscription nobody in the DB references', () => {
     const r = reconcileBilling(
       input({
-        subscriptions: [sub(), sub({ id: 'sub_orphan', metadata: { kind: 'business_plan', businessId: 'b-1' } })],
+        subscriptions: [
+          sub(),
+          sub({ id: 'sub_orphan', metadata: { kind: 'business_plan', businessId: 'b-1' } }),
+        ],
       }),
     );
     expect(kinds(r)).toEqual(['orphan_subscription']);
@@ -121,13 +176,20 @@ describe('reconcileBilling', () => {
   });
 
   it('ignores ended Stripe subscriptions when looking for orphans', () => {
-    const r = reconcileBilling(input({ subscriptions: [sub(), sub({ id: 'sub_old', status: 'canceled' })] }));
+    const r = reconcileBilling(
+      input({ subscriptions: [sub(), sub({ id: 'sub_old', status: 'canceled' })] }),
+    );
     expect(r.issues).toEqual([]);
   });
 
   it('guards the listing gate itself', () => {
     const r = reconcileBilling(
-      input({ subscriptions: [sub({ status: 'unpaid' })], businesses: [business({ billing_status: 'canceled', stripe_subscription_id: null, listed: true })] }),
+      input({
+        subscriptions: [sub({ status: 'unpaid' })],
+        businesses: [
+          business({ billing_status: 'canceled', stripe_subscription_id: null, listed: true }),
+        ],
+      }),
     );
     expect(kinds(r)).toContain('unpaid_listed_business');
   });
@@ -138,10 +200,38 @@ describe('reconcileBilling', () => {
     const r = reconcileBilling(
       input({
         webhookEvents: [
-          { id: 'evt_stuck', type: 'invoice.paid', received_at: old, processed_at: null, error: null, attempts: 0 },
-          { id: 'evt_err', type: 'customer.subscription.updated', received_at: old, processed_at: null, error: 'boom', attempts: 2 },
-          { id: 'evt_fresh', type: 'invoice.paid', received_at: fresh, processed_at: null, error: null, attempts: 0 },
-          { id: 'evt_done', type: 'invoice.paid', received_at: old, processed_at: NOW, error: null, attempts: 0 },
+          {
+            id: 'evt_stuck',
+            type: 'invoice.paid',
+            received_at: old,
+            processed_at: null,
+            error: null,
+            attempts: 0,
+          },
+          {
+            id: 'evt_err',
+            type: 'customer.subscription.updated',
+            received_at: old,
+            processed_at: null,
+            error: 'boom',
+            attempts: 2,
+          },
+          {
+            id: 'evt_fresh',
+            type: 'invoice.paid',
+            received_at: fresh,
+            processed_at: null,
+            error: null,
+            attempts: 0,
+          },
+          {
+            id: 'evt_done',
+            type: 'invoice.paid',
+            received_at: old,
+            processed_at: NOW,
+            error: null,
+            attempts: 0,
+          },
         ],
       }),
     );
@@ -157,7 +247,16 @@ describe('reconcileBilling', () => {
     const r = reconcileBilling(
       input({
         recentEventIds: ['evt_a', 'evt_b'],
-        webhookEvents: [{ id: 'evt_a', type: 'invoice.paid', received_at: NOW, processed_at: NOW, error: null, attempts: 0 }],
+        webhookEvents: [
+          {
+            id: 'evt_a',
+            type: 'invoice.paid',
+            received_at: NOW,
+            processed_at: NOW,
+            error: null,
+            attempts: 0,
+          },
+        ],
       }),
     );
     expect(kinds(r)).toEqual(['webhook_missed']);
@@ -181,8 +280,15 @@ describe('reconcileBilling', () => {
         ],
       }),
     );
-    expect(kinds(r)).toEqual(['commission_state_stale', 'commission_state_stale', 'commission_invoice_lost']);
-    expect(r.issues[0]).toMatchObject({ severity: 'error', fix: { action: 'mark_commission_paid', commissionEventId: 'c-paid' } });
+    expect(kinds(r)).toEqual([
+      'commission_state_stale',
+      'commission_state_stale',
+      'commission_invoice_lost',
+    ]);
+    expect(r.issues[0]).toMatchObject({
+      severity: 'error',
+      fix: { action: 'mark_commission_paid', commissionEventId: 'c-paid' },
+    });
     expect(r.issues[1]).toMatchObject({ severity: 'warn', entity: { id: 'c-void' } });
   });
 
@@ -190,36 +296,123 @@ describe('reconcileBilling', () => {
     const r = reconcileBilling(
       input({
         plans: [
-          { tier: 'standard', cents: 2900, priceId: 'price_std' },
-          { tier: 'featured', cents: 5900, priceId: 'price_feat' },
-          { tier: 'exclusive', cents: 9900, priceId: null },
+          { label: 'business:standard', cents: 14900, priceId: 'price_std' },
+          { label: 'business:featured', cents: 29900, priceId: 'price_feat' },
+          { label: 'hotel:basic', cents: 99000, priceId: null },
+          { label: 'hotel:professional', cents: 149000, priceId: 'price_hotel_pro' },
         ],
         prices: [
-          { id: 'price_std', unitAmount: 3900, currency: 'eur', active: true },
-          { id: 'price_feat', unitAmount: 5900, currency: 'eur', active: false },
+          { id: 'price_std', unitAmount: 15900, currency: 'eur', active: true, interval: 'year' },
+          { id: 'price_feat', unitAmount: 29900, currency: 'eur', active: false, interval: 'year' },
+          {
+            id: 'price_hotel_pro',
+            unitAmount: 149000,
+            currency: 'eur',
+            active: true,
+            interval: 'month',
+          },
         ],
       }),
     );
-    expect(kinds(r)).toEqual(['price_drift', 'price_drift', 'price_drift']);
-    expect(r.issues[0]).toMatchObject({ expected: 2900, actual: 3900 });
+    expect(kinds(r)).toEqual(['price_drift', 'price_drift', 'price_drift', 'price_drift']);
+    expect(r.issues[0]).toMatchObject({ expected: 14900, actual: 15900 });
+    expect(r.issues[3]).toMatchObject({ expected: 'year', actual: 'month' });
   });
 
   it('reconciles hotels the same way', () => {
     const r = reconcileBilling(
       input({
-        subscriptions: [sub(), sub({ id: 'sub_h', metadata: { kind: 'hotel_plan', hotelId: 'h-1' }, status: 'past_due', priceId: 'price_hotel' })],
-        hotels: [{ id: 'h-1', name: 'Hotel', stripe_subscription_id: 'sub_h', billing_status: 'active' }],
+        subscriptions: [
+          sub(),
+          sub({
+            id: 'sub_h',
+            metadata: { kind: 'hotel_plan', hotelId: 'h-1' },
+            status: 'past_due',
+            priceId: 'price_hotel_basic',
+          }),
+        ],
+        hotels: [hotel()],
       }),
     );
     expect(kinds(r)).toEqual(['status_mismatch']);
     expect(r.issues[0]?.fix).toEqual({ action: 'sync_hotel', hotelId: 'h-1' });
   });
 
+  it('flags a hotel whose Stripe price maps to a different package', () => {
+    const r = reconcileBilling(
+      input({
+        subscriptions: [
+          sub(),
+          sub({
+            id: 'sub_h',
+            metadata: { kind: 'hotel_plan', hotelId: 'h-1' },
+            priceId: 'price_hotel_pro',
+          }),
+        ],
+        hotels: [hotel({ plan: 'basic' })],
+      }),
+    );
+    expect(kinds(r)).toEqual(['plan_mismatch']);
+    expect(r.issues[0]).toMatchObject({
+      expected: 'professional',
+      actual: 'basic',
+      fix: { action: 'sync_hotel', hotelId: 'h-1' },
+    });
+  });
+
+  it('warns about live subscriptions on prices we no longer sell', () => {
+    const r = reconcileBilling(
+      input({
+        subscriptions: [
+          sub(),
+          sub({
+            id: 'sub_h',
+            metadata: { kind: 'hotel_plan', hotelId: 'h-1' },
+            priceId: 'price_old_monthly',
+          }),
+        ],
+        hotels: [hotel()],
+      }),
+    );
+    expect(kinds(r)).toEqual(['legacy_price']);
+    expect(r.ok).toBe(true);
+  });
+
+  it('releases launch-offer slots that were claimed but never paid', () => {
+    const stale = new Date(Date.parse(NOW) - 5 * 24 * 60 * 60 * 1000).toISOString();
+    const fresh = new Date(Date.parse(NOW) - 60 * 60 * 1000).toISOString();
+    const r = reconcileBilling(
+      input({
+        hotels: [
+          hotel({
+            id: 'h-stale',
+            stripe_subscription_id: null,
+            billing_status: 'checkout_sent',
+            launch_offer_applied: true,
+            launch_offer_claimed_at: stale,
+          }),
+          hotel({
+            id: 'h-fresh',
+            stripe_subscription_id: null,
+            billing_status: 'checkout_sent',
+            launch_offer_applied: true,
+            launch_offer_claimed_at: fresh,
+          }),
+        ],
+      }),
+    );
+    expect(kinds(r)).toEqual(['launch_offer_stale']);
+    expect(r.issues[0]?.fix).toEqual({ action: 'release_launch_offer', hotelId: 'h-stale' });
+    expect(r.summary.launchOfferClaimed).toBe(2);
+  });
+
   it('warns about email drift and leftover partnership subscriptions', () => {
     const r = reconcileBilling(
       input({
         customers: [{ id: 'cus_1', email: 'other@example.com' }],
-        partnerships: [{ id: 'p-1', stripe_subscription_id: 'sub_legacy', billing_status: 'active' }],
+        partnerships: [
+          { id: 'p-1', stripe_subscription_id: 'sub_legacy', billing_status: 'active' },
+        ],
       }),
     );
     expect(kinds(r).sort()).toEqual(['customer_email_drift', 'legacy_partnership_subscription']);

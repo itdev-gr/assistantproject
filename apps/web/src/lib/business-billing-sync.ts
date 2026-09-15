@@ -5,9 +5,10 @@ import {
   tableForTarget,
   type BillingAction,
   type BusinessBillingState,
+  type HotelBillingState,
   type StripeEventLike,
 } from './stripe-billing-events';
-import { priceToTierMap } from './stripe';
+import { priceToHotelPlanMap, priceToTierMap } from './stripe';
 import { reindexHotelKnowledge } from './knowledge-indexer';
 
 type DB = SupabaseClient<Database>;
@@ -41,6 +42,20 @@ export async function applyBusinessBillingState(
   if (error) throw new Error(`businesses update failed: ${error.message}`);
 }
 
+/** Writes the derived subscription state onto a hotel row (package only when resolved). */
+export async function applyHotelBillingState(
+  admin: DB,
+  hotelId: string,
+  state: HotelBillingState,
+): Promise<void> {
+  const { plan, ...rest } = state;
+  const { error } = await admin
+    .from('hotels')
+    .update({ ...rest, ...(plan ? { plan } : {}) })
+    .eq('id', hotelId);
+  if (error) throw new Error(`hotels update failed: ${error.message}`);
+}
+
 /**
  * The assistant's knowledge index is rebuilt nightly; when a business stops
  * (or starts) being listed, refresh the hotels it is connected to right away
@@ -57,13 +72,20 @@ export async function reindexBusinessPartners(admin: DB, businessId: string): Pr
     try {
       await reindexHotelKnowledge(admin, hotelId);
     } catch (err) {
-      console.error('reindex after billing change failed', hotelId, err instanceof Error ? err.message : err);
+      console.error(
+        'reindex after billing change failed',
+        hotelId,
+        err instanceof Error ? err.message : err,
+      );
     }
   }
 }
 
 /** Business ids touched by a set of actions (for post-processing hooks). */
-export async function businessIdsForActions(admin: DB, actions: BillingAction[]): Promise<string[]> {
+export async function businessIdsForActions(
+  admin: DB,
+  actions: BillingAction[],
+): Promise<string[]> {
   const ids = new Set<string>();
   for (const a of actions) {
     if (a.target !== 'business') continue;
@@ -89,7 +111,7 @@ export async function processStoredEvent(
   admin: DB,
   event: StripeEventLike,
 ): Promise<{ ok: boolean; matched: number; businessIds: string[]; error?: string }> {
-  const actions = applyStripeEvent(event, priceToTierMap());
+  const actions = applyStripeEvent(event, priceToTierMap(), priceToHotelPlanMap());
   let matched = 0;
   const errors: string[] = [];
   for (const action of actions) {

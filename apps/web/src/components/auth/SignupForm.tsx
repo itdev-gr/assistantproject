@@ -218,8 +218,14 @@ export function SignupForm({ next, locale, categories, initialRole = 'user', ini
 
         {role === 'partner' && (
           <fieldset className="space-y-3">
-            <legend className="text-sm font-medium">{t('Choose your plan', 'Επιλέξτε πλάνο')} *</legend>
-            <div className="grid gap-2 sm:grid-cols-3" role="radiogroup" aria-label={t('Plan', 'Πλάνο')}>
+            <legend className="text-sm font-medium">
+              {t('Choose your plan', 'Επιλέξτε πλάνο')} *
+            </legend>
+            <div
+              className="grid gap-2 sm:grid-cols-2"
+              role="radiogroup"
+              aria-label={t('Plan', 'Πλάνο')}
+            >
               {PLANS.map((p) => {
                 const selected = plan === p.tier;
                 return (
@@ -231,26 +237,41 @@ export function SignupForm({ next, locale, categories, initialRole = 'user', ini
                     onClick={() => setPlan(p.tier)}
                     className={cn(
                       'relative flex flex-col items-start gap-0.5 rounded-lg border p-3 text-left transition-colors',
-                      selected ? 'border-primary bg-primary/5 ring-primary/20 ring-2' : 'border-input hover:bg-muted/50',
+                      selected
+                        ? 'border-primary bg-primary/5 ring-primary/20 ring-2'
+                        : 'border-input hover:bg-muted/50',
                       fieldErrors.plan && !plan && 'border-destructive',
                     )}
                   >
-                    {selected && <Check className="text-primary absolute right-2 top-2 h-4 w-4" aria-hidden />}
-                    <span className="text-sm font-semibold">{locale === 'en' ? p.name.en : p.name.el}</span>
+                    {selected && (
+                      <Check className="text-primary absolute right-2 top-2 h-4 w-4" aria-hidden />
+                    )}
+                    <span className="text-sm font-semibold">
+                      {locale === 'en' ? p.name.en : p.name.el}
+                    </span>
                     <span className="text-base font-semibold">
                       {formatEuro(p.cents, locale)}
-                      <span className="text-muted-foreground text-xs font-normal">/{t('month', 'μήνα')}</span>
+                      <span className="text-muted-foreground text-xs font-normal">
+                        /{t('year', 'έτος')}
+                      </span>
                     </span>
-                    <span className="text-muted-foreground text-xs">{locale === 'en' ? p.tagline.en : p.tagline.el}</span>
+                    <span className="text-muted-foreground text-xs">
+                      {locale === 'en' ? p.tagline.en : p.tagline.el}
+                    </span>
                   </button>
                 );
               })}
             </div>
             {fieldErrors.plan && !plan && (
-              <p className="text-destructive text-xs">{t('Choose a plan to continue.', 'Επιλέξτε πλάνο για να συνεχίσετε.')}</p>
+              <p className="text-destructive text-xs">
+                {t('Choose a plan to continue.', 'Επιλέξτε πλάνο για να συνεχίσετε.')}
+              </p>
             )}
             <p className="text-muted-foreground text-xs">
-              {t('You pay after signing in, through Stripe. Cancel anytime.', 'Πληρώνετε μετά τη σύνδεση, μέσω Stripe. Ακύρωση όποτε θέλετε.')}{' '}
+              {t(
+                'You pay after signing in, through Stripe. Billed yearly, cancel anytime.',
+                'Πληρώνετε μετά τη σύνδεση, μέσω Stripe. Ετήσια χρέωση, ακύρωση όποτε θέλετε.',
+              )}{' '}
               <Link href="/pricing" className="text-primary underline-offset-4 hover:underline">
                 {t('Compare plans', 'Σύγκριση πλάνων')}
               </Link>

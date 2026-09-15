@@ -2,18 +2,36 @@
 
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
-import { partnershipUpsertSchema } from '@aga/api-contracts';
+import { MAX_COMMISSION_PCT, partnershipUpsertSchema } from '@aga/api-contracts';
 import { createSupabaseServiceClient } from '@aga/db/service';
 import { requireSuperAdmin } from '@/lib/auth-context';
 
 const idSchema = z.object({ id: z.string().uuid() });
 
+/**
+ * Commission is capped at 10% for new values. Rows created before the cap may
+ * sit above it; toggling such a row (active / tier) resubmits the stored
+ * commission unchanged, which is allowed — lowering is the only edit permitted.
+ */
+const legacySchema = partnershipUpsertSchema.extend({ commissionPct: z.number().min(0).max(100) });
+
 export async function upsertPartnership(raw: unknown) {
   await requireSuperAdmin();
-  const parsed = partnershipUpsertSchema.safeParse(raw);
+  const admin = createSupabaseServiceClient();
+  let parsed = partnershipUpsertSchema.safeParse(raw);
+  if (!parsed.success) {
+    const legacy = legacySchema.safeParse(raw);
+    if (legacy.success && legacy.data.id && legacy.data.commissionPct > MAX_COMMISSION_PCT) {
+      const { data: stored } = await admin
+        .from('partnerships')
+        .select('commission_pct')
+        .eq('id', legacy.data.id)
+        .maybeSingle();
+      if (stored && Number(stored.commission_pct) === legacy.data.commissionPct) parsed = legacy;
+    }
+  }
   if (!parsed.success) return { ok: false as const, error: parsed.error.message };
   const p = parsed.data;
-  const admin = createSupabaseServiceClient();
 
   const row = {
     hotel_id: p.hotelId,

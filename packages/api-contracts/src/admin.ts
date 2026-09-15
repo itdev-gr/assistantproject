@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { slugSchema, subscriptionTierSchema, uuidSchema } from './common';
+import { MAX_COMMISSION_PCT, slugSchema, subscriptionTierSchema, uuidSchema } from './common';
 
 /** A value that's either a real URL, or empty/null (treated as not provided). */
 const optionalUrl = z.preprocess(
@@ -7,10 +7,7 @@ const optionalUrl = z.preprocess(
   z.string().url().nullable(),
 );
 
-const optionalText = z.preprocess(
-  (v) => (v === '' || v == null ? null : v),
-  z.string().nullable(),
-);
+const optionalText = z.preprocess((v) => (v === '' || v == null ? null : v), z.string().nullable());
 
 const optionalEmail = z.preprocess(
   (v) => (v === '' || v == null ? null : v),
@@ -21,7 +18,10 @@ const optionalEmail = z.preprocess(
 const tagsField = z.preprocess(
   (v) =>
     typeof v === 'string'
-      ? v.split(',').map((s) => s.trim()).filter(Boolean)
+      ? v
+          .split(',')
+          .map((s) => s.trim())
+          .filter(Boolean)
       : v,
   z.array(z.string()).default([]),
 );
@@ -74,7 +74,7 @@ export const partnershipUpsertSchema = z.object({
   id: uuidSchema.optional(),
   hotelId: uuidSchema,
   businessId: uuidSchema,
-  commissionPct: z.number().min(0).max(100),
+  commissionPct: z.number().min(0).max(MAX_COMMISSION_PCT),
   paidPriorityScore: z.number().int().min(0).max(100),
   subscriptionTier: subscriptionTierSchema,
   contractStarts: z.string().date().nullable(),

@@ -17,8 +17,8 @@ export function OwnerCta({ locale }: Props) {
           </h2>
           <p className="text-muted-foreground mt-2 text-sm leading-relaxed sm:text-base">
             {t(
-              'List it in the directory for free. Partner hotels recommend it to their guests through the assistant — and every referral brings customers to your door.',
-              'Καταχωρήστε τη δωρεάν στον κατάλογο. Τα συνεργαζόμενα ξενοδοχεία την προτείνουν στους επισκέπτες τους μέσω του βοηθού — και κάθε σύσταση φέρνει πελάτες στην πόρτα σας.',
+              'Join the network from 149 € a year. Partner hotels recommend you to their guests through the assistant — and every referral brings customers to your door.',
+              'Μπείτε στο δίκτυο από 149 € τον χρόνο. Τα συνεργαζόμενα ξενοδοχεία σας προτείνουν στους επισκέπτες τους μέσω του βοηθού — και κάθε σύσταση φέρνει πελάτες στην πόρτα σας.',
             )}
           </p>
         </div>

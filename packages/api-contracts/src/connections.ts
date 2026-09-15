@@ -1,12 +1,17 @@
 import { z } from 'zod';
-import { uuidSchema } from './common';
+import { MAX_COMMISSION_PCT, uuidSchema } from './common';
 
 /**
  * Partnership connection requests (hotel ⇄ business). Field limits mirror the
  * CHECK constraints in migration 0015.
  */
 
-export const connectionRequestStatusSchema = z.enum(['pending', 'accepted', 'declined', 'cancelled']);
+export const connectionRequestStatusSchema = z.enum([
+  'pending',
+  'accepted',
+  'declined',
+  'cancelled',
+]);
 export type ConnectionRequestStatus = z.infer<typeof connectionRequestStatusSchema>;
 
 export const connectionInitiatorSchema = z.enum(['hotel', 'business']);
@@ -20,7 +25,7 @@ const optionalTrimmed = (max: number) =>
 
 const optionalPct = z.preprocess(
   (v) => (v === '' || v === null ? undefined : typeof v === 'string' ? Number(v) : v),
-  z.number().min(0).max(100).optional(),
+  z.number().min(0).max(MAX_COMMISSION_PCT).optional(),
 );
 
 /** Optional extras the sender may attach to a request. */

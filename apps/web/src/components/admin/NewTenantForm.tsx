@@ -5,13 +5,15 @@ import { useRouter } from '@/i18n/routing';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { hotelProfileSchema, subscriptionTierSchema } from '@aga/api-contracts';
+import { hotelPlanSchema, hotelProfileSchema } from '@aga/api-contracts';
+import { HOTEL_PLANS } from '@/lib/hotel-plans';
+import { formatEuro } from '@/lib/plans';
 import { Button, Input, Label, Card, CardContent } from '@aga/ui';
 import { createTenant } from '@/app/actions/admin-tenants';
 
 const formSchema = hotelProfileSchema.extend({
   ownerEmail: z.string().email(),
-  subscriptionTier: subscriptionTierSchema,
+  plan: hotelPlanSchema,
 });
 type FormValues = z.infer<typeof formSchema>;
 
@@ -37,7 +39,7 @@ export function NewTenantForm({ locale }: Props) {
       lng: null,
       brand: { logoUrl: null, primaryColor: null },
       ownerEmail: '',
-      subscriptionTier: 'standard',
+      plan: 'basic',
     },
   });
 
@@ -67,25 +69,31 @@ export function NewTenantForm({ locale }: Props) {
               <Input id="timezone" {...register('timezone')} />
             </Field>
             <Field
-              id="subscriptionTier"
-              label={locale === 'en' ? 'Subscription tier' : 'Επίπεδο συνδρομής'}
-              error={errors.subscriptionTier?.message}
+              id="plan"
+              label={locale === 'en' ? 'Package' : 'Πακέτο'}
+              error={errors.plan?.message}
             >
               <select
-                id="subscriptionTier"
-                {...register('subscriptionTier')}
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                id="plan"
+                {...register('plan')}
+                className="border-input bg-background flex h-10 w-full rounded-md border px-3 py-2 text-sm"
               >
-                <option value="free">free</option>
-                <option value="standard">standard</option>
-                <option value="featured">featured</option>
-                <option value="exclusive">exclusive</option>
+                {HOTEL_PLANS.map((p) => (
+                  <option key={p.plan} value={p.plan}>
+                    {(locale === 'en' ? p.name.en : p.name.el) +
+                      ' · ' +
+                      formatEuro(p.cents, locale) +
+                      (locale === 'en' ? '/year' : '/έτος')}
+                  </option>
+                ))}
               </select>
             </Field>
           </div>
           <Field
             id="ownerEmail"
-            label={locale === 'en' ? 'Owner email (will be invited)' : 'Email ιδιοκτήτη (θα προσκληθεί)'}
+            label={
+              locale === 'en' ? 'Owner email (will be invited)' : 'Email ιδιοκτήτη (θα προσκληθεί)'
+            }
             error={errors.ownerEmail?.message}
           >
             <Input id="ownerEmail" type="email" {...register('ownerEmail')} />
@@ -105,7 +113,7 @@ export function NewTenantForm({ locale }: Props) {
         <Button type="button" variant="ghost" onClick={() => router.push('/admin')}>
           {locale === 'en' ? 'Cancel' : 'Ακύρωση'}
         </Button>
-        {error && <span className="text-sm text-destructive">{error}</span>}
+        {error && <span className="text-destructive text-sm">{error}</span>}
       </div>
     </form>
   );
@@ -126,7 +134,7 @@ function Field({
     <div className="space-y-1.5">
       <Label htmlFor={id}>{label}</Label>
       {children}
-      {error && <p className="text-xs text-destructive">{error}</p>}
+      {error && <p className="text-destructive text-xs">{error}</p>}
     </div>
   );
 }

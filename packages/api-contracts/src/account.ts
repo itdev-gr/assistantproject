@@ -9,7 +9,7 @@ export const partnerStatusSchema = z.enum(['pending', 'approved', 'rejected']);
 export type PartnerStatus = z.infer<typeof partnerStatusSchema>;
 
 /** Paid plans a partner can pick at signup (see apps/web/src/lib/plans.ts). */
-export const paidTierSchema = z.enum(['standard', 'featured', 'exclusive']);
+export const paidTierSchema = z.enum(['standard', 'featured']);
 export type PaidTier = z.infer<typeof paidTierSchema>;
 
 const trimmed = (min: number, max: number) => z.string().trim().min(min).max(max);
