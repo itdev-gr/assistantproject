@@ -113,6 +113,36 @@ export type Database = {
           },
         ]
       }
+      billing_reconciliation_runs: {
+        Row: {
+          healed_count: number
+          id: string
+          issue_count: number
+          issues: Json
+          ok: boolean
+          ran_at: string
+          summary: Json
+        }
+        Insert: {
+          healed_count?: number
+          id?: string
+          issue_count?: number
+          issues?: Json
+          ok: boolean
+          ran_at?: string
+          summary?: Json
+        }
+        Update: {
+          healed_count?: number
+          id?: string
+          issue_count?: number
+          issues?: Json
+          ok?: boolean
+          ran_at?: string
+          summary?: Json
+        }
+        Relationships: []
+      }
       bookings: {
         Row: {
           confirmation_source:
@@ -245,53 +275,47 @@ export type Database = {
           },
         ]
       }
-      billing_reconciliation_runs: {
+      business_owners: {
         Row: {
-          healed_count: number
-          id: string
-          issue_count: number
-          issues: Json
-          ok: boolean
-          ran_at: string
-          summary: Json
+          auth_user_id: string
+          business_id: string
+          created_at: string
         }
         Insert: {
-          healed_count?: number
-          id?: string
-          issue_count?: number
-          issues?: Json
-          ok: boolean
-          ran_at?: string
-          summary?: Json
+          auth_user_id: string
+          business_id: string
+          created_at?: string
         }
         Update: {
-          healed_count?: number
-          id?: string
-          issue_count?: number
-          issues?: Json
-          ok?: boolean
-          ran_at?: string
-          summary?: Json
+          auth_user_id?: string
+          business_id?: string
+          created_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "business_owners_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       businesses: {
         Row: {
           active: boolean
           address: string
+          billing_email: string | null
           billing_exempt: boolean
           billing_status: Database["public"]["Enums"]["billing_status"]
-          current_period_end: string | null
-          listed: boolean
-          stripe_subscription_id: string | null
-          subscription_tier: Database["public"]["Enums"]["subscription_tier"]
-          billing_email: string | null
           category_id: string
           created_at: string
+          current_period_end: string | null
           description_i18n: Json
           id: string
           images: Json
           lat: number
+          listed: boolean | null
           lng: number
           name: string
           opening_hours_json: Json
@@ -299,6 +323,8 @@ export type Database = {
           price_band: number | null
           search_tsv: unknown
           stripe_customer_id: string | null
+          stripe_subscription_id: string | null
+          subscription_tier: Database["public"]["Enums"]["subscription_tier"]
           tags: string[]
           updated_at: string
           verified: boolean
@@ -307,20 +333,19 @@ export type Database = {
           whatsapp: string | null
         }
         Insert: {
-          billing_exempt?: boolean
-          billing_status?: Database["public"]["Enums"]["billing_status"]
-          current_period_end?: string | null
-          stripe_subscription_id?: string | null
-          subscription_tier?: Database["public"]["Enums"]["subscription_tier"]
           active?: boolean
           address: string
           billing_email?: string | null
+          billing_exempt?: boolean
+          billing_status?: Database["public"]["Enums"]["billing_status"]
           category_id: string
           created_at?: string
+          current_period_end?: string | null
           description_i18n?: Json
           id?: string
           images?: Json
           lat: number
+          listed?: boolean | null
           lng: number
           name: string
           opening_hours_json?: Json
@@ -328,6 +353,8 @@ export type Database = {
           price_band?: number | null
           search_tsv?: unknown
           stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          subscription_tier?: Database["public"]["Enums"]["subscription_tier"]
           tags?: string[]
           updated_at?: string
           verified?: boolean
@@ -336,20 +363,19 @@ export type Database = {
           whatsapp?: string | null
         }
         Update: {
-          billing_exempt?: boolean
-          billing_status?: Database["public"]["Enums"]["billing_status"]
-          current_period_end?: string | null
-          stripe_subscription_id?: string | null
-          subscription_tier?: Database["public"]["Enums"]["subscription_tier"]
           active?: boolean
           address?: string
           billing_email?: string | null
+          billing_exempt?: boolean
+          billing_status?: Database["public"]["Enums"]["billing_status"]
           category_id?: string
           created_at?: string
+          current_period_end?: string | null
           description_i18n?: Json
           id?: string
           images?: Json
           lat?: number
+          listed?: boolean | null
           lng?: number
           name?: string
           opening_hours_json?: Json
@@ -357,6 +383,8 @@ export type Database = {
           price_band?: number | null
           search_tsv?: unknown
           stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          subscription_tier?: Database["public"]["Enums"]["subscription_tier"]
           tags?: string[]
           updated_at?: string
           verified?: boolean
@@ -675,20 +703,20 @@ export type Database = {
           billing_status: Database["public"]["Enums"]["billing_status"]
           brand_json: Json
           created_at: string
+          current_period_end: string | null
           default_locale: string
           id: string
           lat: number | null
+          launch_offer_applied: boolean
+          launch_offer_claimed_at: string | null
+          launch_offer_rank: number | null
           lng: number | null
           name: string
+          plan: Database["public"]["Enums"]["hotel_plan"]
           slug: string
           stripe_customer_id: string | null
           stripe_subscription_id: string | null
           subscription_tier: Database["public"]["Enums"]["subscription_tier"]
-          plan: Database["public"]["Enums"]["hotel_plan"]
-          current_period_end: string | null
-          launch_offer_applied: boolean
-          launch_offer_rank: number | null
-          launch_offer_claimed_at: string | null
           timezone: string
           updated_at: string
         }
@@ -697,20 +725,20 @@ export type Database = {
           billing_status?: Database["public"]["Enums"]["billing_status"]
           brand_json?: Json
           created_at?: string
+          current_period_end?: string | null
           default_locale?: string
           id?: string
           lat?: number | null
+          launch_offer_applied?: boolean
+          launch_offer_claimed_at?: string | null
+          launch_offer_rank?: number | null
           lng?: number | null
           name: string
+          plan?: Database["public"]["Enums"]["hotel_plan"]
           slug: string
           stripe_customer_id?: string | null
           stripe_subscription_id?: string | null
           subscription_tier?: Database["public"]["Enums"]["subscription_tier"]
-          plan?: Database["public"]["Enums"]["hotel_plan"]
-          current_period_end?: string | null
-          launch_offer_applied?: boolean
-          launch_offer_rank?: number | null
-          launch_offer_claimed_at?: string | null
           timezone?: string
           updated_at?: string
         }
@@ -719,20 +747,20 @@ export type Database = {
           billing_status?: Database["public"]["Enums"]["billing_status"]
           brand_json?: Json
           created_at?: string
+          current_period_end?: string | null
           default_locale?: string
           id?: string
           lat?: number | null
+          launch_offer_applied?: boolean
+          launch_offer_claimed_at?: string | null
+          launch_offer_rank?: number | null
           lng?: number | null
           name?: string
+          plan?: Database["public"]["Enums"]["hotel_plan"]
           slug?: string
           stripe_customer_id?: string | null
           stripe_subscription_id?: string | null
           subscription_tier?: Database["public"]["Enums"]["subscription_tier"]
-          plan?: Database["public"]["Enums"]["hotel_plan"]
-          current_period_end?: string | null
-          launch_offer_applied?: boolean
-          launch_offer_rank?: number | null
-          launch_offer_claimed_at?: string | null
           timezone?: string
           updated_at?: string
         }
@@ -917,6 +945,167 @@ export type Database = {
           },
         ]
       }
+      partner_applications: {
+        Row: {
+          address: string
+          business_id: string | null
+          business_name: string
+          category_id: string | null
+          created_at: string
+          description: string | null
+          email: string
+          id: string
+          locale: string
+          phone: string
+          rejection_reason: string | null
+          requested_tier:
+            | Database["public"]["Enums"]["subscription_tier"]
+            | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: Database["public"]["Enums"]["partner_status"]
+          user_id: string
+        }
+        Insert: {
+          address?: string
+          business_id?: string | null
+          business_name: string
+          category_id?: string | null
+          created_at?: string
+          description?: string | null
+          email?: string
+          id?: string
+          locale?: string
+          phone?: string
+          rejection_reason?: string | null
+          requested_tier?:
+            | Database["public"]["Enums"]["subscription_tier"]
+            | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: Database["public"]["Enums"]["partner_status"]
+          user_id: string
+        }
+        Update: {
+          address?: string
+          business_id?: string | null
+          business_name?: string
+          category_id?: string | null
+          created_at?: string
+          description?: string | null
+          email?: string
+          id?: string
+          locale?: string
+          phone?: string
+          rejection_reason?: string | null
+          requested_tier?:
+            | Database["public"]["Enums"]["subscription_tier"]
+            | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: Database["public"]["Enums"]["partner_status"]
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "partner_applications_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "partner_applications_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "business_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      partnership_requests: {
+        Row: {
+          business_id: string
+          created_at: string
+          decided_at: string | null
+          decided_by: string | null
+          decline_reason: string | null
+          guest_offer: string | null
+          hotel_id: string
+          id: string
+          initiated_by: Database["public"]["Enums"]["connection_initiator"]
+          message: string
+          partnership_id: string | null
+          proposed_commission_pct: number | null
+          requested_by: string | null
+          status: Database["public"]["Enums"]["connection_request_status"]
+          updated_at: string
+        }
+        Insert: {
+          business_id: string
+          created_at?: string
+          decided_at?: string | null
+          decided_by?: string | null
+          decline_reason?: string | null
+          guest_offer?: string | null
+          hotel_id: string
+          id?: string
+          initiated_by: Database["public"]["Enums"]["connection_initiator"]
+          message: string
+          partnership_id?: string | null
+          proposed_commission_pct?: number | null
+          requested_by?: string | null
+          status?: Database["public"]["Enums"]["connection_request_status"]
+          updated_at?: string
+        }
+        Update: {
+          business_id?: string
+          created_at?: string
+          decided_at?: string | null
+          decided_by?: string | null
+          decline_reason?: string | null
+          guest_offer?: string | null
+          hotel_id?: string
+          id?: string
+          initiated_by?: Database["public"]["Enums"]["connection_initiator"]
+          message?: string
+          partnership_id?: string | null
+          proposed_commission_pct?: number | null
+          requested_by?: string | null
+          status?: Database["public"]["Enums"]["connection_request_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "partnership_requests_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "partnership_requests_hotel_id_fkey"
+            columns: ["hotel_id"]
+            isOneToOne: false
+            referencedRelation: "hotels"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "partnership_requests_hotel_id_fkey"
+            columns: ["hotel_id"]
+            isOneToOne: false
+            referencedRelation: "public_hotels"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "partnership_requests_partnership_id_fkey"
+            columns: ["partnership_id"]
+            isOneToOne: false
+            referencedRelation: "partnerships"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       partnerships: {
         Row: {
           active: boolean
@@ -1038,6 +1227,39 @@ export type Database = {
           },
         ]
       }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          display_name: string | null
+          id: string
+          locale: string
+          partner_status: Database["public"]["Enums"]["partner_status"] | null
+          role: Database["public"]["Enums"]["account_role"]
+          updated_at: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          display_name?: string | null
+          id: string
+          locale?: string
+          partner_status?: Database["public"]["Enums"]["partner_status"] | null
+          role?: Database["public"]["Enums"]["account_role"]
+          updated_at?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          locale?: string
+          partner_status?: Database["public"]["Enums"]["partner_status"] | null
+          role?: Database["public"]["Enums"]["account_role"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
       rate_limit_events: {
         Row: {
           created_at: string
@@ -1046,12 +1268,12 @@ export type Database = {
         }
         Insert: {
           created_at?: string
-          id?: number
+          id?: never
           key: string
         }
         Update: {
           created_at?: string
-          id?: number
+          id?: never
           key?: string
         }
         Relationships: []
@@ -1229,8 +1451,8 @@ export type Database = {
         Row: {
           attempts: number
           error: string | null
-          last_error_at: string | null
           id: string
+          last_error_at: string | null
           payload: Json
           processed_at: string | null
           received_at: string
@@ -1239,8 +1461,8 @@ export type Database = {
         Insert: {
           attempts?: number
           error?: string | null
-          last_error_at?: string | null
           id: string
+          last_error_at?: string | null
           payload: Json
           processed_at?: string | null
           received_at?: string
@@ -1249,8 +1471,8 @@ export type Database = {
         Update: {
           attempts?: number
           error?: string | null
-          last_error_at?: string | null
           id?: string
+          last_error_at?: string | null
           payload?: Json
           processed_at?: string | null
           received_at?: string
@@ -1273,220 +1495,6 @@ export type Database = {
           auth_user_id?: string
           created_at?: string
           email?: string
-        }
-        Relationships: []
-      }
-      business_owners: {
-        Row: {
-          auth_user_id: string
-          business_id: string
-          created_at: string
-        }
-        Insert: {
-          auth_user_id: string
-          business_id: string
-          created_at?: string
-        }
-        Update: {
-          auth_user_id?: string
-          business_id?: string
-          created_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "business_owners_business_id_fkey"
-            columns: ["business_id"]
-            isOneToOne: false
-            referencedRelation: "businesses"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      partner_applications: {
-        Row: {
-          address: string
-          business_id: string | null
-          business_name: string
-          category_id: string | null
-          created_at: string
-          description: string | null
-          email: string
-          id: string
-          locale: string
-          phone: string
-          requested_tier: Database["public"]["Enums"]["subscription_tier"] | null
-          rejection_reason: string | null
-          reviewed_at: string | null
-          reviewed_by: string | null
-          status: Database["public"]["Enums"]["partner_status"]
-          user_id: string
-        }
-        Insert: {
-          requested_tier?: Database["public"]["Enums"]["subscription_tier"] | null
-          address?: string
-          business_id?: string | null
-          business_name: string
-          category_id?: string | null
-          created_at?: string
-          description?: string | null
-          email?: string
-          id?: string
-          locale?: string
-          phone?: string
-          rejection_reason?: string | null
-          reviewed_at?: string | null
-          reviewed_by?: string | null
-          status?: Database["public"]["Enums"]["partner_status"]
-          user_id: string
-        }
-        Update: {
-          requested_tier?: Database["public"]["Enums"]["subscription_tier"] | null
-          address?: string
-          business_id?: string | null
-          business_name?: string
-          category_id?: string | null
-          created_at?: string
-          description?: string | null
-          email?: string
-          id?: string
-          locale?: string
-          phone?: string
-          rejection_reason?: string | null
-          reviewed_at?: string | null
-          reviewed_by?: string | null
-          status?: Database["public"]["Enums"]["partner_status"]
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "partner_applications_business_id_fkey"
-            columns: ["business_id"]
-            isOneToOne: false
-            referencedRelation: "businesses"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "partner_applications_category_id_fkey"
-            columns: ["category_id"]
-            isOneToOne: false
-            referencedRelation: "business_categories"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      partnership_requests: {
-        Row: {
-          business_id: string
-          created_at: string
-          decided_at: string | null
-          decided_by: string | null
-          decline_reason: string | null
-          guest_offer: string | null
-          hotel_id: string
-          id: string
-          initiated_by: Database["public"]["Enums"]["connection_initiator"]
-          message: string
-          partnership_id: string | null
-          proposed_commission_pct: number | null
-          requested_by: string | null
-          status: Database["public"]["Enums"]["connection_request_status"]
-          updated_at: string
-        }
-        Insert: {
-          business_id: string
-          created_at?: string
-          decided_at?: string | null
-          decided_by?: string | null
-          decline_reason?: string | null
-          guest_offer?: string | null
-          hotel_id: string
-          id?: string
-          initiated_by: Database["public"]["Enums"]["connection_initiator"]
-          message: string
-          partnership_id?: string | null
-          proposed_commission_pct?: number | null
-          requested_by?: string | null
-          status?: Database["public"]["Enums"]["connection_request_status"]
-          updated_at?: string
-        }
-        Update: {
-          business_id?: string
-          created_at?: string
-          decided_at?: string | null
-          decided_by?: string | null
-          decline_reason?: string | null
-          guest_offer?: string | null
-          hotel_id?: string
-          id?: string
-          initiated_by?: Database["public"]["Enums"]["connection_initiator"]
-          message?: string
-          partnership_id?: string | null
-          proposed_commission_pct?: number | null
-          requested_by?: string | null
-          status?: Database["public"]["Enums"]["connection_request_status"]
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "partnership_requests_business_id_fkey"
-            columns: ["business_id"]
-            isOneToOne: false
-            referencedRelation: "businesses"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "partnership_requests_hotel_id_fkey"
-            columns: ["hotel_id"]
-            isOneToOne: false
-            referencedRelation: "hotels"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "partnership_requests_hotel_id_fkey"
-            columns: ["hotel_id"]
-            isOneToOne: false
-            referencedRelation: "public_hotels"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "partnership_requests_partnership_id_fkey"
-            columns: ["partnership_id"]
-            isOneToOne: false
-            referencedRelation: "partnerships"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      profiles: {
-        Row: {
-          avatar_url: string | null
-          created_at: string
-          display_name: string | null
-          id: string
-          locale: string
-          partner_status: Database["public"]["Enums"]["partner_status"] | null
-          role: Database["public"]["Enums"]["account_role"]
-          updated_at: string
-        }
-        Insert: {
-          avatar_url?: string | null
-          created_at?: string
-          display_name?: string | null
-          id: string
-          locale?: string
-          partner_status?: Database["public"]["Enums"]["partner_status"] | null
-          role?: Database["public"]["Enums"]["account_role"]
-          updated_at?: string
-        }
-        Update: {
-          avatar_url?: string | null
-          created_at?: string
-          display_name?: string | null
-          id?: string
-          locale?: string
-          partner_status?: Database["public"]["Enums"]["partner_status"] | null
-          role?: Database["public"]["Enums"]["account_role"]
-          updated_at?: string
         }
         Relationships: []
       }
@@ -1602,53 +1610,102 @@ export type Database = {
       }
     }
     Functions: {
-      current_hotel_ids: { Args: never; Returns: string[] }
-      custom_access_token_hook: { Args: { event: Json }; Returns: Json }
-      earth: { Args: never; Returns: number }
-      is_hotel_member: { Args: { h: string }; Returns: boolean }
-      is_hotel_owner: { Args: { h: string }; Returns: boolean }
-      is_approved_partner: { Args: never; Returns: boolean }
-      is_business_owner: { Args: { b: string }; Returns: boolean }
-      is_super_admin: { Args: never; Returns: boolean }
-      record_recent_view: { Args: { p_business_id: string }; Returns: undefined }
-      create_partnership_request: {
+      _lock_partnership_request_for_decision: {
+        Args: { p_id: string }
+        Returns: {
+          business_id: string
+          created_at: string
+          decided_at: string | null
+          decided_by: string | null
+          decline_reason: string | null
+          guest_offer: string | null
+          hotel_id: string
+          id: string
+          initiated_by: Database["public"]["Enums"]["connection_initiator"]
+          message: string
+          partnership_id: string | null
+          proposed_commission_pct: number | null
+          requested_by: string | null
+          status: Database["public"]["Enums"]["connection_request_status"]
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "partnership_requests"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      accept_partnership_request: { Args: { p_id: string }; Returns: string }
+      cancel_partnership_request: { Args: { p_id: string }; Returns: undefined }
+      claim_launch_offer: { Args: { p_hotel_id: string }; Returns: number }
+      create_partner_listing: {
         Args: {
-          p_hotel_id: string
-          p_business_id: string
-          p_initiated_by: Database["public"]["Enums"]["connection_initiator"]
-          p_message: string
-          p_commission?: number | null
-          p_offer?: string | null
+          p_address: string
+          p_business_name: string
+          p_category_id: string
+          p_description: string
+          p_email: string
+          p_locale: string
+          p_phone: string
+          p_user_id: string
         }
         Returns: string
       }
-      accept_partnership_request: { Args: { p_id: string }; Returns: string }
-      claim_launch_offer: { Args: { p_hotel_id: string }; Returns: number | null }
-      release_launch_offer: { Args: { p_hotel_id: string }; Returns: boolean }
+      create_partnership_request: {
+        Args: {
+          p_business_id: string
+          p_commission?: number
+          p_hotel_id: string
+          p_initiated_by: Database["public"]["Enums"]["connection_initiator"]
+          p_message: string
+          p_offer?: string
+        }
+        Returns: string
+      }
+      current_hotel_ids: { Args: never; Returns: string[] }
+      custom_access_token_hook: { Args: { event: Json }; Returns: Json }
+      decline_partnership_request: {
+        Args: { p_id: string; p_reason?: string }
+        Returns: undefined
+      }
+      disconnect_partnership: {
+        Args: { p_partnership_id: string }
+        Returns: undefined
+      }
+      earth: { Args: never; Returns: number }
+      is_approved_partner: { Args: never; Returns: boolean }
+      is_business_owner: { Args: { b: string }; Returns: boolean }
+      is_hotel_member: { Args: { h: string }; Returns: boolean }
+      is_hotel_owner: { Args: { h: string }; Returns: boolean }
+      is_super_admin: { Args: never; Returns: boolean }
       launch_offer_remaining: { Args: never; Returns: number }
-      decline_partnership_request: { Args: { p_id: string; p_reason?: string | null }; Returns: undefined }
-      cancel_partnership_request: { Args: { p_id: string }; Returns: undefined }
-      disconnect_partnership: { Args: { p_partnership_id: string }; Returns: undefined }
       match_knowledge_chunks: {
         Args: {
-          p_hotel: string
-          p_embedding: string
-          p_locale: string
           p_count?: number
+          p_embedding: string
+          p_hotel: string
+          p_locale: string
         }
         Returns: {
-          id: string
-          title: string
           content: string
-          source_table: string
-          source_id: string
+          id: string
           similarity: number
+          source_id: string
+          source_table: string
+          title: string
         }[]
       }
+      record_recent_view: {
+        Args: { p_business_id: string }
+        Returns: undefined
+      }
+      release_launch_offer: { Args: { p_hotel_id: string }; Returns: boolean }
       show_limit: { Args: never; Returns: number }
       show_trgm: { Args: { "": string }; Returns: string[] }
     }
     Enums: {
+      account_role: "user" | "partner"
       billing_status:
         | "unbilled"
         | "checkout_sent"
@@ -1658,9 +1715,12 @@ export type Database = {
       booking_status: "pending" | "confirmed" | "cancelled" | "no_show"
       commission_state: "accrued" | "invoiced" | "paid"
       confirmation_source: "partner_webhook" | "manual" | "self_reported"
-      account_role: "user" | "partner"
       connection_initiator: "hotel" | "business"
-      connection_request_status: "pending" | "accepted" | "declined" | "cancelled"
+      connection_request_status:
+        | "pending"
+        | "accepted"
+        | "declined"
+        | "cancelled"
       hotel_plan:
         | "accommodation"
         | "basic"
@@ -1668,8 +1728,6 @@ export type Database = {
         | "advanced"
         | "enterprise"
       hotel_role: "owner" | "manager" | "staff"
-      partner_status: "pending" | "approved" | "rejected"
-      visit_source: "manual" | "referral"
       hours_entity_type:
         | "reception"
         | "breakfast"
@@ -1683,9 +1741,11 @@ export type Database = {
         | "checkout"
         | "amenity"
       message_role: "guest" | "assistant" | "system"
+      partner_status: "pending" | "approved" | "rejected"
       policy_kind: "pets" | "smoking" | "cancellation" | "payment" | "noise"
       publish_state: "draft" | "published" | "archived"
       subscription_tier: "free" | "standard" | "featured" | "exclusive"
+      visit_source: "manual" | "referral"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1701,12 +1761,12 @@ export type Tables<
   DefaultSchemaTableNameOrOptions extends
     | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
         DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -1730,11 +1790,11 @@ export type TablesInsert<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -1755,11 +1815,11 @@ export type TablesUpdate<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -1780,11 +1840,11 @@ export type Enums<
   DefaultSchemaEnumNameOrOptions extends
     | keyof DefaultSchema["Enums"]
     | { schema: keyof DatabaseWithoutInternals },
-  EnumName extends DefaultSchemaEnumNameOrOptions extends {
+  EnumName extends (DefaultSchemaEnumNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaEnumNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -1797,11 +1857,11 @@ export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
     | keyof DefaultSchema["CompositeTypes"]
     | { schema: keyof DatabaseWithoutInternals },
-  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
+  CompositeTypeName extends (PublicCompositeTypeNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
-    : never = never,
+    : never) = never,
 > = PublicCompositeTypeNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -1813,6 +1873,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      account_role: ["user", "partner"],
       billing_status: [
         "unbilled",
         "checkout_sent",
@@ -1823,13 +1884,21 @@ export const Constants = {
       booking_status: ["pending", "confirmed", "cancelled", "no_show"],
       commission_state: ["accrued", "invoiced", "paid"],
       confirmation_source: ["partner_webhook", "manual", "self_reported"],
-      account_role: ["user", "partner"],
       connection_initiator: ["hotel", "business"],
-      connection_request_status: ["pending", "accepted", "declined", "cancelled"],
-      hotel_plan: ["accommodation", "basic", "professional", "advanced", "enterprise"],
+      connection_request_status: [
+        "pending",
+        "accepted",
+        "declined",
+        "cancelled",
+      ],
+      hotel_plan: [
+        "accommodation",
+        "basic",
+        "professional",
+        "advanced",
+        "enterprise",
+      ],
       hotel_role: ["owner", "manager", "staff"],
-      partner_status: ["pending", "approved", "rejected"],
-      visit_source: ["manual", "referral"],
       hours_entity_type: [
         "reception",
         "breakfast",
@@ -1844,9 +1913,11 @@ export const Constants = {
         "amenity",
       ],
       message_role: ["guest", "assistant", "system"],
+      partner_status: ["pending", "approved", "rejected"],
       policy_kind: ["pets", "smoking", "cancellation", "payment", "noise"],
       publish_state: ["draft", "published", "archived"],
       subscription_tier: ["free", "standard", "featured", "exclusive"],
+      visit_source: ["manual", "referral"],
     },
   },
 } as const
